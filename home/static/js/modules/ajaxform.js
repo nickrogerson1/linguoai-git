@@ -2,8 +2,6 @@ CNVS.AjaxForm = function() {
 	var __core = SEMICOLON.Core;
 	var __modules = SEMICOLON.Modules;
 
-	console.log(__core)
-
 	return {
 		init: function(selector) {
 			if( __core.getSelector(selector, false, false).length < 1 ){
@@ -37,7 +35,6 @@ CNVS.AjaxForm = function() {
 						elRedirect = element.attr('data-redirect'), //undefined
 						defaultBtn, alertType;
 
-						// console.log(defaultBtn)
 
 					if( !elAlert ) {
 						elAlert = 'notify';
