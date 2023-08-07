@@ -1,0 +1,27 @@
+.form-control {
+	background: #d9e4ec;
+}
+
+.form-control:focus {
+	background-color: transparent;
+}
+
+
+.errorlist li {
+	color: red !important;
+  }
+
+
+/* Navigation - credit button */
+.one-line {
+	white-space: nowrap;
+	text-align: center;
+}
+
+span.one-line {
+	line-height: 3em;
+}
+
+.tim-icons {
+	margin-right: 4px;
+} 

@@ -1,0 +1,33 @@
+{% extends "../layouts/base.html" %}
+
+{% load static %}
+
+{% block stylesheets %}
+<link href="{% static 'css/forms.css' %}" rel="stylesheet" />
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+        <div class="card" >
+            <div class="card-header text-center py-4">
+                <h3 class="title mb-1">
+                    Oh No, Service Unavailable!
+                </h3>
+            </div>
+
+        <div class="card">
+            <div class="card-body">
+               <p>We tried to get your results but were unsuccessful. Please try again in a couple of minutes. You were not charged for this usage.</p>
+        </div>
+        </div>
+    </div>
+    </div>
+    </div>
+    </div>
+</div>
+<br><br>
+
+{% endblock content %}

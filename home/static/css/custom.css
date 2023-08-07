@@ -1,0 +1,40 @@
+/* Handles issue with FAQs intefering with the header */
+@media (min-width: 992px){
+	#scroll-spy {
+		margin-top: 60px !important;
+	}
+}
+
+
+#slogan {
+	font-size: 1.2rem;
+}
+
+@media (min-width: 992px){
+	#slogan {
+		font-size: 2rem
+	}
+}
+
+@media (min-width: 550px){
+	#slogan {
+		font-size: 1.5rem
+	}
+}
+
+
+
+/* Header */
+@media (max-width: 992px) {
+	#menu-buttons {
+		margin-bottom: 20px;
+		border-top: var(--cnvs-primary-menu-submenu-border);
+	}
+	#menu-buttons li {
+		margin-top: 14px;
+	}
+}
+
+	#menu-buttons a:first-child {
+		margin-right: 10px;
+}

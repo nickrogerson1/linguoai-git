@@ -1,0 +1,61 @@
+<div class="sidebar">
+        <div class="sidebar-wrapper">
+            <ul class="nav">
+                <li class="{% if 'index' in segment %} active {% endif %} ">
+                    <a href="{% url 'home' %}">
+                        <i class="tim-icons icon-chart-bar-32"></i>
+                        <p>Dashboard</p>
+                    </a>
+                </li>
+                <li class="{% if 'icons' in segment %} active {% endif %}">
+                    <a href="{% url 'ielts-writing-task-2' %}">
+                        <i class="tim-icons icon-pencil"></i>
+                        <p>IELTS Writing Task 2</p>
+                    </a>
+                </li>
+                <li class="{% if 'map' in segment %} active {% endif %}">
+                    <a href="{% url 'corrected' %}">
+                        <i class="tim-icons icon-check-2"></i>
+                        <p>Correct My Work</p>
+                    </a>
+                </li>
+                <li class="{% if 'notifications' in segment %} active {% endif %}">
+                    <a href="{% url 'improved' %}">
+                        <i class="tim-icons icon-spaceship"></i>
+                        <p>Improve My Work</p>
+                    </a>
+                </li>
+                
+                <li class="{% if 'user' in segment %} active {% endif %}">
+                    <a href="{% url 'ielts-writing-task-2-results' %}">
+                        <i class="tim-icons icon-bullet-list-67"></i>
+                        <p>Ielts Results</p>
+                    </a>
+                </li>
+                <li class="{% if 'tables' in segment %} active {% endif %}">
+                    <a href="{% url 'corrected-results' %}">
+                        <i class="tim-icons icon-bullet-list-67"></i>
+                        <p>Corrected Results</p>
+                    </a>
+                </li>
+                <li class="{% if 'typography' in segment %} active {% endif %}">
+                    <a href="{% url 'improved-results' %}">
+                        <i class="tim-icons icon-bullet-list-67"></i>
+                        <p>Improved Results</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'internal-contact' %}">
+                        <i class="tim-icons icon-email-85"></i>
+                        <p>Contact Us</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'logout' %}">
+                        <i class="tim-icons icon-button-power"></i>
+                        <p>Logout</p>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>

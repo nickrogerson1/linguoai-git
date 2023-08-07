@@ -1,0 +1,145 @@
+{% extends "../layouts/base.html" %}
+
+{% load static %}
+
+{% block stylesheets %}
+<link href="{% static 'css/forms.css' %}" rel="stylesheet" />
+
+<style>
+th {
+    font-size: 1.2em !important;
+}
+
+
+
+td {
+    vertical-align: top;
+    padding-left: 3px;
+    max-width: 600px;
+    white-space: break-spaces;
+    color: black;
+}
+
+#guide {
+    border:1px solid black;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#guide td, #guide tr {
+    border:1px solid black;
+}
+
+#guide td {
+    padding: 2px 20px;
+}
+
+</style>
+
+
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+        <div class="card" >
+            <div class="card-header text-center pt-4">
+                <h1 class="title">
+                    IELTS Writing Task 2 Results
+                </h1>
+            </div>
+
+        <div class="card">
+            <div class="card-body">
+                {% if object_list %}
+
+            <div class="row">
+                <div class="col-xl-5 col-md-6">
+                    <div class="table-responsive">
+                        <table id="guide">
+                            <thead class="text-center">
+                                <tr >
+                                    <th colspan="2" class="px-3">Average Band Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Mean</td>
+                                    <td>{{ mean_score }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Median</td>
+                                    <td>{{ median_score }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="col-xl-5 col-md-6 mt-4">
+                <p>Click on the link in the Question column to retrieve your result.</p>
+                </div>
+            </div>
+
+
+                {% endif %}
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table tablesorter">
+                                {% if object_list %}
+                                <thead class="text-center text-primary">
+                                <tr>
+                                    <th>Date Created</th>
+                                    <th>Band</th>
+                                    <th>Question</th>
+                                </tr>
+                                </thead>
+                                {% endif %}
+                                <tbody>
+                                {% for result in object_list %}
+                                <tr>
+                                    <td>{{ result.time_created }}</td>
+                                    <td>{{ result.band }}</td>
+                                    <td><a href="{% url 'ielts-writing-task-2-results-detail' result.pk %}">{{ result.question|safe }}</a></td>
+                                </tr>
+                                {% empty %}
+                                    <tr><h3>You still have not submitted anything yet.</h3></tr>
+                                {% endfor %}
+                                
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            {% if object_list %}
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1">&laquo; first</a>
+                            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                        {% endif %}
+                
+                        <span class="current">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                        </span>
+                
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}">next</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
+            {% endif %}
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+<br><br>
+
+{% endblock content %}

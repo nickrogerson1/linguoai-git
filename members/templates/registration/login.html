@@ -1,0 +1,67 @@
+{% extends "members/layouts/base-fullscreen.html" %}
+
+{% block title %} Login {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<!-- <div class="white-content"> -->
+    <div class="row pt-5">
+        <div class="col-12 col-sm-10 offset-sm-1 col-md-8 mt-5 offset-md-2 pt-5 mt-5">
+            <div class="card">
+                <div class="card-header text-center py-4">
+                    <h2 class="title">
+                        Sign IN
+                    </h2>
+                
+                    <h6 class="card-category">
+                        {% if form.errors %}
+                            {% for field, errors in form.errors.items %}
+                                {% for e in errors%}
+                                <h5 class="text-danger">{{ e|striptags }}</h5>
+                                {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                        <span>
+                            <h5>Please enter your Log In details:</h5>
+                        </span>
+                        {% endif %}  
+                    </h6>
+                </div>
+
+                <form role="form" method="post" action="">
+                    {% csrf_token %}  
+
+                    <div class="card-body px-5 py-3"> 
+                        {% for field in form %}
+                        <div class="col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">
+                            <div class="form-group">
+                                {{ field.label_tag }} 
+                                {{ field }}
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                    </div>
+                    
+                    <div class="card-footer text-center">
+                        <button type="submit" name="login" class="btn btn-fill btn-primary">Login</button>
+                        
+                        <br /><br />
+
+                        <p>Don't have an account? <a href="{% url 'register' %}" class="text-primary">Register</a></p>
+                        <p>Forgotten your password? <a href="{% url 'reset_password' %}" class="text-primary">Reset it</a></p>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

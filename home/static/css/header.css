@@ -1,0 +1,33 @@
+
+/* Header */
+@media (min-width: 992px) {
+    .morph-marker {
+        --cnvs-morph-height: 3px;
+        --cnvs-morph-duration: .3s;
+        position: absolute;
+        display: block;
+        background: var(--cnvs-themecolor);
+        height: var(--cnvs-morph-height);
+        border-radius: var(--bs-border-radius);
+        transition: all var(--cnvs-morph-duration);
+    }
+
+    .morph-bg .morph-marker {
+        --cnvs-morph-height: 100%;
+        opacity: .1;
+        bottom: 0 !important;
+    }
+
+    .morph-bg .menu-link {
+        position: relative;
+        --cnvs-primary-menu-padding-y: 11px;
+        --cnvs-primary-menu-hover-color: var(--cnvs-primary-menu-color);
+        z-index: 1;
+    }
+}
+
+/* Bring the menu items closer together when expanded */
+    .is-expanded-menu .menu-link {
+        padding-left: 10px;
+        padding-right: 10px;
+    }

@@ -1,0 +1,202 @@
+{% extends "members/layouts/base-fullscreen.html" %}
+{% load static %}
+
+{% block title %} Register {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<!-- Font Icons -->
+<link rel="stylesheet" href="{% static 'css/font-icons.css' %}">
+
+<style>
+
+#fade-out {
+    animation: fadeOut ease-in 5s;
+    animation-fill-mode: forwards;
+    font-size: 20px;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    70%% {
+        opacity: 0.7;
+    }
+    80%% {
+        opacity: 0.5;
+    }
+    90%% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 0;
+    }
+    }
+
+ 
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="white-content">
+<div class="row pt-5">
+        <div class="col-12 col-sm-10 offset-sm-1 col-md-8 mt-5 offset-md-2 pt-5 mt-5">
+            <div class="card">
+                <div class="card-header text-center py-4">
+                    <h2 class="title">
+                        Sign UP
+                    </h2>
+
+                    <h6 class="card-category">
+                        {% if msg %}
+                            <span class="text-danger">{{ msg | safe }}</span>
+                        {% else %}
+                            <span style="color: black;">
+                                Add your details below:
+                            </span>
+                        {% endif %}  
+                    </h6>     
+
+                </div>
+
+                {% if success %}
+
+                    <div class="card-footer text-center">
+                        <a href="{% url 'home' %}" 
+                            class="btn btn-fill btn-primary">Login</a>
+                    </div>
+
+                {% else %}
+
+                    <form role="form" method="post" action="">
+    
+                        {% csrf_token %}
+
+                        <div class="card-body px-5 py-3">
+                            
+                            <div class="col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">
+                                <div class="form-group">
+                                    <label>Username</label><br>
+                                    {{ form.username }}
+                                </div>
+                                <span class="text-danger">{{ form.username.errors }}</span>
+                            </div>
+
+                            <div class="col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">
+                                <div class="form-group">
+                                    <label>Name</label><br>
+                                    {{ form.first_name }}
+                                </div>
+                                <span class="text-danger">{{ form.first_name.errors }}</span>
+                            </div>
+
+                            <div class="col-6 col-sm-4 offset-sm-1 offset-md-2 col-xl-2 offset-xl-3 px-md-1">
+                                <div class="form-group">
+                                    <label>Year of Birth</label><br>
+                                    {{ form.year }}
+                                </div>
+                                <span class="text-danger">{{ form.year.errors }}</span>
+                            </div>
+
+                            <div class="col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">
+                                <div class="form-group">
+                                    <label>Email</label><br>
+                                    {{ form.email }}
+                                </div>
+                                <span class="text-danger">{{ form.email.errors }}</span>
+                            </div>
+
+                            <div class="col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">
+                                <div class="form-group">
+                                    <label>Country of Origin</label><br>
+                                    {{ form.country }}
+                                </div>
+                                <span class="text-danger">{{ form.country.errors }}</span>
+                            </div>
+                            
+                            
+                            
+
+
+                            <div class="col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">
+                                <div class="form-group">
+                                    <div class="row ml-0">
+                                    <label>Preferred Currency&nbsp</label>
+                                    <i class="bi bi-info-square" data-toggle="tooltip" data-placement="top" title="The currency cannot be changed once set">
+                                    </i>
+                                    </div>
+                                    {{ form.currency }}
+                                </div>
+                                <span class="text-danger">{{ form.currency.errors }}</span>
+                            </div>
+                             
+
+                            <div class="col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">
+                                <div class="form-group">
+                                    <label>Password</label><br>
+                                    {{ form.password1 }}
+                                </div>
+                                <span class="text-danger">{{ form.password1.errors }}</span>
+                            </div>
+
+                            <div class="col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">
+                                <div class="form-group">
+                                    <label>Enter Your Password Again</label><br>
+                                    {{ form.password2 }}
+                                </div>
+                                <span class="text-danger">{{ form.password2.errors }}</span>
+                            </div>                                        
+
+                        <div class="card-footer text-center mx-auto">
+                            <button type="submit" name="register" class="btn btn-fill btn-primary">Register</button>
+                            <br /><br />
+                            <p>Have an account? <a href="{% url 'login' %}" class="text-primary">Login</a></p> 
+                        </div>
+                    </div>
+
+                </div>
+                    
+                    </form>
+
+                {% endif %} 
+
+        </div>
+    </div>
+</div>
+
+<!-- To get tooltips -->
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"></script>
+	<script src="{% static 'js/plugins.bootstrap.js' %}"></script>
+    <script src="{% static 'js/core/jquery.min.js' %}"></script>
+
+
+<script>
+    $(function () {
+			$('[data-toggle="tooltip"]').tooltip()
+		  })
+
+
+    const checkYear = () => {
+        const year = document.querySelector('#id_year')
+        const twentyYearsAgo = new Date().getFullYear() - 20
+
+        if(parseInt(year.value) === twentyYearsAgo) {
+            const p = document.createElement('p')
+            p.setAttribute('id', 'fade-out')
+            p.setAttribute('class', 'col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1')
+            p.innerHTML = `Were you really born in ${twentyYearsAgo}?`
+            year.parentNode.parentNode.after(p)
+
+            setTimeout(() => p.remove(), 3000)
+        }
+        }
+
+    document.querySelector('#id_email')
+    .addEventListener('focus', checkYear, {once : true})
+
+</script>
+
+{% endblock content %}

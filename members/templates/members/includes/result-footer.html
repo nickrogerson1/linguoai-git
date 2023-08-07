@@ -1,0 +1,94 @@
+{% load static %}
+
+<br>
+{% if result.new_search %}
+    <h4>It took <strong>{{ result.processing_time }} seconds</strong> to process your submission and {{ result.symbol}}{{ result.charged }} was deducted from your account.</h4>
+    <br>
+    {% endif %}
+</div>
+{% if result.decision == 'Awaiting Approval' %}
+<h3 style="color: red;">This result has been reported to us.</h3>
+{% elif result.decision == 'Accepted' %}
+<h4 style="color: red;">This result has been reported to us and was accepted. We have credited your balance with {{ result.symbol }}{{ result.charged }}</h4>
+{% elif result.decision == 'Declined'  %}
+<h4 style="color: red;">This result has been reported to us and was declined. If you would like further information, then please contact us directly.</h4>
+{% else %}
+
+<div class="row" id="report-row">
+    <div class="col-5 col-sm-4 col-md-3">
+        <div class="card">
+            <div class="card-body">
+            <a href="#block-modal-contact" data-lightbox="inline">  
+                <button type="button" class="btn btn-fill btn-primary">Report</button>
+            </a> 
+        </div>
+    </div>
+    </div>
+        <div class="col-7 col-sm-8 col-md-9">
+            <div class="card">
+                <div class="card-body">
+            <h4>Not happy with the result? Report it for manual review and we may refund you.</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div  data-target="#block-modal-contact" id="modal-out"></div>
+
+    <!-- Modal -->
+    <div class="modal1 mfp-hide" id="block-modal-contact" >
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-white rounded">
+
+                <div class="row m-0">
+                    <div class="col-lg-6 d-flex align-items-center bg-light">
+                        <img src="{% static 'img/report.svg' %}" alt="Image" class="">
+                    </div>
+                <div class="col-lg-6 p-5">
+                    <h3 class="mb-3 text-center">Report Your Result For Manual Review</h3>
+                    <p class="mb-4 op-07">Please state as clearly as possible why you think this result is bad.</p>
+                    <div class="form-widget">
+
+                        <div class="form-result"></div>
+                        
+                        <form class="mb-0" id="block-contactform" name="block-contactform" action=
+                        {% if result.report_url %}
+                        "{% url 'report' result.report_url %}"
+                        {% else %}
+                        "{% url 'report' request.path %}"
+                        {% endif %}
+                        method="post">
+
+                            {% csrf_token %}
+
+                            <label for="id_message">Give Your Reasons:</label>
+                            <textarea name="message" cols="40" rows="15" class="form-control" maxlength="4000" required="" id="id_message"></textarea>
+                            <div class="col-12 d-flex justify-content-end">
+                                <button class="btn w-100 btn-primary py-2 mx-0" type="submit" id="block-contactform-submit" name="block-contactform-submit" value="submit">Submit Report</button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="prefix" value="block-contactform-">
+                        </form>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+        </div>
+            </div>
+            {% if result.new_search %}
+                <div class="text-center">
+                <a href="{% url 'improved' %}" >
+                <button type="button" class="btn btn-fill btn-primary">Fancy another go?</button>
+                </a>
+                </div>
+            {% endif %}
+            </div>
+            </div>
+        </div>
+    </div>
+<br><br>
+        

@@ -1,0 +1,47 @@
+<section id="faqs">
+    <div class="content-wrap overflow-visible bg-light">
+        <div class="container">
+
+            <div class="row justify-content-center gutter-50 blocks-faqs-3">
+                <div class="col-xl-6 col-lg-8 text-center mb-1">
+                    <p class="mt-5 mb-2 text-info text-uppercase ls-2 text-smaller">How can we help you?</p>
+                    <h3 class="h1 fw-bold mb-3">Frequently Asked Questions</h3>
+                </div>
+
+                <div class="clear"></div>
+
+                <!-- Nav Sidebar Section -->
+                <div class="col-lg-4 d-flex flex-column sticky-section sticky-top h-100" style="top: 0px">
+                    <div id="scroll-spy" class="list-group mt-5">
+                        <a class="list-group-item list-group-item-action active" href="#general">General</a>
+                        <a class="list-group-item list-group-item-action" href="#ielts">IELTS</a>
+                        <a class="list-group-item list-group-item-action" href="#credits">Topping Up</a>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+
+                    <!-- FAQs - Filter Content
+                    ============================================= -->
+                    <div class="faqs">
+            {% comment %}
+              Don't forget to change the order in the nav section above if you change the order here!!!
+            {% endcomment %}
+
+                        {% include './faqs/general.html' %}
+
+                        {% include './faqs/ielts.html' %}
+
+                        {% include './faqs/credits.html' %}
+                                        
+                    </div>
+
+                    <!-- <div class="vh-75"></div> -->
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>

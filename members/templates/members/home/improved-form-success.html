@@ -1,0 +1,71 @@
+{% extends "../layouts/base-results.html" %}
+
+{% load static %}
+
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">  
+    <div class="row">
+        <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+            <div class="alert alert-info" role="alert" id="success-alert">
+                The improved text has been copied to your clipboard!
+              </div>
+        <div class="card" >
+            <div class="card-body px-2 py-2">
+            <div>
+                <h1 class="text-center">Your Improved Version</h1>
+               
+                <p class="text-primary">This is your improved version. If you would like a copy of your work, then you can download it
+                in either PDF of DOCX format. You can even copy the improved version by clicking on the link below.
+                </p>
+                <br>
+                <div class="mb-2">
+                <button type="button" id="copy-button" class="btn btn-secondary btn-sm">Copy Text</button>
+                <a href="{% url 'get_improved_pdf' result.pk %}"><button type="button" id="pdf-button" class="btn btn-secondary btn-sm">Download PDF</button></a>
+                <a href="{% url 'get_improved_docx' result.pk %}"><button type="button" id="docx-button" class="btn btn-secondary btn-sm">Download DOCX</button></a>
+                </div>
+                <br>
+                <p id="improved-version">{{ result.improved_sub|safe }}</p>
+                <br>
+                <br>
+                <h3>Your Original Version:</h3>
+                <p>{{ result.submission|safe }}</p>
+                
+                {% include '../includes/result-footer.html' %}
+
+
+{% endblock content %}
+
+{% block javascripts %}
+
+<script>
+const copyButton = document.querySelector('#copy-button')
+const improvedVersion = document.querySelector('#improved-version')
+
+$(document).ready(function() {
+  $("#success-alert").hide();
+})
+  function showSuccessAlert () {
+    $("#success-alert").fadeTo(2000, 500).slideUp(500, function() {
+      $("#success-alert").slideUp(500);
+    });
+  };
+
+const copyText = async () => {
+    try {
+        await navigator.clipboard.writeText(improvedVersion.innerText)
+        showSuccessAlert()
+    } catch (e){
+        console.log(e)
+    }
+}
+
+copyButton.addEventListener('click', copyText)
+
+</script>
+
+{% endblock javascripts %}

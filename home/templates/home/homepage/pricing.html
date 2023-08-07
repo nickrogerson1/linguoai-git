@@ -1,0 +1,39 @@
+{% load static %}
+
+<section id="pricing">
+    <div class="content-wrap d-flex min-vh-100 align-items-center">
+        <div class="container">
+            <div class="row col-mb-50 justify-content-center">
+
+                <div class="col-xl-6 col-lg-8 text-center">
+                    <h3 class="h1 fw-bold mb-3" >Pricing</h3>
+                </div>
+
+                <div class="clear"></div>
+
+                <div class="col-md-6">
+                    <div class="card border-0 dark shadow-sm h-shadow shadow-ts p-3" style="background: url('{% static 'one.jpg' %}') no-repeat top center / contain;">
+                        <div class="card-body">
+                            <h3 class="card-title h2 fw-bold mb-4 text-black text-center">Everything is 1 credit!</h3>
+                            <p class="card-text mb-5 text-black">We currently charge a flat rate of one credit for each product. There are hard limits on the number of words you can submit and vary by product.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6" >
+                    <div id="credit-prices" class="card border-0 shadow-sm h-shadow shadow-ts p-3" style="background: url('{% static 'dollars.jpg' %}') no-repeat top center / cover;">
+                        <!-- <div class="card-body" > -->
+                            <h3 class="card-title h2 fw-bold mb-4">Save up to 30% on credits!</h3>
+                            <ul>
+                                <li>1 credit = $1</li>
+                                <li>10 credits = $9 – Save 10%</li>
+                                <li>30 credits = $24 – Save 20%</li>
+                                <li>50+ credits = $40 – Save 30%</li>
+                              </ul>
+                        <!-- </div> -->
+                    </div>
+
+            </div>
+        </div>
+    </div>
+</section>

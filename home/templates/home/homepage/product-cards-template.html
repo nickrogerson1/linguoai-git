@@ -1,0 +1,20 @@
+{% load static %}
+
+<div class="col-lg-8">
+    <div class="card imagescalein">
+        <div class="row g-0 align-items-center">
+            <div class="col-md-4 d-flex align-self-stretch overflow-hidden order-first order-md-{{ imgpos }}">
+                <img src="{% static source %}" class="rounded-start" alt="{{ alttext }}">
+            </div>
+            <div class="col-md-8 p-4">
+                <div class="card-body">
+                    <h3 class="card-title">{{ title }}</h3>
+                    <p class="card-text mb-2">{{ text }}</p>
+                    <a href="#" class="btn btn-primary">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="clear"></div>

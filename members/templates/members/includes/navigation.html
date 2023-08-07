@@ -1,0 +1,81 @@
+{% load static %}
+
+
+<style>
+.btn-outline {
+    background-color: transparent;
+    color: inherit;
+    transition: all .5s;
+}
+</style>
+        
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-absolute navbar-transparent">
+            <div class="container-fluid">
+                <div class="navbar-wrapper">
+                    <div class="navbar-toggle d-inline">
+                        <button type="button" class="navbar-toggler">
+                            <span class="navbar-toggler-bar bar1"></span>
+                            <span class="navbar-toggler-bar bar2"></span>
+                            <span class="navbar-toggler-bar bar3"></span>
+                        </button>
+                    </div>
+                    <a class="navbar-brand" href="{% url 'home' %}">
+                        <img class="logo-default" src="{% static 'img/linguoai-logo.svg' %}" alt="Linguo AI Logo">
+                    </a>
+                </div>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-bar navbar-kebab"></span>
+                    <span class="navbar-toggler-bar navbar-kebab"></span>
+                    <span class="navbar-toggler-bar navbar-kebab"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navigation">
+                    <ul class="navbar-nav ml-auto">
+                        <li >
+                            <a href="#">
+                            <button type="button" class="btn btn-outline-primary">User Guide</button>
+                            </a>
+                        </li>
+                       <li class="nav-item">
+                        <span class="one-line">
+                        <i class="tim-icons icon-bank"></i>
+                        
+                        Balance 
+                        {% if user.currency == 'USD' %}
+                        ${% else %}¥{% endif %}{% firstof result.balance user.balance %}
+                        </span>
+                        <!-- </button> -->
+                       </li>
+                       {% comment %}
+                       {% url 'top-up' as top_up %} 
+                       {% if request.path != top_up %}
+                       {% endcomment %}
+                        <li>
+                        <form action="{% url 'top-up' %}" method="POST">
+                            {% csrf_token %}
+                                <!-- Top Up -->
+                                <button type="submit" class="btn btn-xl btn-fill btn-primary text-center" >
+                                <i class="tim-icons icon-credit-card"></i> Top Up
+                                </button>
+                        </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="modal modal-search fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModal"
+             aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="SEARCH">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <i class="tim-icons icon-simple-remove"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Navbar -->
+        

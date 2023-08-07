@@ -1,0 +1,11 @@
+{% autoescape off %}
+
+Hi {{ name }},
+<br><br>
+Thanks for choosing to sign up with Linguo.ai!
+<br><br>
+Please click on the link below to complete your registration and activate your account:
+<br><br>
+http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+
+{% endautoescape %}

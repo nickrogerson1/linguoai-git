@@ -1,0 +1,63 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MBH5S83P2X"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-MBH5S83P2X');
+    </script>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'img/apple-icon.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/brain-fav.png' %}">
+
+    <title>
+        Linguo AI{% block title %}{% endblock %}
+    </title>
+
+    <!--     Fonts and icons     -->
+    <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,600,700,800" rel="stylesheet"/>
+    <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+    <!-- Nucleo Icons -->
+    
+    <link href="{% static 'css/nucleo-icons.css' %}" rel="stylesheet"/>
+ 
+    <link href="{% static 'css/black-dashboard.css' %}" rel="stylesheet"/>
+
+    <!-- Specific Page CSS goes HERE  -->
+    {% block stylesheets %}{% endblock stylesheets %}
+    <link href="{% static 'css/custom1.css' %}" rel="stylesheet"/>
+    
+        
+</head>
+<body class="white-content">
+
+    <div class="wrapper">
+
+        {% include '../includes/sidebar.html' %}
+
+        <div class="main-panel">
+
+            {% include '../includes/navigation.html' %}
+
+            {% block content %}{% endblock content %}
+
+        </div>
+    </div>
+
+    {% include '../includes/scripts.html' %}
+
+    {% block fazerstylesheets %}{% endblock fazerstylesheets %}
+
+    <!-- Specific Page JS goes HERE  -->
+    {% block javascripts %}{% endblock javascripts %}
+
+</body>
+</html>

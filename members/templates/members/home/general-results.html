@@ -1,0 +1,107 @@
+{% extends "../layouts/base.html" %}
+
+{% load static %}
+
+{% block stylesheets %}
+<link href="{% static 'css/forms.css' %}" rel="stylesheet" />
+
+<style>
+.band {
+    min-width: 50px;
+}
+
+th {
+    font-size: 1.5em !important;
+}
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+        <div class="card" >
+            <div class="card-header text-center pt-3 pb-0">
+                <h1 class="title">
+                    Your
+                    {% if request.resolver_match.url_name == 'improved-results' %}
+                    Improved
+                  {% else %}
+                    Corrected
+                  {% endif %}
+                  Submissions
+                </h1>
+            </div>
+
+        <div class="card">
+            <div class="card-body">
+                {% if object_list %}
+              
+                <div class="card-body px-2 py-1">
+                    <p class="text-center">
+                        Click on the link in the Submission column to retrieve your result.
+                    </p>
+                </div>
+                {% endif %}
+
+            <div class="card ">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table tablesorter">
+                            {% if object_list %}
+                            <thead class="text-center text-primary">
+                            <tr>
+                                <th>Date Created</th>
+                                <th>Submission</th>
+                            </tr>
+                            </thead>
+                            {% endif %}
+                            <tbody>
+                            {% for result in object_list %}
+                            <tr>
+                                <td class="w-25">{% firstof result.time_sent result.time_created %}</td>
+                                {% if corrected %}
+                                <td><a href="{% url 'corrected-results-detail' result.pk %}">{{ result.submission|safe|truncatewords:50 }}</a></td>
+                                {% else %}
+                                <td><a href="{% url 'improved-results-detail' result.pk %}">{{ result.submission|safe|truncatewords:50 }}</a></td>  
+                                {% endif %}
+                            </tr>
+                            {% empty %}
+                                <tr><h3>You still have not submitted anything yet.</h3></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+            {% if object_list %}
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1">&laquo; first</a>
+                            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                        {% endif %}
+                
+                        <span class="current">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                        </span>
+                
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}">next</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
+            {% endif %}
+            </div>
+        </div>
+        </div>
+    </div>
+    </div>
+</div>
+<br><br>
+
+{% endblock content %}

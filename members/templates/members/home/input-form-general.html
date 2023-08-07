@@ -1,0 +1,94 @@
+{% extends "../layouts/base.html" %}
+
+{% load static %}
+
+{% block stylesheets %}
+<link href="{% static 'css/forms.css' %}" rel="stylesheet" />
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+        <div class="card" >
+            <div class="card-header text-center py-4">
+                <h1 class="title">
+                    {% if request.resolver_match.url_name == 'improved' %}
+                      Improve
+                    {% else %}
+                      Correct
+                    {% endif %}
+                    Your Work
+                </h1>
+            </div>
+           
+            <div class="card-body px-2 py-2">
+            <p class="text-center">
+              There is currently a hard limit of 25000 characters per submission (around 5000 words).
+            </p>
+        </div>
+        <div class="card">
+            <div class="card-body">
+            <form action="" method="post">
+                {% csrf_token %}
+
+                <label for="submission">Type or Paste In Your Work Below:</label>
+                <div class="form-group">
+                    {{ form.submission }}
+                </div>
+                <p id="sub-count">Word Count: 0&nbsp;&nbsp;|&nbsp;&nbsp;Character Count: 0</p>
+                <span class="text-danger">{{ form.submission.errors }}</span>
+                <div class="text-center">
+                    <input id="button" type="submit" value="SUBMIT" class="btn btn-fill btn-primary">
+                    <input id="clear" type="button" value="CLEAR FORM" class="btn btn-fill btn-primary">
+                </div>
+                
+            </form>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    </div>
+</div>
+<br><br>
+
+
+
+
+
+
+
+
+
+<div id='overlay'>
+    <div id="waiting-anim">
+    <span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </span>
+    <div class='base'>
+      <span></span>
+      <div class='face'></div>
+    </div>
+  </div>
+  <div class='longfazers'>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <h1>Hold Tight!<br>We're working on it...</h1>
+</div>
+{% endblock content %}
+
+{% block fazerstylesheets %}
+<link href="{% static 'css/api-wait.css' %}" rel="stylesheet" />
+{% endblock fazerstylesheets %}
+
+{% block javascripts %}
+<script src="{% static 'js/forms.js' %}"></script>
+{% endblock javascripts %}

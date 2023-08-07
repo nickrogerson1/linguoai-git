@@ -1,0 +1,66 @@
+{% extends "../layouts/base-results.html" %}
+
+{% load static %}
+
+{% block stylesheets %}
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+            <div class="alert alert-info" role="alert" id="success-alert">
+                The explanation text has been copied to your clipboard!
+              </div>
+        <div class="card" >
+            <div class="card-body px-2 py-2">
+            <div>
+                <h1 class="text-center">IELTS Writing Task 2 Result</h1><br>
+                <h2 class="text-center mb-0">Band {{ result.band|safe }}</h2>
+                <br>
+                <div class="mb-2">
+                    <button type="button" id="copy-button" class="btn btn-secondary btn-sm">Copy Text</button>
+                    <a href="{% url 'get_ielts_writing_pdf' result.pk %}"><button type="button" id="pdf-button" class="btn btn-secondary btn-sm">Download PDF</button></a>
+                    <a href="{% url 'get_ielts_writing_docx' result.pk %}"><button type="button" id="docx-button" class="btn btn-secondary btn-sm">Download DOCX</button></a>
+                    </div>
+                <h3 class="mb-2">Detailed Explanation:</h3>
+                <p id="explanation">{{ result.score_res|safe }}</p>
+                <br>
+                <h3 class="mb-2">Your Question:</h3>
+                <h4>{{ result.question|safe }}</h4>
+                <br>
+                <h3 class="mb-2">Your Answer:</h3>
+                <p>{{ result.answer|safe }}</p>
+                
+                {% include '../includes/result-footer.html' %}
+
+
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+const copyButton = document.querySelector('#copy-button')
+const explanation = document.querySelector('#explanation')
+
+$(document).ready(function() {
+  $("#success-alert").hide();
+})
+  function showSuccessAlert () {
+    $("#success-alert").fadeTo(2000, 500).slideUp(500, function() {
+      $("#success-alert").slideUp(500);
+    });
+  };
+
+const copyText = async () => {
+    try {
+        await navigator.clipboard.writeText(explanation.innerText)
+        showSuccessAlert()
+    } catch (e){
+        console.log(e)
+    }
+}
+
+copyButton.addEventListener('click', copyText)
+</script>
+{% endblock javascripts %}

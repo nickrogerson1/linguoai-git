@@ -1,0 +1,19 @@
+{% extends "members/layouts/base-fullscreen.html" %}
+
+{% block content %}
+                <div class="col-12 col-sm-10 offset-sm-1 col-md-8 mt-5 offset-md-2 pt-5 mt-5">
+                    <div class="card">
+                        <div class="card-header text-center py-4">
+                            <h2>Confirm Your Email Address Is Correct.</h2>
+
+                            <p>
+                            We have just sent an email to <strong>{{ email }}</strong>. 
+                            Go to <strong>{{ email }}</strong> and click on the link in the email to confirm your account!
+                            Please note that you may need to check your spam folder to find the email.
+                            </P>
+                        
+                        </div>
+                    </div>
+                </div>
+
+{% endblock content %}

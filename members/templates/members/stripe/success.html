@@ -1,0 +1,26 @@
+{% extends "../layouts/base.html" %}
+
+{% block title %} - Payment Accepted! {% endblock title%} 
+
+{% block content %}
+
+<div class="content">
+  <div class="container-fluid">
+   <div class="row">
+      <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+        <div class="card" >
+          <div class="card-body px-2 py-2">
+            <div>
+              <div class="alert alert-success text-center" role="alert">
+                <h2>Thanks for topping up, {{ customer }}!</h2>
+                <p>{{ symbol }}{{ amount }} {{ currency }} have been added to your account.</p>
+                <a href="{% url 'home' %}" >Go back to the dashboard</a>
+              </div>
+           </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,47 @@
+{% load static %}
+
+    <div  data-target="#block-modal-contact" id="modal-out"></div>
+
+        <!-- Modal -->
+        <div class="modal1 mfp-hide" id="block-modal-contact" >
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content bg-white rounded">
+
+                    <div class="row m-0">
+                        <div class="col-lg-6 d-flex align-items-center bg-light">
+                            <img src="{% static 'images/blocks/preview/popups/popup-contact.svg' %}" alt="Image" class="">
+                        </div>
+                        <div class="col-lg-6 p-5">
+                            <h3 class="mb-3">Got something you need to tell us?</h3>
+                            <p class="mb-4 op-07">Just fill in the form below and we'll get back to you as soon as we can.</p>
+                            <div class="form-widget">
+
+                                <div class="form-result"></div>
+
+                                <form class="mb-0" id="block-contactform" name="block-contactform" action="" method="post">
+
+                                    {% csrf_token %}
+
+                                    <div class="form-process">
+                                        <div class="css3-spinner">
+                                            <div class="css3-spinner-scaler"></div>
+                                        </div>
+                                    </div>
+
+                                    {{ form.as_p }}
+
+                                        <div class="col-12 d-flex justify-content-end">
+                                            <button class="btn w-100 btn-primary py-2 mx-0" type="submit" id="block-contactform-submit" name="block-contactform-submit" value="submit">Send Message</button>
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" name="prefix" value="block-contactform-">
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>

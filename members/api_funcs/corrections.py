@@ -1,0 +1,60 @@
+from difflib import HtmlDiff
+import nltk.data
+from .make_request import fetch_from_openai
+from lxml import html, etree
+import re
+
+
+def find_difference(original_text):
+
+    messages = [
+        {"role": "system", "content": "You are a writing editor."},
+        {"role": "user", 
+        "content": f"Correct all the errors in each sentence and do not merge sentences. Make the text sound more like an English native speaker when required. Refrain from using woke terminology.\n\nHere is the text:\n\n{original_text}"}
+    ]
+
+
+    messages=messages
+    # model='gpt-4'
+    model='gpt-3.5-turbo'
+    max_tokens=600
+    temperature=1.0
+
+  
+    res = fetch_from_openai(messages,model,max_tokens,temperature)
+
+    if res:
+# Break into sentences and find differences
+        sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
+        original_text_sents = sent_detector.tokenize(original_text)
+        openai_res_sents = sent_detector.tokenize(res[0])
+        edited = HtmlDiff().make_table(original_text_sents, openai_res_sents)
+# Clean the tables of crappy HTML
+        edited = re.sub('nowrap="nowrap"|nowrap', '', edited)
+        edited = re.sub('&nbsp;|&#160;', ' ', edited)
+
+
+    # Remove extra columns added by HtmlDiff Library
+        table = html.fragment_fromstring(edited)
+    # My new swanky header element complete with CSS classes
+        header = etree.fromstring('''
+            <thead id="main-table" class="text-center">
+                <tr>
+                    <th colspan="2">Original</th>
+                    <th colspan="2">Edited</th>
+                </tr>
+            </thead>
+            ''')
+    # First remove the extra colgroups
+    # Using a hack to add the header as I need to go down and then back up the tree
+        for i ,el in enumerate(table.getchildren()):
+            if i < 2:
+                el.getparent().insert(-1, header) 
+                el.getparent().remove(el)
+    # Then remove them from the rows
+        for row in table.getchildren()[-1].iterchildren():
+            row.remove(row.getchildren()[0])
+            row.remove(row.getchildren()[2])
+            res[0] = html.tostring(table).decode('utf-8')
+        
+    return res

@@ -1,0 +1,17 @@
+{% extends "members/layouts/base-fullscreen.html" %}
+
+{% block content %}
+                <div class="col-12 col-sm-10 offset-sm-1 col-md-8 mt-5 offset-md-2 pt-5 mt-5">
+                    <div class="card">
+                        <div class="card-header text-center py-4">
+                            <h2>Congratulations, your account is now activated!</h2>
+                <p>
+                Please you use this link to log back in: 
+                <a href="{% url 'home' %}" class="text-primary">Login</a>
+                </P>
+                        
+                        </div>
+                    </div>
+                </div>
+
+{% endblock content %}

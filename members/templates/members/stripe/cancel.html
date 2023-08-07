@@ -1,0 +1,30 @@
+{% extends "../layouts/base.html" %}
+
+{% block title %} - Payment Cancelled{% endblock title%} 
+
+{% block content %}
+
+<div class="content">
+  <div class="container-fluid">
+  <div class="row">
+      <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+      <div class="card" >
+          <div class="card-body px-2 py-2">
+          <div>
+              <div class="alert alert-info" role="alert">
+                <h2 class="mb-3">Did something go wrong, {{ user.first_name }}?</h2>
+                <p>Click the button below to return to the purchase area.</p>
+                <form action="{% url 'top-up' %}" method="POST">
+                  {% csrf_token %}
+                      <!-- Top Up -->
+                  <input id="button" type="submit" value="Top Up" class="btn btn-xl btn-fill btn-primary text-center">
+              </form>
+              </div>
+          </div>
+      </div>
+      </div>
+      </div>
+  </div>
+  </div>
+</div>
+{% endblock content %}
