@@ -38,25 +38,25 @@ CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://*.linguo.ai']
 
 
 INSTALLED_APPS = [
-    'tz_detect',
+    # 'tz_detect',
     "home",
     "members",
     # 'webpack_loader',
 
-    'blog',
-    'wagtail.contrib.forms',
-    'wagtail.contrib.redirects',
-    'wagtail.embeds',
-    'wagtail.sites',
-    'wagtail.users',
-    'wagtail.snippets',
-    'wagtail.documents',
-    'wagtail.images',
-    'wagtail.search',
-    'wagtail.admin',
-    'wagtail',
-    'modelcluster',
-    'taggit',
+    # 'blog',
+    # 'wagtail.contrib.forms',
+    # 'wagtail.contrib.redirects',
+    # 'wagtail.embeds',
+    # 'wagtail.sites',
+    # 'wagtail.users',
+    # 'wagtail.snippets',
+    # 'wagtail.documents',
+    # 'wagtail.images',
+    # 'wagtail.search',
+    # 'wagtail.admin',
+    # 'wagtail',
+    # 'modelcluster',
+    # 'taggit',
 
     "django.contrib.admin",
     "django.contrib.auth",
@@ -67,11 +67,11 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
+    # 'wagtail.contrib.redirects.middleware.RedirectMiddleware',
     'django.middleware.security.SecurityMiddleware',
      "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'tz_detect.middleware.TimezoneMiddleware',
+    # 'tz_detect.middleware.TimezoneMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -139,7 +139,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+# USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -197,8 +197,8 @@ base.tag_re = re.compile(base.tag_re.pattern, re.DOTALL)
 # }
 
 
-WAGTAIL_SITE_NAME = 'LinguoAI'
-WAGTAILADMIN_BASE_URL = 'cms/'
+# WAGTAIL_SITE_NAME = 'LinguoAI'
+# WAGTAILADMIN_BASE_URL = 'cms/'
 
 
 OPENAI_API_KEY = env('OPENAI_API_KEY')
