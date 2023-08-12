@@ -38,7 +38,7 @@ CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://*.linguo.ai']
 
 
 INSTALLED_APPS = [
-    # 'tz_detect',
+    'tz_detect',
     "home",
     "members",
     # 'webpack_loader',
@@ -71,7 +71,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
      "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # 'tz_detect.middleware.TimezoneMiddleware',
+    'tz_detect.middleware.TimezoneMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -139,7 +139,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-# USE_TZ = True
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)

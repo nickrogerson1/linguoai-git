@@ -1,4 +1,3 @@
-
 const displayLoader = () => {
     // Only run if form has been completed
     const parts = [...document.querySelectorAll('.form-group')]
@@ -8,9 +7,7 @@ const displayLoader = () => {
     }
 }
 
-
-const button = document.querySelector('#button')
-button.addEventListener('click', displayLoader)
+document.querySelector('#button').addEventListener('click', displayLoader)
 
 
 const form = document.querySelector('.form-group')
@@ -21,7 +18,6 @@ form.addEventListener('input', () => {
     const char_count = form.dataset.replicatedValue.length
     form.nextElementSibling.innerHTML = `Word Count: ${word_count}&nbsp;&nbsp;|&nbsp;&nbsp;Character Count: ${char_count}`
 })
-
 
 
 

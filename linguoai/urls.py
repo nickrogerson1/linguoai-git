@@ -27,7 +27,7 @@ urlpatterns = [
     # path('documents/', include(wagtaildocs_urls)),
     # path('blog/', include(wagtail_urls)),
 
-    # path('tz_detect/', include('tz_detect.urls')),
+    path('tz_detect/', include('tz_detect.urls')),
     path('admin/', admin.site.urls),
     path('', include('home.urls')),
     path('', include('members.urls')),

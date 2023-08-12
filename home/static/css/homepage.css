@@ -96,3 +96,11 @@
 .content-wrap {
     padding: 2rem;
 }
+
+
+/* Make sure the X remains visible on mobile */
+@media (max-width: 991px){
+	.mfp-close {
+		color: black;
+	}
+}

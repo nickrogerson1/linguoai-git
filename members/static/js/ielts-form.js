@@ -1,13 +1,3 @@
-const displayLoader = () => {
-    // Only run if form has been completed
-    const parts = [...document.querySelectorAll('.form-group')]
-    const check = parts.every(x => x.dataset.replicatedValue)
-    if(check) {
-        document.querySelector('#overlay').style.display = 'block'
-    }
-}
-
-
 const checkValidWordCount = e => {
     e.preventDefault()
 
@@ -38,7 +28,7 @@ const checkValidWordCount = e => {
     // Send back errors if not enough or too many words
 
     // Same style for all warnings
-    className = 'text-danger warning-text';
+    const className = 'text-danger warning-text';
 
     if (!questionWordCount || questionWordCount < 15){
         const warning = Object.assign(document.createElement('h4'), {
@@ -71,7 +61,7 @@ const checkValidWordCount = e => {
         return answer.after(answer.nextElementSibling, warning)
     } 
 
-    displayLoader()
+    document.querySelector('#overlay').style.display = 'block'
     e.currentTarget.submit()
     
 }
@@ -79,7 +69,9 @@ const checkValidWordCount = e => {
 document.querySelector('#ielts-form-submit').addEventListener('submit', checkValidWordCount)
 
 
-const forms = document.querySelectorAll('.form-group')
+// Exclude the select box - not supported by Firefox Aug 2023.
+// It knocks out the word count on Firefox
+const forms = document.querySelectorAll('.form-group:has(textarea)')
 
 // Count the words and characters
 forms.forEach( form => {

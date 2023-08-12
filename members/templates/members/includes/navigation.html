@@ -43,7 +43,7 @@
                         
                         Balance 
                         {% if user.currency == 'USD' %}
-                        ${% else %}¥{% endif %}{% firstof result.balance user.balance %}
+                        ${% else %}¥{% endif %}{% firstof result.balance user.balance '0' %}
                         </span>
                         <!-- </button> -->
                        </li>

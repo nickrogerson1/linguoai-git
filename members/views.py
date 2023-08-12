@@ -411,15 +411,16 @@ class IeltsWritingTask2View(LoginRequiredMixin,ContextMixin,CreateView):
     model = IeltsWritingTask2
     template_name = 'members/home/input-form-ielts-writing-task-2.html'
     form_class = IeltsWritingTask2Form
+    extra_context = ''
 
 
     def get(self, request, *args, **kwargs):
         # If they have some balance
         if self.request.user.balance:
-            return super(IeltsWritingTask2View, self).get(self, request, *args, **kwargs)
-        else:
-        # Otherwise redirect to top up page
-            return redirect('insufficient-funds')
+        # Add this to extra context as the form wipes out the kwargs being passed down
+            if 'Firefox' in request.META['HTTP_USER_AGENT']:
+                self.extra_context = {'browser' : 'Firefox'}
+            return super().get(self, request, *args, **kwargs)
 
 
 # Override the entire post method and return to same page and ignore success_url
@@ -446,10 +447,12 @@ class IeltsWritingTask2View(LoginRequiredMixin,ContextMixin,CreateView):
             t0 = time.time()
             q = escape(self.object.question)
             a = escape(self.object.answer)
+            language = self.object.get_explanation_language_display().split(' ')[0]
+
 
             # Add all the openai data to the db
             # [html, model, prompt_tokens, completion_tokens, total_tokens]
-            data = get_ielts_writing_task_2_score(q,a)
+            data = get_ielts_writing_task_2_score(q,a,language)
             if data:
 
                 # Pull out the band and replace it with nothing
@@ -468,6 +471,7 @@ class IeltsWritingTask2View(LoginRequiredMixin,ContextMixin,CreateView):
 
                 # Add the report url to the context
                 ctx['result'].report_url = f'/ielts-writing-task-2/{ctx["result"].pk}/'
+                ctx['link'] = 'ielts-writing-task-2'
 
                 return render(request, 'members/home/ielts-writing-task-2-success.html', ctx)
             else:
@@ -522,6 +526,7 @@ class CorrectedFormView(LoginRequiredMixin,ContextMixin, CreateView):
 
             # Add the report url to the context
                 ctx['result'].report_url = f'/corrected-results/{ctx["result"].pk}/'
+                ctx['link'] = 'corrected'
               
 
                 return render(request, 'members/home/corrected-form-success.html', ctx)

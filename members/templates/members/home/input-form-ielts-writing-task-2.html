@@ -19,18 +19,34 @@
                     IELTS Writing Task 2
                 </h1>
             </div>
-            <div class="card-body px-2 py-2">
+        <div class="card-body px-2 pt-2 pb-0">
             <p>
               There is a hard limit of 3000 characters per answer (around 600 words) which is more than double the 250 word minimum for IELTS Writing Task 2.
               We suggest you write around 400 words.
             <br><br>
               As this service is currently in <strong>BETA</strong>, we are providing it at cost value.
             </p>
-        </div>
+        
+
+        {% if browser %}
+        <br>
+        <h4 class="text-danger">As of September 2023, the IELTS Word Counter is not currently supported in Firefox. 
+          The service will still work but we recommend using another browser.</h4>
+        {% endif %}
+      </div>
+
         <div class="card">
-            <div class="card-body">
+            <div class="card-body pt-0">
             <form action="" method="post" id="ielts-form-submit">
                 {% csrf_token %}
+
+                <div class="col-12 col-sm-8 col-md-6 col-lg-4 col-xl-5 px-0 mt-0">
+                    <div class="form-group" id="explanation">
+                    <label for="explanation">Select your explanation language:</label>
+                    {{ form.explanation_language }}
+                  </div>
+                  <span class="text-danger">{{ form.currency.errors }}</span>
+                </div>
 
                 <label for="question">Type or Paste In Your Question</label>
                 <div class="form-group" id="question">
@@ -85,8 +101,6 @@
   </div>
   <h1>Hold Tight!<br>We're working on it...</h1>
 </div>
-
-
 {% endblock content %}
 
 {% block fazerstylesheets %}

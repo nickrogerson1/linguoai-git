@@ -6,12 +6,14 @@
     <br>
     {% endif %}
 </div>
-{% if result.decision == 'Awaiting Approval' %}
-<h3 style="color: red;">This result has been reported to us.</h3>
+{% if user.reports_blocked %}    
+{% comment %}Do nothing and don't tell them they've been blocked.{% endcomment %}
+{% elif result.decision == 'Awaiting Approval' %}
+<h3 class="text-danger">This result has been reported to us.</h3>
 {% elif result.decision == 'Accepted' %}
-<h4 style="color: red;">This result has been reported to us and was accepted. We have credited your balance with {{ result.symbol }}{{ result.charged }}</h4>
+<h4 class="text-danger">This result has been reported to us and was accepted. We have credited your balance with {{ result.symbol }}{{ result.charged }}</h4>
 {% elif result.decision == 'Declined'  %}
-<h4 style="color: red;">This result has been reported to us and was declined. If you would like further information, then please contact us directly.</h4>
+<h4 class="text-danger">This result has been reported to us and was declined. If you would like further information, then please contact us directly.</h4>
 {% else %}
 
 <div class="row" id="report-row">
@@ -43,6 +45,7 @@
                 <div class="row m-0">
                     <div class="col-lg-6 d-flex align-items-center bg-light">
                         <img src="{% static 'img/report.svg' %}" alt="Image" class="">
+                        
                     </div>
                 <div class="col-lg-6 p-5">
                     <h3 class="mb-3 text-center">Report Your Result For Manual Review</h3>
@@ -67,7 +70,9 @@
                                 <button class="btn w-100 btn-primary py-2 mx-0" type="submit" id="block-contactform-submit" name="block-contactform-submit" value="submit">Submit Report</button>
                             </div>
                         </div>
+
                         <input type="hidden" name="prefix" value="block-contactform-">
+
                         </form>
                     </div>
                     </div>
@@ -81,7 +86,15 @@
             </div>
             {% if result.new_search %}
                 <div class="text-center">
-                <a href="{% url 'improved' %}" >
+                    <a href="
+                {% if link == 'ielts-writing-task-2' %}
+                {% url 'ielts-writing-task-2' %}
+                {% elif link == 'corrected' %}
+                {% url 'corrected' %}
+                {% else %}
+                {% url 'improved' %} 
+                {% endif %} 
+                    ">
                 <button type="button" class="btn btn-fill btn-primary">Fancy another go?</button>
                 </a>
                 </div>
@@ -90,5 +103,5 @@
             </div>
         </div>
     </div>
-<br><br>
+
         

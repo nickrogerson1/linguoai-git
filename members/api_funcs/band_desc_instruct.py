@@ -1,4 +1,5 @@
-instructions = '''
+def instructions(language): 
+    return f'''
 These are the band descriptors to be used to assess the answer. 
 
 You must select a suitable band for each band descriptor: Task Response, Coherence and Cohesion, Lexical Recourse and Grammatical Range, and Accuracy.
@@ -9,9 +10,11 @@ The overall score is calculated by adding all the band scores together and then 
 
 If the score ends in .25, then round down to the nearest integer. For example, 6.25 should be 6.
 
-State reasons for and against why you chose that band in Chinese and English.
+State reasons for and against why you chose that band in {language}.
 
-Always start by stating the overall score like this %%%%%Band {overall score}%%%%%
+Always start by stating the overall score like this %%%%%Band {{overall score}}%%%%%
+
+Return the answer in HTML.
 
 Task Response:
 Band 9

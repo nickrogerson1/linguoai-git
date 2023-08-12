@@ -24,6 +24,7 @@ class User(AbstractUser):
     reports = models.PositiveIntegerField(default=0)
     total_submissions = models.PositiveIntegerField(default=0)
     percent_reported = models.DecimalField(max_digits=6, decimal_places=3, default=0)
+    reports_blocked = models.BooleanField(default=False)
 
     CHOICES = [
         ('USD', '$ United States Dollar'),
@@ -70,6 +71,26 @@ class BaseModel(models.Model):
 
 
 class IeltsWritingTask2(BaseModel):
+    CHOICES = [
+        ('EN', 'English'),
+        ('CN', 'Chinese 中文'),
+        ('ES', 'Spanish Español'),
+        ('PT', 'Portuguese Português'),
+        ('FR', 'French Français'),
+        ('DE', 'German Deutsch'),
+        ('JP', 'Japanese 日本語'),
+        ('KO', 'Korean 한국어'),
+        ('TH', 'Thai แบบไทย'),
+        ('AR', 'Arabic عربي'),
+        ('RU', 'Russian русский'),
+        ('ID', 'Indonesian bahasa Indonesia'),
+        ('FA', 'Farsi فارسی'),
+        ('VI', 'Vietnamese Tiếng Việt'),
+        ('BN', 'Bengali বাংলা'),
+        ('HI', 'Hindi हिंदी')
+    ]
+
+    explanation_language = models.CharField(max_length=2, choices=CHOICES, default='EN')
     question = models.TextField(validators=[MaxLengthValidator(500)])
     answer = models.TextField(validators=[MaxLengthValidator(3000)])
     score_res = models.TextField()
