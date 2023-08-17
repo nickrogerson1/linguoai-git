@@ -64,7 +64,6 @@ class BaseModel(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     
 
-
     class Meta:
         abstract = True
     
@@ -106,7 +105,7 @@ class IeltsWritingTask2(BaseModel):
 
 class CorrectedSubmission(BaseModel):
     submission = models.TextField(validators=[MaxLengthValidator(25000)])
-    corrections = models.TextField()
+    result = models.TextField()
         
     def __str__(self):
         return self.owner.username
@@ -156,4 +155,3 @@ class UserReportedResults(models.Model):
 
     class Meta:
         verbose_name_plural = "User Reported Results"
-

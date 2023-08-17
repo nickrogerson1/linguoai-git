@@ -25,42 +25,16 @@
                     <a href="{% url 'get_ielts_writing_docx' result.pk %}"><button type="button" id="docx-button" class="btn btn-secondary btn-sm">Download DOCX</button></a>
                     </div>
                 <h3 class="mb-2">Detailed Explanation:</h3>
-                <p id="explanation">{{ result.score_res|safe }}</p>
+                <div id="result">{{ result.score_res|safe }}</div>
                 <br>
                 <h3 class="mb-2">Your Question:</h3>
                 <h4>{{ result.question|safe }}</h4>
                 <br>
                 <h3 class="mb-2">Your Answer:</h3>
-                <p>{{ result.answer|safe }}</p>
-                
-                {% include '../includes/result-footer.html' %}
+                <div>{{ result.answer|safe }}</div>
 
 
 {% endblock content %}
 
 {% block javascripts %}
-<script>
-const copyButton = document.querySelector('#copy-button')
-const explanation = document.querySelector('#explanation')
-
-$(document).ready(function() {
-  $("#success-alert").hide();
-})
-  function showSuccessAlert () {
-    $("#success-alert").fadeTo(2000, 500).slideUp(500, function() {
-      $("#success-alert").slideUp(500);
-    });
-  };
-
-const copyText = async () => {
-    try {
-        await navigator.clipboard.writeText(explanation.innerText)
-        showSuccessAlert()
-    } catch (e){
-        console.log(e)
-    }
-}
-
-copyButton.addEventListener('click', copyText)
-</script>
 {% endblock javascripts %}

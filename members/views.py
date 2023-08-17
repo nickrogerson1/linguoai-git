@@ -3,6 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.contrib.gis.geoip2 import GeoIP2
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+
+from django.views import View
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView
 from django.views.generic.detail import DetailView
@@ -37,7 +40,6 @@ from django.core.mail import send_mail
 
 
 
-
 # Costs per 1000 tokens
 LLM_COSTS = {
     # up to 4k
@@ -52,8 +54,8 @@ LLM_COSTS = {
 # Pricing per 100 words
 PRICING = {
     'ielts_writing_task_2': {
-        'USD': 0.05,
-        'CNY': 0.5
+        'USD': 0.08,
+        'CNY': 0.7
     },
     'corrected_results': {
         'USD': 0.03,
@@ -419,8 +421,12 @@ class IeltsWritingTask2View(LoginRequiredMixin,ContextMixin,CreateView):
         if self.request.user.balance:
         # Add this to extra context as the form wipes out the kwargs being passed down
             if 'Firefox' in request.META['HTTP_USER_AGENT']:
-                self.extra_context = {'browser' : 'Firefox'}
+                date = datetime.datetime.now().strftime("%B %Y")
+                self.extra_context = {'browser': 'Firefox', 'date': date}
             return super().get(self, request, *args, **kwargs)
+        else:
+        # Otherwise redirect to top up page
+            return redirect('insufficient-funds')
 
 
 # Override the entire post method and return to same page and ignore success_url
@@ -497,7 +503,7 @@ class CorrectedFormView(LoginRequiredMixin,ContextMixin, CreateView):
         # Otherwise redirect to top up page
             return redirect('insufficient-funds')
 
-# Overrirde the entire post method and return to same page and ignore success_url
+# Override the entire post method and return to same page and ignore success_url
     def post(self, request, *args, **kwargs):
         form = CorrectedForm(request.POST)
         if form.is_valid():
@@ -517,18 +523,18 @@ class CorrectedFormView(LoginRequiredMixin,ContextMixin, CreateView):
                 request.session['out_of_credit'] = True
                 return redirect('insufficient-funds')
             
-            data = find_difference(sub)
+            data = call_and_find_difference(sub)
 
             if data:
-                self.object.corrections = data[0].replace('\n', '').lstrip()
+                self.object.result = data[0].replace('\n', '').lstrip()
 
                 ctx = self.get_context_data_post(data, t0, price_per_100_words, total_words, charged, sub)
 
-            # Add the report url to the context
+            # More context
+                self.object.corrections = data[5].replace('\n', '').lstrip()
                 ctx['result'].report_url = f'/corrected-results/{ctx["result"].pk}/'
                 ctx['link'] = 'corrected'
               
-
                 return render(request, 'members/home/corrected-form-success.html', ctx)
             else:
                 return redirect('unavailable')
@@ -607,6 +613,11 @@ class DetailViewMixin:
             # obj.refunded = values.refunded
             obj.decision = values.decision
             obj.symbol = '$' if request.user.currency == 'USD' else '¥'
+        
+        if self.model == CorrectedSubmission:
+            sub = obj.submission
+            result = obj.result
+            obj.corrections = find_difference(sub, result)
 
         return render(request, self.template_name, {'result' : obj})
 
@@ -650,6 +661,7 @@ class CorrectedResultsView(LoginRequiredMixin, ListViewQueryMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super(CorrectedResultsView, self).get_context_data(**kwargs)
         context['corrected'] = True
+        context['detail'] = 'corrected-results-detail'
         return context
 
 class CorrectedResultsDetailView(LoginRequiredMixin, DetailViewMixin, DetailView):
@@ -665,10 +677,57 @@ class ImprovedResultsView(LoginRequiredMixin, ListViewQueryMixin, ListView):
     paginate_by = 25
     template_name = 'members/home/general-results.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(ImprovedResultsView, self).get_context_data(**kwargs)
+        context['detail'] = 'improved-results-detail'
+        return context
+    
+
 class ImprovedResultsDetailView(LoginRequiredMixin, DetailViewMixin, DetailView):
     model = ImprovedSubmission
     template_name = 'members/home/improved-form-success.html'
     context_object_name = 'result'
+
+
+
+
+
+class UserDeleteMixin(View):
+# Deletes the object just for the User and NOT the backend
+    def post(self, request):
+        if request.method == "POST":
+            print(f'VAR: {self.request.POST.getlist("checks")}')
+
+            try:
+                count = len(self.request.POST.getlist("checks"))
+                self.model.objects.filter(
+                pk__in=self.request.POST.getlist('checks'), 
+        #Make sure they haven't messed about with the HTML and it's theirs
+                owner=request.user.id 
+                ).update(user_deleted = True)
+
+                msg = ' was' if count == 1 else  's were'
+                messages.success(request, f'Your selected submission{msg} successfully removed.')
+            except:
+                messages.error(request, 'Operation failed!')
+
+            return redirect(reverse(self.success_url))
+        
+class CorrectedDeleteFiles(UserDeleteMixin):
+    template_name = 'members/home/corrected-form-success.html'
+    model = CorrectedSubmission
+    success_url = 'corrected-results'
+
+class ImprovedDeleteFiles(UserDeleteMixin):
+    template_name = 'members/home/improved-form-success.html'
+    model = ImprovedSubmission
+    success_url = 'improved-results'
+
+class IeltsWritingTask2DeleteFiles(UserDeleteMixin):
+    template_name = 'members/home/ieltswriting-task-2-success.html'
+    model = IeltsWritingTask2
+    success_url = 'ielts-writing-task-2-results'
+
 
 
 
@@ -734,23 +793,3 @@ def report_bad_result(request, url):
         return JsonResponse({'report_success' : True}, status = 200)
         
         print('didn\t work')
-
-
-
-
-# Bulk upload
-# JS to open up the uploader and check the word count against the balance
-# They send it in, django immediately returns an http response and sends the API request in the background
-# Once the API request is done, their account is updated
-# Also, stop them from submitting anymore requests while this is going on
-# Return the response in zip format?
-# Ask to confirm the price before submitting
-# They should also be able to "single" upload in the usual fashion with the upload form
-
-
-# Bulk download
-# Mimic django admin
-# Add checkboxes to rows
-# Add "check all" box at top
-# Add confirm button for delete like admin
-# Add option whether to download or delete

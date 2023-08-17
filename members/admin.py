@@ -5,6 +5,7 @@ from .models import *
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import Group
 from django.utils.safestring import mark_safe
+from .api_funcs.corrections import find_difference
 
 
 class CustomUserAdmin(UserAdmin):
@@ -77,7 +78,7 @@ base_fields = ['owner', 'time_created', 'model_used', 'prompt_tokens', 'completi
                'profit', '_margin', 'new_balance', 'processing_time', 'user_reported', ]
 
 class IeltsWritingTask2Admin(AdminMixin, admin.ModelAdmin):
-    list_display = ('owner', 'time_created', 'band', '_question', '_score_res')
+    list_display = ('owner', 'time_created', 'band', '_question')
     list_per_page = 25
     fields = base_fields + ['band', '_score_res', '_question', '_answer', 'comments', 'user_deleted']
     readonly_fields = base_fields + [ 'band', '_score_res', '_question', '_answer', 'time_created']
@@ -108,15 +109,19 @@ class IeltsWritingTask2Admin(AdminMixin, admin.ModelAdmin):
 
 
 class CorrectedSubAdmin(AdminMixin, admin.ModelAdmin):
-    list_display = ('owner', 'time_created', '_corrections')
+    list_display = ('owner', 'time_created', 'corrected_result')
     list_per_page = 25
-    fields = base_fields + ['_corrections', 'comments', 'user_deleted']
-    readonly_fields = base_fields + ['_corrections', 'time_created'] 
+    fields = base_fields + ['_sub', '_result',  'corrected_result', 'comments', 'user_deleted']
+    readonly_fields = base_fields + ['_sub',  'corrected_result', '_result', 'time_created'] 
     
 
-    @admin.display(description="corrections")
-    def _corrections(self, obj):
-        return mark_safe(obj.corrections)
+    @admin.display(description="submission")
+    def _sub(self, obj):
+        return mark_safe(obj.submission)
+
+    @admin.display(description="result")
+    def _result(self, obj):
+        return mark_safe(obj.result)
     
     @admin.display(description="margin")
     def _margin(self, obj):
@@ -126,6 +131,10 @@ class CorrectedSubAdmin(AdminMixin, admin.ModelAdmin):
         css = {
             'all': ('css/admin.css',)
         }
+
+    
+    def corrected_result(self, obj):
+        return mark_safe(find_difference(obj.submission, obj.result))
 
 
 

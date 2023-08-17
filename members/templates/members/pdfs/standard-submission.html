@@ -1,4 +1,4 @@
-{% extends '../layouts/base.html' %}
+{% extends '../layouts/base-pdf.html' %}
 {% load static %}
 
 {% block stylesheets %}
@@ -13,8 +13,14 @@
         <div class="card" >
             <div class="card-body px-2 py-2">
             <div>
-                <h2>Your Improved Version:</h2>
-                <p id="improved-version">{{ improved|safe }}</p>
+                <h2>Your
+                {% if corrected  %}
+                    Corrected
+                    {% else %}
+                     Improved 
+                    {% endif %}
+                     Version:</h2>
+                <p>{{ result|safe }}</p>
                 <br>
                 <br>
                 <h3>Your Original Version:</h3>

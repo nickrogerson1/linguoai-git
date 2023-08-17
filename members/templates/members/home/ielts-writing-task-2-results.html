@@ -34,8 +34,18 @@ td {
     padding: 2px 20px;
 }
 
-</style>
+#delete-area{
+    display: none;
+    visibility: hidden;
+}
 
+
+
+@media (min-width: 576px){ 
+    #dropdown {
+        width: 125%;
+        }
+}
 
 </style>
 {% endblock stylesheets %}
@@ -44,6 +54,19 @@ td {
 <div class="content">
     <div class="container-fluid">
         <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+
+            <div class="alert alert-danger" id="input-warning" role="alert">
+                You've not selected anything! Please select an item and try again.
+              </div>
+
+              {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-success" id="subs-removed-success" role="alert">
+                    {{ message }}
+                </div>
+              {% endfor %}
+              {% endif %}
+
         <div class="card" >
             <div class="card-header text-center pt-4">
                 <h1 class="title">
@@ -55,8 +78,24 @@ td {
             <div class="card-body">
                 {% if object_list %}
 
+                <div>
+                    <h4>Click on the link in the Question column to retrieve your result.</h4>
+                </div>
+
             <div class="row">
-                <div class="col-xl-5 col-md-6">
+                <div class="col-12 col-sm-6 mt-3 d-flex justify-content-center text-center order-md-first order-last">
+                    <form name="download" class="form-group" style="display:block;">                        
+                        <select name="download" id="dropdown" class="form-control pl-5">
+                            <option value="" selected="">Choose Action</option>
+                            <option value="">Delete Selected</option>
+                            <option value="{% url 'get_bulk_ielts_writing_pdf' %}">Get PDF Versions</option>
+                            <option value="{% url 'get_bulk_ielts_writing_docx' %}">Get DOCX Versions</option>
+                          </select>
+                    </form>
+                </div>
+
+
+                <div class="col-12 col-sm-6">
                     <div class="table-responsive">
                         <table id="guide">
                             <thead class="text-center">
@@ -77,15 +116,27 @@ td {
                         </table>
                     </div>
                 </div>
-
-                <div class="col-xl-5 col-md-6 mt-4">
-                <p>Click on the link in the Question column to retrieve your result.</p>
-                </div>
             </div>
 
 
-                {% endif %}
+                
 
+              
+                    
+
+                   
+
+                    <form action="{% url 'ielts-writing-task-2-delete' %}" name="delete-files" id="delete-files" class="form-group ml-2" method="post"> 
+                    {% csrf_token %} 
+
+                
+                <div class="mb-2" id="delete-area">
+                    <h4 style="color: red;">Are you sure you want to delete these results?</h4>
+                    <button type="submit" id="delete" class="btn btn-warning btn-sm">YES, DELETE THEM!</button>
+                    <button type="button" id="undo-form-freeze" class="btn btn-warning btn-sm" style="background:green;">NO, KEEP THEM!</button>
+                </div>
+
+            {% endif %}
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive">
@@ -93,6 +144,7 @@ td {
                                 {% if object_list %}
                                 <thead class="text-center text-primary">
                                 <tr>
+                                    <th><input type="checkbox" id="select-all-items" name="" value=""></th>
                                     <th>Date Created</th>
                                     <th>Band</th>
                                     <th>Question</th>
@@ -102,6 +154,7 @@ td {
                                 <tbody>
                                 {% for result in object_list %}
                                 <tr>
+                                    <td><input type="checkbox" class="checkbox" id="{{ result.pk }}" name="checks" value="{{ result.pk }}"></td>
                                     <td>{{ result.time_created }}</td>
                                     <td>{{ result.band }}</td>
                                     <td><a href="{% url 'ielts-writing-task-2-results-detail' result.pk %}">{{ result.question|safe }}</a></td>
@@ -112,9 +165,11 @@ td {
                                 
                                 </tbody>
                             </table>
-                        </div>
+                        </form>
+
                     </div>
                 </div>
+            </div>
 
             {% if object_list %}
                 <div class="pagination">
@@ -143,3 +198,18 @@ td {
 <br><br>
 
 {% endblock content %}
+
+
+
+{% block javascripts %}
+{% if messages %}
+<script>
+    // Add and remove this code when it is deleted successfully
+    $("#subs-removed-success").fadeTo(2000, 500).slideUp(500, function() {
+        $("#subs-removed-success").slideUp(500);
+    }) 
+</script>
+{% endif %}
+
+<script src="{% static 'js/results.js' %}"></script>
+{% endblock javascripts %}

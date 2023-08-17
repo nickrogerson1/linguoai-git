@@ -3,6 +3,8 @@
 {% load static %}
 
 {% block stylesheets %}
+<!-- <link href="{% static 'css/forms.css' %}" rel="stylesheet" /> -->
+
 <style>
 .diff_chg {
     color: red;
@@ -45,6 +47,19 @@ td {
     font-weight: 300;
 }
 
+#result {
+    font-size: 0;
+}
+
+#dropdown {
+    color: white;
+    background-color: #2d3b5e;
+    font-size: 0.875rem;
+    font-weight: 600;
+    appearance: menulist;
+}
+
+
 </style>
 
 {% endblock stylesheets %}
@@ -54,6 +69,9 @@ td {
     <div class="container-fluid">
     <div class="row">
         <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+            <div class="alert alert-info" role="alert" id="success-alert">
+                The corrected text has been copied to your clipboard!
+              </div>
         <div class="card" >
             <div class="card-body px-2 py-2">
             <div>
@@ -102,28 +120,39 @@ td {
                         </div>
                     </div>
                 </div>
-
             </div>
 
-
-            
-                <div class="mb-2">
-                    <a href="{% url 'get_corrected_pdf' result.pk %}"><button type="button" id="pdf-button" class="btn btn-secondary btn-sm">Download PDF</button></a>
-                    <a href="{% url 'get_corrected_docx' result.pk %}"><button type="button" id="docx-button" class="btn btn-secondary btn-sm">Download DOCX</button></a>
-                    </div>
-
+                <div class="mb-2 form-row">
+                    <button type="button" id="copy-button" class="btn btn-secondary btn-sm form-group mt-0">Copy Edited Text</button>
+                    <form name="download" class="form-group ml-2 ">                        
+                        <select name="download" id="dropdown" class="form-control py-1">
+                            <option value="" selected="">Choose File Type</option>
+                            <option value="{% url 'get_corrected_pdf' result.pk 1 %}">Get PDF Version</option>
+                            <option value="{% url 'get_corrected_pdf' result.pk 0 %}">Get Split PDF Version</option>
+                            <option value="{% url 'get_corrected_docx' result.pk 1 %}">Get DOCX Version</option>
+                            <option value="{% url 'get_corrected_docx' result.pk 0 %}">Get Split DOCX Version</option>
+                          </select>
+                    </form>
+                </div>
                     <div class="card mb-0">
                         <div class="card-body">
                             <div class="table-responsive overflow-hidden">
-                                {{ result.corrections|safe }}
+                                <div>{{ result.corrections|safe }}</div>
+                                <div id="result">{{ result.result|safe }}</div>
                             </div>
                         </div>
                     </div>
-               
-
-                    {% include '../includes/result-footer.html' %}
-
 {% endblock content %}
 
 {% block javascripts %}
+<script>
+    const getDocument = () => {
+// Make sure this is positive before firing so it doesn't fire on the first one and refresh the page
+        if(document.download.download.selectedIndex){
+            location = document.download.download.options[document.download.download.selectedIndex].value
+            console.log(location)
+        }
+    }
+    document.addEventListener('change', getDocument)
+    </script>
 {% endblock javascripts %}

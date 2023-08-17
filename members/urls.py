@@ -12,9 +12,9 @@ urlpatterns = [
     path('register/', Registration.as_view(), name="register"),
     path("logout/", LogoutView.as_view(), name="logout"),
 
-    # Payment
     path("top-up/", CreateStripeCheckoutSessionView.as_view(), name="top-up"),
     path("insufficient-funds/", TemplateView.as_view(template_name="members/home/insufficient-funds.html"), name="insufficient-funds"),
+    
     path('payment-successful', SuccessfulPaymentView.as_view()),
     path('payment-canceled/', TemplateView.as_view(template_name="members/stripe/cancel.html")),
     path("webhooks/stripe/", StripeWebhookView.as_view(), name="stripe-webhook"),
@@ -42,19 +42,7 @@ urlpatterns = [
     path('reset_password_complete/', PasswordResetCompleteView.as_view(), name ='password_reset_complete'),
 
 
-    # Sidebar pages
-    path('icons/', TemplateView.as_view(template_name="members/home/icons.html")),
-    path('map/', TemplateView.as_view(template_name="members/home/map.html")),
-    path('notifications/', TemplateView.as_view(template_name="members/home/notifications.html")),
-    path('user/', TemplateView.as_view(template_name="members/home/user.html")),
-    path('tables/', TemplateView.as_view(template_name="members/home/tables.html")),
-    path('typography/', TemplateView.as_view(template_name="members/home/typography.html")),
-    path('rtl/', TemplateView.as_view(template_name="members/home/rtl.html")),
-
-
-
     # Account Management
-    # re_path(r"^accounts/", include("django.contrib.auth.urls")),
     path('', include("django.contrib.auth.urls")),
 
     # Website functionality
@@ -72,15 +60,25 @@ urlpatterns = [
     path('improved-results/', ImprovedResultsView.as_view(), name='improved-results'),
     path('improved-results/<int:pk>/', ImprovedResultsDetailView.as_view(), name='improved-results-detail'),
 
+
+    path('corrected-delete-files/', CorrectedDeleteFiles.as_view(), name='corrected-delete'),
+    path('improved-delete-files/', ImprovedDeleteFiles.as_view(), name='improved-delete'),
+    path('ielts-writing-task-2-delete-files/', IeltsWritingTask2DeleteFiles.as_view(), name='ielts-writing-task-2-delete'),
+
     # PDF & DOCX Requests
-    path('corrected-results/pdf/<int:pk>/', get_pdf, name='get_corrected_pdf'),
-    path('corrected-results/docx/<int:pk>/', get_docx, name='get_corrected_docx'),
+    re_path(r'^corrected-results/bulk-pdf/(?P<type>[01])/(?P<pks>([0-9]+/)+)?$', get_bulk_pdf, name='get_bulk_corrected_pdf'),
+    re_path(r'^corrected-results/bulk-docx/(?P<type>[01])/(?P<pks>([0-9]+/)+)?$', get_bulk_docx, name='get_bulk_corrected_docx'),
+    re_path(r'^improved-results/bulk-pdf/(?P<pks>([0-9]+/)+)?$', get_bulk_pdf, name='get_bulk_improved_pdf'),
+    re_path(r'^improved-results/bulk-docx/(?P<pks>([0-9]+/)+)?$', get_bulk_docx, name='get_bulk_improved_docx'),
+    re_path(r'^ielts-writing-task-2-results/bulk-pdf/(?P<pks>([0-9]+/)+)?$', get_bulk_pdf, name='get_bulk_ielts_writing_pdf'),
+    re_path(r'^ielts-writing-task-2-results/bulk-docx/(?P<pks>([0-9]+/)+)?$', get_bulk_docx, name='get_bulk_ielts_writing_docx'),
+
+    path('corrected-results/pdf/<int:pk>/<int:type>/', get_pdf, name='get_corrected_pdf'),
+    path('corrected-results/docx/<int:pk>/<int:type>/', get_docx, name='get_corrected_docx'),
     path('improved-results/pdf/<int:pk>/', get_pdf, name='get_improved_pdf'),
     path('improved-results/docx/<int:pk>/', get_docx, name='get_improved_docx'),
-    path('ielts-task-2-results/pdf/<int:pk>/', get_pdf, name='get_ielts_writing_pdf'),
-    path('ielts-task-2-results/docx/<int:pk>/', get_docx, name='get_ielts_writing_docx'),
-   
-
+    path('ielts-writing-task-2-results/pdf/<int:pk>/', get_pdf, name='get_ielts_writing_pdf'),
+    path('ielts-writing-task-2-results/docx/<int:pk>/', get_docx, name='get_ielts_writing_docx'),
 
     # Matches any html file
     re_path(r'^.*\.*', pages, name='pages'),

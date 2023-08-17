@@ -1,0 +1,31 @@
+.field-safe_question {
+    min-width: 150px;
+}
+
+.field-time_sent {
+    max-width: 40px;
+    white-space: normal;
+}
+
+th {
+    text-align: center;
+}
+
+.diff_chg {
+    color: red;
+}
+
+.diff_sub {
+    color: #ffc40c;
+}
+
+.diff_add {
+    color: green;
+}
+
+td {
+    vertical-align: top;
+    padding-left: 3px;
+    max-width: 500px;
+    white-space: break-spaces;
+}

@@ -13,6 +13,12 @@
 th {
     font-size: 1.5em !important;
 }
+
+#delete-area{
+    display: none;
+    visibility: hidden;
+}
+
 </style>
 {% endblock stylesheets %}
 
@@ -21,14 +27,27 @@ th {
     <div class="container-fluid">
     <div class="row">
         <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+
+            <div class="alert alert-danger" id="input-warning" role="alert">
+                You've not selected anything! Please select an item and try again.
+              </div>
+
+              {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-success" id="subs-removed-success" role="alert">
+                    {{ message }}
+                </div>
+              {% endfor %}
+              {% endif %}
+             
         <div class="card" >
-            <div class="card-header text-center pt-3 pb-0">
-                <h1 class="title">
-                    Your
-                    {% if request.resolver_match.url_name == 'improved-results' %}
-                    Improved
+            <div class="card-header text-center pt-5 pb-1">
+                <h1 class="title mb-0">
+                   Your
+                {% if corrected %}
+                  Corrected
                   {% else %}
-                    Corrected
+                  Improved
                   {% endif %}
                   Submissions
                 </h1>
@@ -37,21 +56,60 @@ th {
         <div class="card">
             <div class="card-body">
                 {% if object_list %}
-              
-                <div class="card-body px-2 py-1">
-                    <p class="text-center">
-                        Click on the link in the Submission column to retrieve your result.
-                    </p>
+                <div class="container">
+                <div class=row>
+               
+                <div class="mb-2 form-row col-md-5 order-md-first order-last">
+                    <form name="download" class="form-group ml-2 ">                        
+                        <select name="download" id="dropdown" class="form-control py-1">
+                            <option value="" selected="">Choose Action</option>
+                            <option value="">Delete Selected</option>
+                            {% if corrected %}
+                            <option value="{% url 'get_bulk_corrected_pdf' 1 %}">Get PDF Versions</option>    
+                            <option value="{% url 'get_bulk_corrected_pdf' 0 %}">Get Split PDF Versions</option>
+                            <option value="{% url 'get_bulk_corrected_docx' 1 %}">Get DOCX Versions</option>
+                            <option value="{% url 'get_bulk_corrected_docx' 0 %}">Get Split DOCX Versions</option>
+                            {% else %}
+                            <option value="{% url 'get_bulk_improved_pdf' %}">Get PDF Versions</option>
+                            <option value="{% url 'get_bulk_improved_docx' %}">Get DOCX Versions</option>
+                            {% endif %}
+                          </select>
+                    </form>
                 </div>
+         
+          
+                <div class="px-2 pt-4 col-md-7" >
+                    <h4>Click on the link in the Submission column to retrieve your result.</h4>
+                </div>
+         
+        </div>
+                <form action=
+                {% if corrected %}
+                "{% url 'corrected-delete' %}" 
+                {% else %}
+                "{% url 'improved-delete' %}" 
                 {% endif %}
+                name="delete-files" class="form-group ml-2" id="delete-files" method="post"> 
+                    {% csrf_token %} 
 
-            <div class="card ">
+                
+                <div class="mb-2" id="delete-area">
+                    <h4 style="color: red;">Are you sure you want to delete these results?</h4>
+                    <button type="submit" id="delete" class="btn btn-warning btn-sm">YES, DELETE THEM!</button>
+                    <button type="button" id="undo-form-freeze" class="btn btn-sm" style="background:green;">NO, KEEP THEM!</button>
+                </div>
+
+
+                {% endif %}
+                   
+                <div class="card ">
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table tablesorter">
                             {% if object_list %}
                             <thead class="text-center text-primary">
                             <tr>
+                                <th><input type="checkbox" id="select-all-items" name="" value=""></th>
                                 <th>Date Created</th>
                                 <th>Submission</th>
                             </tr>
@@ -60,18 +118,17 @@ th {
                             <tbody>
                             {% for result in object_list %}
                             <tr>
+                                <td><input type="checkbox" class="checkbox" id="{{ result.pk }}" name="checks" value="{{ result.pk }}"></td>
                                 <td class="w-25">{% firstof result.time_sent result.time_created %}</td>
-                                {% if corrected %}
-                                <td><a href="{% url 'corrected-results-detail' result.pk %}">{{ result.submission|safe|truncatewords:50 }}</a></td>
-                                {% else %}
-                                <td><a href="{% url 'improved-results-detail' result.pk %}">{{ result.submission|safe|truncatewords:50 }}</a></td>  
-                                {% endif %}
+                                <td><a href="{% url detail result.pk %}">{{ result.submission|safe|truncatewords:50 }}</a></td>
                             </tr>
                             {% empty %}
                                 <tr><h3>You still have not submitted anything yet.</h3></tr>
                             {% endfor %}
                             </tbody>
                         </table>
+                       
+                    </form>
                     </div>
                 </div>
             </div>
@@ -105,3 +162,17 @@ th {
 <br><br>
 
 {% endblock content %}
+
+
+{% block javascripts %}
+{% if messages %}
+<script>
+    // Add and remove this code when it is deleted successfully
+    $("#subs-removed-success").fadeTo(2000, 500).slideUp(500, function() {
+        $("#subs-removed-success").slideUp(500);
+    }) 
+</script>
+{% endif %}
+
+<script src="{% static 'js/results.js' %}"></script>
+{% endblock javascripts %}

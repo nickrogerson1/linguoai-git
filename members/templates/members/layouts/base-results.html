@@ -28,9 +28,6 @@
 	<link rel="stylesheet" href="{% static 'css/header.css' %}">
     <!-- Font Icons -->
 	<link rel="stylesheet" href="{% static 'css/font-icons.css' %}">
-    <!-- Plugins/Components CSS -->
-	<!-- <link rel="stylesheet" href="{% static 'css/swiper.css' %}"> -->
-
 
 
     <!--     Fonts and icons     -->
@@ -50,19 +47,22 @@
         background-color: rgba(var(--bs-light-rgb), var(--bs-bg-opacity)) !important;
       }
 
-    /* Make sure the X remains visible on mobile and desktop for all pages */
+      /* Make sure the X remains visible on mobile and desktop for all pages */
     @media (max-width: 576px) {
         .mfp-close {
             color: black;
         }
      }
     </style>
+    
 
     <!-- Specific Page CSS goes HERE  -->
     {% block stylesheets %}{% endblock stylesheets %}
-    <link href="{% static 'css/custom1.css' %}" rel="stylesheet"/>     
-</head>
+    <link href="{% static 'css/custom1.css' %}" rel="stylesheet"/>
 
+    
+        
+</head>
 <body class="white-content">
 
     <div class="wrapper">
@@ -74,6 +74,8 @@
             {% include '../includes/navigation.html' %}
 
             {% block content %}{% endblock content %}
+
+            {% include '../includes/result-footer.html' %}
         </div>
     </div>
     <!-- From Homepage -->
@@ -84,16 +86,40 @@
     {% include '../includes/scripts.html' %}
 
 
-    <script>
-          $(document).ready( function(){
-            $('#block-contactform').on( 'formSubmitSuccess', function(){
-            // Replace the report row to stop them making multiple reports for the same piece
-                $('#report-row').replaceWith('<h3 style="color: red;">This result has been reported to us.</h3>')
-                $.magnificPopup.close();
-            });
+<script>
+        $(document).ready( function(){
+        $('#block-contactform').on( 'formSubmitSuccess', function(){
+        // Replace the report row to stop them making multiple reports for the same piece
+            $('#report-row').replaceWith('<h3 style="color: red;">This result has been reported to us.</h3>')
+            $.magnificPopup.close();
         });
+    });
 
-        </script>
+
+    
+    const copyButton = document.querySelector('#copy-button')
+    const result = document.querySelector('#result')
+
+    $(document).ready(function() {
+    $("#success-alert").hide();
+    })
+    function showSuccessAlert () {
+        $("#success-alert").fadeTo(2000, 500).slideUp(500, function() {
+        $("#success-alert").slideUp(500);
+        });
+    };
+
+    const copyText = async () => {
+        try {
+            await navigator.clipboard.writeText(result.innerText)
+            showSuccessAlert()
+        } catch (e){
+            console.log(e)
+        }
+    }
+
+    copyButton.addEventListener('click', copyText)
+</script>
 
     <!-- Specific Page JS goes HERE  -->
     {% block javascripts %}{% endblock javascripts %}
