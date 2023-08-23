@@ -23,31 +23,36 @@
 {% block content %}
 <div class="content">
     <div class="container-fluid">
-    <div class="row">
-        <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
-        <div class="card" >
-            <div class="card-header text-center py-4">
-                {% if user.balance %}
-                <h2>Ooops, looks like you don't have enough credit to make that submission.</h2>
-                {% else %}
-                <h2>Damn, you're completely out of credit!</h2>
-                {% endif %}
-            </div>
-            
-        <div class="card">
-            <h4 class="text-center">Please click on the top up button below to purchase more credit.</h4>
-            <div class="card-body text-center">
-                <form action="{% url 'top-up' %}" method="POST">
-                    {% csrf_token %}
-                        <!-- Top Up -->
-                    <input id="button" type="submit" value="Top Up" class="btn btn-xl btn-fill btn-primary text-center">
-                </form>
-         
+        <div class="row">
+            <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+                <div class="card" >
+                    <div class="card-header text-center py-4">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <h2>{{ message }}</h2>
+                            {% endfor %}
+                    
+                            {% else %}
+                            <h2>Damn, you're completely out of credit!</h2>
+                            {% endif %}
+                    </div>
+                            
+                    <div class="card">
+                            <h4 class="text-center">Please click on the top up button below to purchase more credit.</h4>
+                        <div class="card-body text-center">
+                            <form action="{% url 'top-up' %}" method="POST">
+                                {% csrf_token %}
+                                    <!-- Top Up -->
+                                <input id="button" type="submit" value="Top Up" class="btn btn-xl btn-fill btn-primary text-center">
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    </div>
 </div>
+
 <br><br>
 
 {% endblock content %}

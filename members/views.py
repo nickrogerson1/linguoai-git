@@ -35,8 +35,8 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 
 from django.core.mail import send_mail
-
-
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from .tasks import *
 
 
 
@@ -54,21 +54,30 @@ LLM_COSTS = {
 # Pricing per 100 words
 PRICING = {
     'ielts_writing_task_2': {
-        'USD': 0.08,
+        'USD': 0.09,
         'CNY': 0.7
     },
     'corrected_results': {
-        'USD': 0.03,
+        'USD': 0.04,
         'CNY': 0.3
     },
     'improved_results': {
-        'USD': 0.03,
+        'USD': 0.04,
         'CNY': 0.3
     }
 }
 
 
 
+
+class LoginUser(LoginView):
+    redirect_authenticated_user = True
+    form_class = LoginForm
+
+
+
+
+from django.contrib.gis.geoip2 import GeoIP2
 def get_country_code(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     ip =  x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
@@ -80,11 +89,6 @@ def get_country_code(request):
         return 'US'
 
 
-class LoginUser(LoginView):
-    redirect_authenticated_user = True
-    form_class = LoginForm
-
-
 
 class TokenGenerator(PasswordResetTokenGenerator):
     def _make_hash_value(self, user, timestamp):
@@ -93,6 +97,8 @@ class TokenGenerator(PasswordResetTokenGenerator):
             six.text_type(user.is_active)
         )
 account_activation_token = TokenGenerator()
+
+
 
 
 class Registration(CreateView):
@@ -164,7 +170,6 @@ def activate_account(request, uidb64, token):
     
 
 
-from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
 
 # Password reset
 class CustomPasswordResetView(PasswordResetView):
@@ -178,7 +183,6 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 
 
 
-
 @login_required(login_url="/login/")
 def index(request):
     user = request.user
@@ -187,6 +191,7 @@ def index(request):
     usage2 = CorrectedSubmission.objects.filter(owner=user.id).values('charged', 'new_balance', 'time_created').annotate(usage_type=Value('Corrected Submission',output_field=CharField()))
     usage3 = ImprovedSubmission.objects.filter(owner=user.id).values('charged', 'new_balance', 'time_created').annotate(usage_type=Value('Improved Submission',output_field=CharField()))
     usage = usage1.union(usage2,usage3).order_by('-time_created')
+
 
 # Calculate data to use in chartjs
     days_ago = datetime.timedelta(days=15)
@@ -224,7 +229,6 @@ def index(request):
     purchases = PurchaseHistory.objects.filter(owner=user.id).values('amount', 'time_created').order_by('-time_created')[:10]
 
     currency = '$' if user.currency == 'USD' else '¥'
-    
     return render(request, 'members/home/index.html', {'usage' : usage, 'labels' : labels, 'data' : data, 'purchases' : purchases, 'currency' : currency})
 
 
@@ -320,99 +324,90 @@ class InternalContactForm(FormView):
             return self.form_invalid(form)
 
 
-# This is to add the context to the data in the template context
-# Can't override  get_context_data directly as it's being used by the GET method.
-class ContextMixin:
 
-    def get_context_data_post(self, data, start_time, price, total_words, charged, submission, answer=False):
-    # Add all the openai data to the db
-        # [html, model, prompt_tokens, completion_tokens, total_tokens]
-        self.object.model_used = data[1]
-        self.object.prompt_tokens = data[2]
-        self.object.completion_tokens = data[3]
-        self.object.total_tokens = data[4]
-        
-        # Get the current authenticated user
-        user = self.request.user
+class BalanceCheckMixin:
 
-        # Add them to the current db
-        self.object.owner = user
+    def check_user_has_sufficient_funds(self, results_type, sub=None, q=None, a=None):
 
-         # Record the time it took
-        t1 = time.time()
-        self.object.processing_time = round(t1 -start_time, 3)
-        
-        if data[1].startswith('gpt-3'):
-            model_used = 'gpt-3'
-        elif data[1].startswith('gpt-4'):
-            model_used = 'gpt-4'
+    # Check the cost before starting
+        currency = self.request.user.currency
+        price_per_100_words = PRICING[results_type]['USD'] if currency == 'USD' else PRICING[results_type]['CNY']
 
-        # Work out cost
-        cost = round((data[2] / 1000) * LLM_COSTS[model_used]['input'] + (data[3] / 1000) * LLM_COSTS[model_used]['output'], 4)
-
-        # Enforce minimum charge
-        if user.currency == 'USD':
-            if charged < 0.05:
-                charged = 0.05
-        # And for RMB
+        if sub:
+            total_words = len(sub.strip().split())
         else:
-            if charged < 0.5:
-                charged = 0.5
+            total_words = len((q + ' ' + a).strip().split())
 
-    # Save charged before continuing to make USD calculations
-        self.object.charged = charged
+        cost = round((total_words / 100) * price_per_100_words, 2)
 
-    # Deduct the amount from their balance and add total submission
-    # Do this here before converted into dollars
-        u = User.objects.get(pk=user.id)
-        u.balance -= Decimal(charged)
-        u.total_submissions += 1
-        u.save()
+    # Enforce Minimum charge
+        if currency == 'USD':
+            charged = 0.05 if cost < 0.05 else cost
+        else:
+            # for CNY
+            charged = 0.5 if cost < 0.5 else cost
 
-        self.object.new_balance = u.balance
-
-    # Get the charges into dollars to make USD calculations
-        usd_exchange_rate = 1
-
-        if user.currency == 'CNY':
-            usd_exchange_rate = 0.14
-            charged = charged * usd_exchange_rate
-        # Add this to the db to make it more coherent
-            self.object.usd_charge = charged
-
-        profit = charged - cost
-        margin = round((profit / cost) * 100, 3)
-
-        print(f'Exchange rate: {usd_exchange_rate}')
-
-        # Then save them
-        self.object.currency = user.currency
-        self.object.cost = cost
-        self.object.total_words = total_words
-        self.object.price_per_100_words = price
-        self.object.usd_exchange_rate = usd_exchange_rate
-        self.object.profit = profit
-        self.object.margin = margin
-        self.object.save()
-
-
-        # Context only info
-        # Let the template know this was a new search and not a lookup
-        self.object.new_search = True
-        self.object.symbol = '$' if user.currency == 'USD' else '¥'
-        self.object.balance = Decimal(u.balance).quantize(Decimal('0.01'))
-
-        # self.object.pk = self.object.pk
-
-        ctx = {'result' : self.object}
-        return ctx
+        # Then make sure they have enough money
+        if self.request.user.balance < charged:
+            messages.warning(self.request, "Ooops, looks like you don't have enough credit to make that submission.")
+            return False
+        
+        return [ price_per_100_words, total_words, charged ]
 
 
 
-class IeltsWritingTask2View(LoginRequiredMixin,ContextMixin,CreateView):
+
+class ImprovedFormView(LoginRequiredMixin, BalanceCheckMixin, FormView):
+    model = ImprovedSubmission
+    template_name = 'members/home/input-form-general.html'
+    form_class = ImprovedForm
+    success_url = 'sent-successfully/'
+
+
+    def get(self, request, *args, **kwargs):
+        # If they have some balance
+        if self.request.user.balance:
+            print(request)
+            return super(ImprovedFormView, self).get(self, request, *args, **kwargs)
+        else:
+        # Otherwise redirect to top up page
+            return redirect('insufficient-funds')
+
+
+    def post(self, request):
+        t0 = time.time()
+        form = ImprovedForm(request.POST)
+        if form.is_valid():
+            self.object = form.save(commit=False)
+
+            t0 = time.time()
+            sub = escape(self.object.submission)
+
+            args = self.check_user_has_sufficient_funds('improved_results', sub=sub)
+
+        # If they have insufficient funds, then end it
+            if not args:
+                return redirect('insufficient-funds')
+            
+            user_id = self.request.user.id
+            
+            # Then pass to Celery to process
+            get_improved_results.delay(t0, user_id, sub, *args)
+              
+            return redirect(self.success_url)
+        else:
+            self.object = ''
+            return super(ImprovedFormView, self).form_invalid(form)
+        
+
+
+
+
+class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
     model = IeltsWritingTask2
     template_name = 'members/home/input-form-ielts-writing-task-2.html'
     form_class = IeltsWritingTask2Form
+    success_url = 'sent-successfully/'
     extra_context = ''
 
 
@@ -429,59 +424,29 @@ class IeltsWritingTask2View(LoginRequiredMixin,ContextMixin,CreateView):
             return redirect('insufficient-funds')
 
 
-# Override the entire post method and return to same page and ignore success_url
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         t0 = time.time()
         form = IeltsWritingTask2Form(request.POST)
         if form.is_valid():
+            t0 = time.time()
+
             self.object = form.save(commit=False)
             q = escape(self.object.question)
             a = escape(self.object.answer)
 
+            args = self.check_user_has_sufficient_funds('ielts_writing_task_2', q=q, a=a)
 
-            # Check the cost before starting
-            price_per_100_words = PRICING['ielts_writing_task_2']['USD'] if request.user.currency == 'USD' else PRICING['ielts_writing_task_2']['CNY']
-            total_words = len((q + ' ' + a).strip().split())
-            charged = round((total_words / 100) * price_per_100_words, 2)
-
-            # Then make sure they have enough money
-            if self.request.user.balance < charged:
-                request.session['out_of_credit'] = True
+        # If they have insufficient funds, then end it
+            if not args:
                 return redirect('insufficient-funds')
-
-
-            t0 = time.time()
-            q = escape(self.object.question)
-            a = escape(self.object.answer)
+            
             language = self.object.get_explanation_language_display().split(' ')[0]
+            lang_code = self.object.explanation_language
+            user_id = self.request.user.id
 
+            get_ielts_writing_task_2_scores(t0, user_id, q, a, language, lang_code, *args)
 
-            # Add all the openai data to the db
-            # [html, model, prompt_tokens, completion_tokens, total_tokens]
-            data = get_ielts_writing_task_2_score(q,a,language)
-            if data:
-
-                # Pull out the band and replace it with nothing
-                reg = r'%%%%%([a-zA-Z0-9_\. ]+)%%%%%'
-                m = re.search(reg, data[0], flags=re.I)
-                self.object.band = m.group(1).replace('Band ', '')
-
-                # Remove \n and change to <br>
-                self.object.question = q.replace('\n', '<br>')
-                self.object.answer = a.replace('\n', '<br>')
-                # Get rid of first two breaks as well for admin interface
-                score = re.sub(reg, '', data[0])
-                self.object.score_res = score.replace('\n', '<br>').replace('<br>','',2)
-
-                ctx = self.get_context_data_post(data, t0, price_per_100_words, total_words, charged, q, a)
-
-                # Add the report url to the context
-                ctx['result'].report_url = f'/ielts-writing-task-2/{ctx["result"].pk}/'
-                ctx['link'] = 'ielts-writing-task-2'
-
-                return render(request, 'members/home/ielts-writing-task-2-success.html', ctx)
-            else:
-                return redirect('unavailable')
+            return redirect(self.success_url)
         else:
             self.object = ''
             return super(IeltsWritingTask2View, self).form_invalid(form)
@@ -489,10 +454,11 @@ class IeltsWritingTask2View(LoginRequiredMixin,ContextMixin,CreateView):
 
 
 
-class CorrectedFormView(LoginRequiredMixin,ContextMixin, CreateView):
+class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, FormView):
     model = CorrectedSubmission
     template_name = 'members/home/input-form-general.html'
     form_class = CorrectedForm
+    success_url = 'sent-successfully/'
 
 
     def get(self, request, *args, **kwargs):
@@ -503,8 +469,8 @@ class CorrectedFormView(LoginRequiredMixin,ContextMixin, CreateView):
         # Otherwise redirect to top up page
             return redirect('insufficient-funds')
 
-# Override the entire post method and return to same page and ignore success_url
-    def post(self, request, *args, **kwargs):
+
+    def post(self, request):
         form = CorrectedForm(request.POST)
         if form.is_valid():
             self.object = form.save(commit=False)
@@ -512,96 +478,24 @@ class CorrectedFormView(LoginRequiredMixin,ContextMixin, CreateView):
             t0 = time.time()
             sub = escape(self.object.submission)
 
-            # Check the cost before starting
-            price_per_100_words = PRICING['corrected_results']['USD'] if request.user.currency == 'USD' else PRICING['corrected_results']['CNY']
-            print(f'User Currency: {request.user.currency}')
-            total_words = len(sub.strip().split())
-            charged = round((total_words / 100) * price_per_100_words, 2)
+            args = self.check_user_has_sufficient_funds('corrected_results', sub=sub)
 
-            # Then make sure they have enough money
-            if self.request.user.balance < charged:
-                request.session['out_of_credit'] = True
+        # If they have insufficient funds, then end it
+            if not args:
                 return redirect('insufficient-funds')
             
-            data = call_and_find_difference(sub)
-
-            if data:
-                self.object.result = data[0].replace('\n', '').lstrip()
-
-                ctx = self.get_context_data_post(data, t0, price_per_100_words, total_words, charged, sub)
-
-            # More context
-                self.object.corrections = data[5].replace('\n', '').lstrip()
-                ctx['result'].report_url = f'/corrected-results/{ctx["result"].pk}/'
-                ctx['link'] = 'corrected'
+            user_id = self.request.user.id
+            
+            # Then pass to Celery to process
+            get_corrected_results.delay(t0, user_id, sub, *args)
               
-                return render(request, 'members/home/corrected-form-success.html', ctx)
-            else:
-                return redirect('unavailable')
+            return redirect(self.success_url)
+            
         else:
             self.object = ''
             return super(CorrectedFormView, self).form_invalid(form)
 
 
-
-
-
-class ImprovedFormView(LoginRequiredMixin,ContextMixin,CreateView):
-    model = ImprovedSubmission
-    template_name = 'members/home/input-form-general.html'
-    form_class = ImprovedForm
-
-
-    def get(self, request, *args, **kwargs):
-        # If they have some balance
-        if self.request.user.balance:
-            print(request)
-            return super(ImprovedFormView, self).get(self, request, *args, **kwargs)
-        else:
-        # Otherwise redirect to top up page
-            return redirect('insufficient-funds')
-
-
-# Overrirde the entire post method and return to same page and ignore success_url
-    def post(self, request, *args, **kwargs):
-        t0 = time.time()
-        form = ImprovedForm(request.POST)
-        if form.is_valid():
-            self.object = form.save(commit=False)
-
-            t0 = time.time()
-            sub = escape(self.object.submission).replace('\n', '<br>')
-
-            # Check the cost before starting
-            price_per_100_words = PRICING['improved_results']['USD'] if request.user.currency == 'USD' else PRICING['improved_results']['CNY']
-            total_words = len(sub.strip().split())
-            charged = round((total_words / 100) * price_per_100_words, 2)
-
-            # Then make sure they have enough money
-            if self.request.user.balance < charged:
-                request.session['out_of_credit'] = True
-                return redirect('insufficient-funds')
-            
-
-            self.object.submission = sub
-            data = improved_submission(sub)
-            if data:
-                self.object.improved_sub = data[0].replace('\n', '<br>')
-
-                ctx = self.get_context_data_post(data, t0, price_per_100_words, total_words, charged, sub)
-
-                # Add the report url to the context
-                ctx['result'].report_url = f'/improved-results/{ctx["result"].pk}/'
-                
-                return render(request, 'members/home/improved-form-success.html', ctx)
-            else:
-                return redirect('unavailable')
-        else:
-            self.object = ''
-            return super(ImprovedFormView, self).form_invalid(form)
-        
-
-# ***********************LIST AND DETAIL VIEWS********************************
 
 # Mixins for detail and list views
 class DetailViewMixin:
@@ -618,6 +512,7 @@ class DetailViewMixin:
             sub = obj.submission
             result = obj.result
             obj.corrections = find_difference(sub, result)
+
 
         return render(request, self.template_name, {'result' : obj})
 
@@ -651,18 +546,22 @@ class IeltsResultsDetailView(LoginRequiredMixin, DetailViewMixin, DetailView):
     context_object_name = 'result'
 
 
+
 # Corrected Results
 class CorrectedResultsView(LoginRequiredMixin, ListViewQueryMixin, ListView):
     model = CorrectedSubmission
     paginate_by = 25
     template_name = 'members/home/general-results.html'
 
+
 # This is so as not to make multiple templates
     def get_context_data(self, **kwargs):
         context = super(CorrectedResultsView, self).get_context_data(**kwargs)
         context['corrected'] = True
         context['detail'] = 'corrected-results-detail'
+
         return context
+    
 
 class CorrectedResultsDetailView(LoginRequiredMixin, DetailViewMixin, DetailView):
     model = CorrectedSubmission
@@ -681,13 +580,31 @@ class ImprovedResultsView(LoginRequiredMixin, ListViewQueryMixin, ListView):
         context = super(ImprovedResultsView, self).get_context_data(**kwargs)
         context['detail'] = 'improved-results-detail'
         return context
-    
 
 class ImprovedResultsDetailView(LoginRequiredMixin, DetailViewMixin, DetailView):
     model = ImprovedSubmission
     template_name = 'members/home/improved-form-success.html'
     context_object_name = 'result'
 
+
+
+
+# Need to do some of check to add submissions that are incomplete to the top of the list
+class ResultsLogView(LoginRequiredMixin, ListView):
+
+    paginate_by = 25
+    template_name = 'members/home/log.html'
+
+    def get_queryset(self) -> QuerySet[any]:
+        id = self.request.user.id
+        # (Download Checkbox) Submission Type - Time Submitted - Status (Complete/Being Processed/Failed)
+        usage1 = (IeltsWritingTask2.objects.filter(owner=id,user_deleted=False).values('pk', 'time_created')
+            .annotate(type=Value('Ielts Writing Task 2'), url_link=Value('ielts-writing-task-2-results-detail')))
+        usage2 = (CorrectedSubmission.objects.filter(owner=id,user_deleted=False).values('pk', 'time_created')
+            .annotate(type=Value('Corrected Submission'), url_link=Value('corrected-results-detail')))
+        usage3 = (ImprovedSubmission.objects.filter(owner=id,user_deleted=False).values('pk', 'time_created')
+            .annotate(type=Value('Improved Submission'), url_link=Value('improved-results-detail')))
+        return usage1.union(usage2,usage3).order_by('-time_created')
 
 
 
@@ -729,6 +646,39 @@ class IeltsWritingTask2DeleteFiles(UserDeleteMixin):
     success_url = 'ielts-writing-task-2-results'
 
 
+class LogDeleteFiles(View):
+    template_name = 'members/home/log.html'
+    success_url = 'log'
+
+    def post(self, request):
+        if request.method == "POST":
+            print(f'VAR: {self.request.POST.getlist("checks")}')
+
+            try:
+                items = request.POST.getlist("checks")
+
+                for i,item in enumerate(items):
+                    model = item.split('/')[0]
+                    pk = item.split('/')[1]
+
+                    if model.startswith('improved'):
+                        model = ImprovedSubmission
+                    elif model.startswith('corrected'):
+                        model = CorrectedSubmission
+                    else:
+                        model = IeltsWritingTask2
+
+                    model.objects.filter(pk=pk,
+            #Make sure they haven't messed about with the HTML and it's theirs
+                    owner=request.user.id 
+                    ).update(user_deleted=True)
+
+                msg = 's were' if i else ' was'
+                messages.success(request, f'Your selected submission{msg} successfully removed.')
+            except:
+                messages.error(request, 'Operation failed!')
+
+            return redirect(reverse(self.success_url))
 
 
 
@@ -793,3 +743,16 @@ def report_bad_result(request, url):
         return JsonResponse({'report_success' : True}, status = 200)
         
         print('didn\t work')
+
+
+
+def get_bulk_pdf_task(request, pks, type=None):
+    sub_type = request.path.split('/')[1]
+    user = request.user.username
+    get_bulk_pdf.delay(sub_type, user, pks, type=type)
+    messages.success(request, 'We will process your PDFs as fast as we can.')
+    return redirect(reverse('corrected-results'))
+
+
+def get_bulk_mixed_pdf_task(request, url_str):
+    get_bulk_mixed_pdf.delay(request, url_str)

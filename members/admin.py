@@ -80,8 +80,8 @@ base_fields = ['owner', 'time_created', 'model_used', 'prompt_tokens', 'completi
 class IeltsWritingTask2Admin(AdminMixin, admin.ModelAdmin):
     list_display = ('owner', 'time_created', 'band', '_question')
     list_per_page = 25
-    fields = base_fields + ['band', '_score_res', '_question', '_answer', 'comments', 'user_deleted']
-    readonly_fields = base_fields + [ 'band', '_score_res', '_question', '_answer', 'time_created']
+    fields = base_fields + ['band', 'explanation_language', '_score_res', '_question', '_answer', 'comments', 'user_deleted']
+    readonly_fields = base_fields + [ 'band', 'explanation_language', '_score_res', '_question', '_answer', 'time_created']
     
 
 # Display the HTML properly for these cols

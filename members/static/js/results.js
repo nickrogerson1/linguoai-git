@@ -25,6 +25,28 @@ if(dropdown) dropdown.addEventListener('change', processCheckboxes)
 
 
 function processCheckboxes() {
+
+    let index = dropdown.selectedIndex
+
+    // 1st, check if it's the log page and send them through in pairs
+    if(dropdown.options[index].value.startsWith('/log/')){
+        const subs = [...document.querySelectorAll('tbody tr')].reduce((a,x) => {
+            const isChecked = x.children[0].children[0].checked
+            console.log(isChecked)
+            if(isChecked){
+                console.log(x.children[2].children[0].pathname)
+                return a = a + x.children[2].children[0].pathname.slice(1)
+            }
+            return a},
+            dropdown.options[index].value
+        )
+        console.log(subs)
+        // Reset dropdown
+        dropdown.selectedIndex = 0
+        return location = subs
+    }
+
+    // Continue checking otherwise
     const checkboxes = document.querySelectorAll('.checkbox')
     const ids = [...checkboxes].reduce((a,x) => {
     if(x.checked){
@@ -32,8 +54,6 @@ function processCheckboxes() {
         }
         return a
     },'')
-
-    let index = dropdown.selectedIndex
     
     // Make sure they've selected something first
     if(ids.length && index === 1){
@@ -75,11 +95,14 @@ function processCheckboxes() {
     // Get the zipped documents requested
         location = dropdown.options[index].value + ids
         dropdown.selectedIndex = 0
+
     } else {
     // Warn them that they've selected nothing
-    // Proving it's no the 1st option
+    // Providing it's not the 1st option
         if(index) {
             dropdown.selectedIndex = 0
+    // Make sure the warning is visible
+            document.body.scrollTop = document.documentElement.scrollTop = 80;
             showInputWarning()
         }
     }

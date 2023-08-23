@@ -38,16 +38,16 @@ def strip_tags(html):
 
 
 @login_required(login_url="/login/")
-def get_docx(request, pk, type=None, multi=False):
+def get_docx(request, pk, type=None, multi=False, sub=None):
     print(type)
     if type:
         type = int(type)
 
-    origin = request.path.split('/')[1]
+    sub_type = sub if sub else request.path.split('/')[1]
     user = request.user
     date_format = '%A %-d %B %Y at %-I:%M %p'
     
-    if origin == 'corrected-results':
+    if sub_type == 'corrected-results':
 
         look_up = CorrectedSubmission.objects.get(pk=pk)
         sub = look_up.submission
@@ -165,7 +165,7 @@ def get_docx(request, pk, type=None, multi=False):
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             return response
     
-    elif origin == 'improved-results':
+    elif sub_type == 'improved-results':
 
         look_up = ImprovedSubmission.objects.get(pk=pk)
         sub = strip_tags(look_up.submission)
@@ -255,15 +255,49 @@ def get_bulk_docx(request, pks, type=None):
         return get_docx(request, pks[0], type)
 
     # Otherwise zip them
-    filename = f'{request.user}-docx-corrections.zip'
     buffer = BytesIO()
 
     with ZipFile(buffer, 'w', ZIP_DEFLATED) as f:
         for pk in pks:  
             fetch_file = get_docx(request, pk, type, multi=True)
             doc = fetch_file[0]
-            lf = fetch_file[1]
-            f.writestr(lf, doc.getvalue())
+            fn = fetch_file[1]
+            f.writestr(fn, doc.getvalue())
+
+    headers = {
+        'Content-Disposition': f'attachment; filename="{filename}"',
+        'Content-Type': 'application/zip'
+    }
+        
+    return HttpResponse(buffer.getvalue(), headers=headers)
+
+
+
+
+
+def get_bulk_mixed_docx(request, url_str):
+
+    filename = f'{request.user}-docxs.zip'
+
+    url_list = url_str.split("/")[:-1]
+
+    # Split them into chunks
+    pairs = [url_list[i:i+2] for i in range(0, len(url_list),2)]
+    print(f'Pairs: {pairs}')
+
+    # if just one file, return as is 
+    if len(pairs) == 1:
+        return get_docx(request, pairs[0][1], sub=pairs[0][0])
+
+    # Otherwise zip them
+    buffer = BytesIO()
+
+    with ZipFile(buffer, 'w', ZIP_DEFLATED) as f:
+        for pair in pairs:  
+            fetch_file = get_docx(request, pair[1], type=True, multi=True, sub=pair[0])
+            doc = fetch_file[0]
+            fn = fetch_file[1]
+            f.writestr(fn, doc.getvalue())
 
     headers = {
         'Content-Disposition': f'attachment; filename="{filename}"',

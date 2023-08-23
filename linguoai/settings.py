@@ -43,20 +43,20 @@ INSTALLED_APPS = [
     "members",
     # 'webpack_loader',
 
-    # 'blog',
-    # 'wagtail.contrib.forms',
-    # 'wagtail.contrib.redirects',
-    # 'wagtail.embeds',
-    # 'wagtail.sites',
-    # 'wagtail.users',
-    # 'wagtail.snippets',
-    # 'wagtail.documents',
-    # 'wagtail.images',
-    # 'wagtail.search',
-    # 'wagtail.admin',
-    # 'wagtail',
-    # 'modelcluster',
-    # 'taggit',
+    'blog',
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
+    'wagtail.embeds',
+    'wagtail.sites',
+    'wagtail.users',
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail',
+    'modelcluster',
+    'taggit',
 
     "django.contrib.admin",
     "django.contrib.auth",
@@ -67,7 +67,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    # 'wagtail.contrib.redirects.middleware.RedirectMiddleware',
+    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
     'django.middleware.security.SecurityMiddleware',
      "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -197,8 +197,8 @@ base.tag_re = re.compile(base.tag_re.pattern, re.DOTALL)
 # }
 
 
-# WAGTAIL_SITE_NAME = 'LinguoAI'
-# WAGTAILADMIN_BASE_URL = 'cms/'
+WAGTAIL_SITE_NAME = 'LinguoAI'
+WAGTAILADMIN_BASE_URL = 'cms/'
 
 
 OPENAI_API_KEY = env('OPENAI_API_KEY')

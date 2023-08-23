@@ -6,18 +6,19 @@ from ..api_funcs.corrections import find_difference
 import pdfkit
 
 
-@login_required(login_url="/login/")
-def get_pdf(request, pk, type=None, multi=False):
-    print(f'Type {type}')
+# @login_required(login_url="/login/")
+def get_pdf(sub_type, user, pk, type=None, multi=False, sub=None):
+
     if type:
         type = int(type)
-    origin = request.path.split('/')[1]
-    user = request.user
+
+    # sub_type = sub if sub else request.path.split('/')[1]
+    # user = request.user
     options={"enable-local-file-access" : False}
 
 
-    if origin == 'corrected-results':
-        print(origin)
+    if sub_type == 'corrected-results':
+        
         look_up = CorrectedSubmission.objects.get(pk=pk)
         sub = look_up.submission
         result = look_up.result
@@ -42,7 +43,7 @@ def get_pdf(request, pk, type=None, multi=False):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
     
-    if origin == 'improved-results':
+    if sub_type == 'improved-results':
 
         look_up = ImprovedSubmission.objects.get(pk=pk)
         sub = look_up.submission
@@ -89,47 +90,4 @@ def get_pdf(request, pk, type=None, multi=False):
         response = HttpResponse(pdf, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
-    
-
-
-
-from zipfile import ZipFile, ZIP_DEFLATED
-from io import BytesIO
-
-def get_bulk_pdf(request, pks, type=None):
-
-    origin = request.path.split('/')[1]
-    if origin == 'corrected-results':
-        filename = f'{request.user}-pdf-corrections.zip'
-    elif origin == 'improved-results':
-        filename = f'{request.user}-pdf-improved.zip'
-    else:
-        filename = f'{request.user}-pdf-ielts-writing-task-2.zip'
-        
-
-    # Ignore last one as it's empty
-    pks = pks.split('/')[:-1]
-    print(f'PKS: {pks}')
-
-    # if just one file, return as is 
-    if len(pks) == 1:
-        return get_pdf(request, pks[0], type)
-
-    # Otherwise zip them
-    buffer = BytesIO()
-
-    with ZipFile(buffer, 'w', ZIP_DEFLATED) as f:
-        for pk in pks:
-            fetch_file = get_pdf(request, pk, type, multi=True)
-            pdf = fetch_file[0]
-            lf = fetch_file[1]
-            b = BytesIO(pdf)
-            f.writestr(lf, b.getvalue())
-
-    headers = {
-        'Content-Disposition': f'attachment; filename="{filename}"',
-        'Content-Type': 'application/zip'
-    }
-        
-    return HttpResponse(buffer.getvalue(), headers=headers)
     

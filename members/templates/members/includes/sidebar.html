@@ -1,4 +1,8 @@
-<div class="sidebar">
+
+    <div class="sidebar">
+        <!--
+          Tip 1: You can change the color of the sidebar using: ="blue | green | orange | red"
+      -->
         <div class="sidebar-wrapper">
             <ul class="nav">
                 <li class="{% if 'index' in segment %} active {% endif %} ">
@@ -23,6 +27,13 @@
                     <a href="{% url 'improved' %}">
                         <i class="tim-icons icon-spaceship"></i>
                         <p>Improve My Work</p>
+                    </a>
+                </li>
+
+                <li class="{% if 'user' in segment %} active {% endif %}">
+                    <a href="{% url 'log' %}">
+                        <i class="tim-icons icon-bullet-list-67"></i>
+                        <p>Submission Log</p>
                     </a>
                 </li>
                 
