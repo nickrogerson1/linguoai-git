@@ -1,0 +1,227 @@
+{% load static %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+
+<!DOCTYPE html>
+<html dir="ltr" lang="en-US">
+<head>
+    <!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-MBH5S83P2X"></script>
+	<script>
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'G-MBH5S83P2X');
+	</script>
+
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta http-equiv="x-ua-compatible" content="IE=edge">
+	<meta name="author" content="SemiColonWeb">
+	<meta name="description" content="Get Canvas to build powerful websites easily with the Highly Customizable &amp; Best Selling Bootstrap Template, today.">
+
+	<!-- Font Imports -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=PT+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+	<!-- Core Style -->
+	<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+	<!-- Font Icons -->
+	<link rel="stylesheet" href="{% static 'css/font-icons.css' %}">
+
+    {% comment %}
+	<!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    {% endcomment %}
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- Document Title
+	============================================= -->
+	<title>LinguoAI - {{ page.title }}</title>
+
+</head>
+
+<body class="stretched">
+
+	{% include './includes/header.html' %}
+	
+
+<!-- Document Wrapper
+============================================= -->
+<div id="wrapper">
+
+<!-- Content
+============================================= -->
+<section id="content">
+	<!-- <div class="content-wrap pt-0 bg-light"> -->
+		<div class="container">
+<!-- Entry Image
+============================================= -->
+<div class="entry-image align-wide-full min-vh-50 d-flex align-items-center justify-content-center px-5" style="background: url({% static 'images/blog/full/2.jpg' %}) no-repeat center center / cover;">
+
+	<div class="p-4 bg-white position-relative rounded text-sm-center mw-xs">
+
+		<!-- Entry Title
+		============================================= -->
+		<h1 class="mb-3">{{ page.title }}</h1>
+
+							<!-- Entry Meta
+							============================================= -->
+			<div class="d-flex justify-content-center">
+				<div class="entry-meta mb-0 pb-3">
+					<ul>
+						<li><i class="uil uil-schedule"></i>{{ page.date }}</li>
+
+						{% with authors=page.authors.all %}
+							{% if authors %}
+								{% for author in authors %}
+							<li><i class="uil uil-user"></i>{{ author.name }}</li>	
+								{% endfor %}
+							{% endif %}
+						{% endwith %}
+
+						{% with categories=page.categories.all %}
+							{% if categories %}
+								{% for cat in categories %}
+							<li>{{ cat }}</li>
+								{% endfor %}
+							{% endif %}
+						{% endwith %}
+										
+								<!-- <li><a href="#"><i class="uil uil-comments-alt"></i> 43 Comments</a></li> -->
+					</ul>
+				</div><!-- .entry-meta end -->
+			</div>
+		</div>
+	</div>
+
+<div class="single-post mw-sm mx-auto">
+
+	<!-- Single Post
+	============================================= -->
+	<div class="entry">
+
+		<div class="clear"></div>
+
+		<!-- Entry Content
+		============================================= -->
+		<div class="entry-content mt-3">
+
+			{{ page.body|richtext }}
+
+		<!-- Tag Cloud
+			============================================= -->
+			<div class="tagcloud mb-5">
+				{% with tags=page.tags.all %}
+					{% if tags %}
+						<div class="tags">
+							<h3>Tags</h3>
+							{% for tag in tags %}
+								<a href="{% slugurl 'tags' %}?tag={{ tag }}">{{ tag }}</a>
+							{% endfor %}
+						</div>
+					{% endif %}
+				{% endwith %}
+			</div><!-- .tagcloud end -->
+
+
+<p><a href="{{ page.get_parent.url }}">Return to the blog</a></p>
+
+
+<!-- Post Single - Share
+			============================================= -->
+			<div class="card my-2 border rounded border-default">
+				<div class="card-body p-3">
+					<div class="d-flex align-items-center justify-content-between">
+						<h6 class="fs-6 fw-semibold mb-0">Share:</h6>
+						<div class="d-flex">
+							<a href="https://www.facebook.com/sharer/sharer.php?u={{ page.get_full_url }}" class="social-icon si-small text-white border-transparent rounded-circle bg-facebook" title="Facebook">
+								<i class="fa-brands fa-facebook-f"></i>
+								<i class="fa-brands fa-facebook-f"></i>
+							</a>
+
+							<a href="https://twitter.com/intent/tweet?text={{ page.get_full_url }}" class="social-icon si-small text-white border-transparent rounded-circle bg-twitter" title="Twitter">
+								<i class="fa-brands fa-twitter"></i>
+								<i class="fa-brands fa-twitter"></i>
+							</a>
+
+							<a href="https://pinterest.com/pin/create/button/?url=&media={{ page.get_full_url }}" class="social-icon si-small text-white border-transparent rounded-circle bg-pinterest" title="Pinterest">
+								<i class="fa-brands fa-pinterest-p"></i>
+								<i class="fa-brands fa-pinterest-p"></i>
+							</a>
+
+							<a href="https://wa.me/whatsappphonenumber/?text={{ page.get_full_url }}" class="social-icon si-small text-white border-transparent rounded-circle bg-whatsapp" title="Whatsapp">
+								<i class="fa-brands fa-whatsapp"></i>
+								<i class="fa-brands fa-whatsapp"></i>
+							</a>
+
+						</div>
+					</div>
+				</div>
+			</div><!-- Post Single - Share End -->
+
+		</div>
+	</div><!-- .entry end -->
+
+
+					
+<!-- Post Author Info
+			============================================= -->
+		{% with authors=page.authors.all %}
+		{% if authors %}
+			{% for author in authors %}
+					
+			<div class="card border-default mb-3">
+				<div class="card-body p-4">
+					<div class="row">
+						<div class="col-auto">
+							{% image author.author_image fill-40x60 style="vertical-align: middle" %}
+						<!-- class="rounded-circle square square-md"> -->
+						
+									</div>
+									<div class="col">
+										<div class="d-flex align-items-start mb-2">
+											<div>
+												<h5 class="text-medium fw-semibold mb-0"><a href="#" class="text-dark">{{ author.name }}</a></h5>
+											</div>
+										</div>
+										<p class="mb-3">{{ author.profile }}</p>
+									</div>
+								</div>
+							</div>
+							{% endfor %}
+						</ul>
+					{% endif %}
+				{% endwith %}
+					</div><!-- Post Single - Author End -->
+
+				</div>
+			</div>
+		</section><!-- #content end -->
+
+	</div><!-- #wrapper end -->
+
+	
+	{% include './includes/footer.html' %}
+
+	<!-- Go To Top
+	============================================= -->
+	<div id="gotoTop" class="uil uil-angle-up"></div>
+
+	{% comment %}
+    <!-- JavaScript Mostly For the Header -->
+	<script src="{% static 'js/plugins.min.js' %}"></script>
+	<script src="{% static 'js/functions.js' %}"></script>
+	<script src="{% static 'js/jquery.js' %}"></script>
+
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+	{% endcomment %}
+	<!-- JavaScripts
+	============================================= -->
+	<script src="{% static 'js/functions.js' %}"></script>
+	{% block javascript %}{% endblock javascript %}
+</body>
+</html>

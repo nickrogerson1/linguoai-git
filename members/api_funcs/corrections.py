@@ -7,6 +7,11 @@ import re
 
 def find_difference(sub, res):
 # Break into sentences and find differences
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt')
+
     sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
     original_text_sents = sent_detector.tokenize(sub)
     openai_res_sents = sent_detector.tokenize(res)

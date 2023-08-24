@@ -1,14 +1,21 @@
 import os
 from celery import Celery
 import ssl
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "linguoai.settings")
-app = Celery("linguoai")
+app = Celery('linguoai',
+             backend=env('REDIS_URL'),
+             broker=env('REDIS_URL'))
+
 app.config_from_object("django.conf:settings", namespace="CELERY")
 
 
-# app.conf.update(
-    # broker_use_ssl = True
+# app.conf.update( broker_use_ssl = True )
+
                 # broker_use_ssl = {
                 #     'ssl_keyfile': '/Users/nickrogerson/Desktop/LinguoAI/Linguo-ai/LinguoAI/linguoai/rab_conf/tls-gen/basic/client_myhost.local/key.pem',
                 #     'ssl_certfile': '/Users/nickrogerson/Desktop/LinguoAI/Linguo-ai/LinguoAI/linguoai/rab_conf/tls-gen/basic/client_myhost.local/cert.pem',

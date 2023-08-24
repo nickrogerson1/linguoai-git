@@ -6,6 +6,7 @@ from ..api_funcs.corrections import find_difference
 import pdfkit
 
 
+# Main processing function for individual PDFs 
 # @login_required(login_url="/login/")
 def get_pdf(sub_type, user, pk, type=None, multi=False, sub=None):
 
@@ -91,3 +92,9 @@ def get_pdf(sub_type, user, pk, type=None, multi=False, sub=None):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
     
+
+# Helper function to handle raw data
+def get_pdf_version(request, pk, type=None):
+    sub_type = request.path.split('/')[1]
+    user = request.user.username
+    return get_pdf(sub_type, user, pk, type=type)

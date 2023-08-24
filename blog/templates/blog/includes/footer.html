@@ -1,0 +1,62 @@
+{% load static %}
+
+	<div id="wrapper">
+
+		<!-- Footer
+		============================================= -->
+		<footer id="footer" class="bg-light border-width-1 border-f5">
+			<!-- <div class="container"> -->
+
+				<!-- Footer Widgets
+				============================================= -->
+				<!-- <div class="footer-widgets-wrap"> -->
+
+					<div class="row justify-content-center text-center py-sm-5" >
+						<div class="col-12 mb-4">
+
+							<div class="widget">
+								<a href="#"><img src="{% static 'footer-linguo-logo.jpg' %}" alt="Image" ></a>
+								<span id="slogan" class="tetx-uppercase op-05 d-block">The AI Way To Improve Your Language Skills</span>
+							</div>
+
+						</div>
+
+						<div class="clear"></div>
+						{% comment %}
+						<div class="col-12 mt-5">
+
+							<div class="widget">
+								<ul class="list-inline m-0">
+									<li class="list-inline-item mx-lg-3 my-lg-0 m-3"><a class="text-dark h-text-primary" href="#products"><u>Products</u></a></li>
+									<li class="list-inline-item mx-lg-3 my-lg-0 m-3"><a class="text-dark h-text-primary" href="#benefits"><u>Benefits</u></a></li>
+									<li class="list-inline-item mx-lg-3 my-lg-0 m-3"><a class="text-dark h-text-primary" href="#pricing"><u>Pricing</u></a></li>
+									<li class="list-inline-item mx-lg-3 my-lg-0 m-3"><a class="text-dark h-text-primary" href="#about"><u>About</u></a></li>
+									<li class="list-inline-item mx-lg-3 my-lg-0 m-3"><a class="text-dark h-text-primary" href="#faqs"><u>FAQs</u></a></li>
+									<li class="list-inline-item mx-lg-3 my-lg-0 m-3"><a class="text-dark h-text-primary" href="#block-modal-contact" data-lightbox="inline"><u>Contact Us</u></a></li>
+								</ul>
+							</div>
+							
+							{% include '../homepage/contact.html' %}
+							
+						</div>
+						{% endcomment %}
+			</div>
+
+			<!-- Copyrights
+			============================================= -->
+			<div id="copyrights" class="bg-white">
+				<div class="container">
+
+					<div class="row">
+						<div class="col-12 text-center">
+							<span id="copyright" class="text-black-50">&copy; {{ year }} All Rights Reserved by Linguo AI</span>
+						</div>	
+					</div>
+
+				</div>
+			</div><!-- #copyrights end -->
+		</footer><!-- #footer end -->
+
+	</div>
+
+	{% block javascript %}{% endblock javascript %}

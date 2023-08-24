@@ -487,7 +487,7 @@ class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, FormView):
             user_id = self.request.user.id
             
             # Then pass to Celery to process
-            get_corrected_results.delay(t0, user_id, sub, *args)
+            get_corrected_results(t0, user_id, sub, *args)
               
             return redirect(self.success_url)
             

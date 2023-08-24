@@ -112,6 +112,7 @@
     const copyText = async () => {
         try {
             await navigator.clipboard.writeText(result.innerText)
+            document.body.scrollTop = document.documentElement.scrollTop = 80;
             showSuccessAlert()
         } catch (e){
             console.log(e)

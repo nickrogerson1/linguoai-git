@@ -145,7 +145,7 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
 
     
 
-@shared_task
+# @shared_task
 def get_corrected_results(t0, user_id, sub, price_per_100_words, total_words, charged):
 
     # Long API call
@@ -210,9 +210,6 @@ from io import BytesIO
 from .copies.pdf import get_pdf
 from django.http import HttpResponse
 
-
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 
 @shared_task
 def get_bulk_pdf(sub_type, user, pks, type=None):
