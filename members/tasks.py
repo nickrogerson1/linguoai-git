@@ -145,7 +145,7 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
 
     
 
-# @shared_task
+@shared_task
 def get_corrected_results(t0, user_id, sub, price_per_100_words, total_words, charged):
 
     # Long API call

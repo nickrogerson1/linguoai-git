@@ -444,7 +444,7 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
             lang_code = self.object.explanation_language
             user_id = self.request.user.id
 
-            get_ielts_writing_task_2_scores(t0, user_id, q, a, language, lang_code, *args)
+            get_ielts_writing_task_2_scores.delay(t0, user_id, q, a, language, lang_code, *args)
 
             return redirect(self.success_url)
         else:
@@ -487,7 +487,7 @@ class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, FormView):
             user_id = self.request.user.id
             
             # Then pass to Celery to process
-            get_corrected_results(t0, user_id, sub, *args)
+            get_corrected_results.delay(t0, user_id, sub, *args)
               
             return redirect(self.success_url)
             
