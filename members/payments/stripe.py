@@ -52,8 +52,8 @@ class CreateStripeCheckoutSessionView(View):
             ],
             metadata = {'owner' : self.request.user},
             mode="payment",
-            success_url='http://localhost:8000/payment-successful?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='http://localhost:8000/payment-canceled/',
+            success_url='https://linguo.ai/payment-successful?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='https://linguo.ai/payment-canceled/',
         )
         return redirect(checkout_session.url)
     

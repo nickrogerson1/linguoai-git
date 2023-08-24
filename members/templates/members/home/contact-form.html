@@ -9,41 +9,39 @@
 {% block content %}
 <div class="content">
     <div class="container-fluid">
-    <div class="row">
-        <div class="col-12 col-lg-8 offset-lg-2 pt-4 mt-5">
-        <div class="card" >
-            <div class="card-header text-center py-4">
-                <h3 class="title">
-                    Get In Touch!
-                </h3>
-            </div>
-            <div class="card-body px-2 py-2">
-            <p>
-                Got something on your mind? Fill in the form below and let us know.
-                We'll try and get back to you as soon as we can.
-            </p>
-        </div>
-        <div class="card">
-            <div class="card-body col-md-10 offset-md-1">
-            <form action="" method="post">
-                {% csrf_token %}
+        <div class="row">
+            <div class="col-12 col-lg-8 offset-lg-2 pt-4 mt-5">
+                <div class="card" >
+                    <div class="card-header text-center py-4">
+                        <h3 class="title">Get In Touch!</h3>
+                    </div>
+                    <div class="card">
+                        <div class="card-body px-2 py-2">
+                            <div class="card-body col-md-10 offset-md-1">
+                            <p>
+                            Got something on your mind or just wanna report a bug? Fill in the form below and let us know.
+                            We'll try and get back to you as soon as we can.
+                            </p>
+                        </div>
+                    
+                            <form action="" method="post">
+                                {% csrf_token %}
 
-                <label for="submission">Enter Your Message</label>
-                <div class="form-group">
-                    {{ form.message }}
-                </div>
+                                <label for="submission">Enter Your Message</label>
+                                <div class="form-group">
+                                {{ form.message }}
+                                </div>
                 
-                <div class="text-center">
-                    <input id="button" type="submit" value="SUBMIT" class="btn btn-fill btn-primary">
-                    <input id="clear" type="button" value="CLEAR FORM" class="btn btn-fill btn-primary">
+                                <div class="text-center">
+                                    <input id="button" type="submit" value="SUBMIT" class="btn btn-fill btn-primary">
+                                    <input type="reset" value="CLEAR FORM" class="btn btn-fill btn-primary">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                
-            </form>
-            </div>
             </div>
         </div>
-        </div>
-    </div>
     </div>
 </div>
 <br><br>
@@ -51,14 +49,4 @@
 {% endblock content %}
 
 {% block javascripts %}
-<script>
-const clearInput = () => {
-    document.querySelector('form').reset()
-    const form = document.querySelector('.form-group')
-    form.lastElementChild.innerText = ''
-    form.setAttribute('data-replicated-value','')
-}
-
-document.querySelector('#clear').addEventListener('click', clearInput)
-</script>
 {% endblock javascripts %}
