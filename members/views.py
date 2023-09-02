@@ -39,6 +39,17 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmVie
 from .tasks import *
 
 
+from io import BytesIO
+import docx
+from striprtf.striprtf import rtf_to_text
+import fitz
+from zipfile import ZipFile
+import redis
+
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 
 # Costs per 1000 tokens
 LLM_COSTS = {
@@ -65,6 +76,11 @@ PRICING = {
         'USD': 0.04,
         'CNY': 0.3
     }
+}
+
+MIN_CHARGE = {
+    'USD': 0.05,
+    'CNY': 0.5
 }
 
 
@@ -325,11 +341,15 @@ class InternalContactForm(FormView):
 
 
 
+
 class BalanceCheckMixin:
 
-    def check_user_has_sufficient_funds(self, results_type, sub=None, q=None, a=None):
+    def check_user_has_sufficient_funds(self, results_type, sub=None, q=None, a=None, multi=False):
+
+        TWO_PLACES = Decimal("0.01")
 
     # Check the cost before starting
+        user = self.request.user.username
         currency = self.request.user.currency
         price_per_100_words = PRICING[results_type]['USD'] if currency == 'USD' else PRICING[results_type]['CNY']
 
@@ -338,67 +358,96 @@ class BalanceCheckMixin:
         else:
             total_words = len((q + ' ' + a).strip().split())
 
-        cost = round((total_words / 100) * price_per_100_words, 2)
+        cost = Decimal(round((total_words / 100) * price_per_100_words, 2)).quantize(TWO_PLACES)
 
     # Enforce Minimum charge
         if currency == 'USD':
-            charged = 0.05 if cost < 0.05 else cost
+            charged = Decimal(MIN_CHARGE['USD']).quantize(TWO_PLACES) if cost < Decimal(MIN_CHARGE['USD']).quantize(TWO_PLACES) else cost
         else:
             # for CNY
-            charged = 0.5 if cost < 0.5 else cost
+            charged = Decimal(MIN_CHARGE['CNY']).quantize(TWO_PLACES) if cost < Decimal(MIN_CHARGE['CNY']).quantize(TWO_PLACES) else cost
 
-        # Then make sure they have enough money
-        if self.request.user.balance < charged:
-            messages.warning(self.request, "Ooops, looks like you don't have enough credit to make that submission.")
-            return False
+        temp_balance = None
         
+        if multi:
+            r = redis.Redis()
+            with r.lock('user_balance'):
+                temp_balance = r.hget(user, 'temp_balance')
+
+        print(f'REQ BALANCE: {type(self.request.user.balance)}')
+
+        user_balance = Decimal(float(temp_balance)).quantize(TWO_PLACES) if temp_balance else self.request.user.balance
+        print(f'TEMP BALANCE {temp_balance}')
+        print(f'USER BALANCE: {user_balance}')
+
+        # If they don't have enough money:
+        if user_balance < charged:
+            if multi:
+                return [ price_per_100_words, total_words, charged, 'Rejected: Insufficient Funds']
+            else:
+            # Only send warning when redirecting
+                messages.warning(self.request, "Ooops, looks like you don't have enough credit to make that submission.")
+                return False
+        
+        # Otherwise reduce temp_balance
+        if multi:
+            with r.lock('user_balance'):
+                user_balance = float(user_balance - charged)
+                print(f'599 - {type(user_balance)}')
+                r.hset(user, mapping={'temp_balance' : user_balance})
+                return [ price_per_100_words, total_words, charged, 'Awaiting Response' ]
+            
         return [ price_per_100_words, total_words, charged ]
 
-
-
-
-class ImprovedFormView(LoginRequiredMixin, BalanceCheckMixin, FormView):
-    model = ImprovedSubmission
-    template_name = 'members/home/input-form-general.html'
-    form_class = ImprovedForm
-    success_url = 'sent-successfully/'
-
+class StandardSubMixin:
 
     def get(self, request, *args, **kwargs):
         # If they have some balance
         if self.request.user.balance:
-            print(request)
-            return super(ImprovedFormView, self).get(self, request, *args, **kwargs)
+            return super().get(self, request, *args, **kwargs)
         else:
         # Otherwise redirect to top up page
             return redirect('insufficient-funds')
 
+    def get_context_data(self):
+        price = PRICING[self.charge_type]['USD']/100 if self.request.user.currency == 'USD' else PRICING[self.charge_type]['CNY']/100
+        min_charge = MIN_CHARGE['USD'] if self.request.user.currency == 'USD' else MIN_CHARGE['CNY']
+        min_words = int(min_charge / price)
+        symbol = '$' if self.request.user.currency == 'USD' else '¥'
+        kwargs = {'per_word' : symbol + str(price), 'min_charge' : symbol + f'{min_charge:.2f}', 'min_words' : min_words }
+        return super().get_context_data(**kwargs)
+    
+    # def post(self, request):
+    #     form = CorrectedForm(request.POST)
+    #     if form.is_valid():
+    #         self.object = form.save(commit=False)
 
-    def post(self, request):
-        t0 = time.time()
-        form = ImprovedForm(request.POST)
-        if form.is_valid():
-            self.object = form.save(commit=False)
+    #         t0 = time.time()
+    #         sub = escape(self.object.submission)
 
-            t0 = time.time()
-            sub = escape(self.object.submission)
+    #         args = self.check_user_has_sufficient_funds(self.charge_type, sub=sub)
+    #          # [ price_per_100_words, total_words, charged ]
 
-            args = self.check_user_has_sufficient_funds('improved_results', sub=sub)
-
-        # If they have insufficient funds, then end it
-            if not args:
-                return redirect('insufficient-funds')
+    #     # If they have insufficient funds, then end it
+    #         if not args:
+    #             return redirect('insufficient-funds')
             
-            user_id = self.request.user.id
+    #         user_id = self.request.user.id
+    #         username = self.request.user.username
+    #         symbol = '$' if self.request.user.currency == 'USD' else '¥'
+    #     # Only one submission so must be 1
+    #         html_id = 1
             
-            # Then pass to Celery to process
-            get_improved_results.delay(t0, user_id, sub, *args)
+    #         # Then pass to Celery to process
+    #         get_results.delay(t0, username, user_id, sub, html_id, model, *args)
               
-            return redirect(self.success_url)
-        else:
-            self.object = ''
-            return super(ImprovedFormView, self).form_invalid(form)
-        
+    #         # return redirect(self.success_url)
+    #         ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
+    #         return render(request, "members/home/sent-success.html", context=ctx)
+            
+    #     else:
+    #         self.object = ''
+    #         return super(CorrectedFormView, self).form_invalid(form)
 
 
 
@@ -407,28 +456,29 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
     model = IeltsWritingTask2
     template_name = 'members/home/input-form-ielts-writing-task-2.html'
     form_class = IeltsWritingTask2Form
-    success_url = 'sent-successfully/'
-    extra_context = ''
-
+    charge_type = 'ielts_writing_task_2'
+    success_url = 'submitted/'
 
     def get(self, request, *args, **kwargs):
         # If they have some balance
         if self.request.user.balance:
-        # Add this to extra context as the form wipes out the kwargs being passed down
-            if 'Firefox' in request.META['HTTP_USER_AGENT']:
-                date = datetime.datetime.now().strftime("%B %Y")
-                self.extra_context = {'browser': 'Firefox', 'date': date}
             return super().get(self, request, *args, **kwargs)
         else:
         # Otherwise redirect to top up page
             return redirect('insufficient-funds')
+
+    def get_context_data(self):
+        price = PRICING[self.charge_type]['USD']/100 if self.request.user.currency == 'USD' else PRICING[self.charge_type]['CNY']/100
+        min_flat_rate = 250 * price
+        symbol = '$' if self.request.user.currency == 'USD' else '¥'
+        kwargs = {'per_word' : symbol + str(price), 'min_flat_rate' : symbol + f'{min_flat_rate:.2f}'}
+        return super().get_context_data(**kwargs)
 
 
     def post(self, request):
         t0 = time.time()
         form = IeltsWritingTask2Form(request.POST)
         if form.is_valid():
-            t0 = time.time()
 
             self.object = form.save(commit=False)
             q = escape(self.object.question)
@@ -442,32 +492,105 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
             
             language = self.object.get_explanation_language_display().split(' ')[0]
             lang_code = self.object.explanation_language
+            username = self.request.user.username
             user_id = self.request.user.id
 
-            get_ielts_writing_task_2_scores.delay(t0, user_id, q, a, language, lang_code, *args)
+            get_ielts_writing_task_2_scores(t0, username, user_id, q, a, language, lang_code, *args)
 
             return redirect(self.success_url)
         else:
             self.object = ''
             return super(IeltsWritingTask2View, self).form_invalid(form)
+        
+    def post(self, request):
+        t0 = time.time()
+        form = IeltsWritingTask2Form(request.POST)
+        if form.is_valid():
+            self.object = form.save(commit=False)
+
+            q = escape(self.object.question)
+            a = escape(self.object.answer)
+
+            args = self.check_user_has_sufficient_funds('ielts_writing_task_2', q=q, a=a)
+            # [ price_per_100_words, total_words, charged ]
+
+        # If they have insufficient funds, then end it
+            if not args:
+                return redirect('insufficient-funds')
+            
+
+            language = self.object.get_explanation_language_display().split(' ')[0]
+            lang_code = self.object.explanation_language
+            username = self.request.user.username
+            user_id = self.request.user.id
+            symbol = '$' if self.request.user.currency == 'USD' else '¥'
+        # Only one submission so must be 1
+            html_id = 1
+            
+            # Then pass to Celery to process
+            get_ielts_writing_task_2_scores(t0, username, user_id, q, a, language, lang_code, html_id, *args)
+            
+            # return redirect(self.success_url)
+            ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
+            return render(request, "members/home/sent-success.html", context=ctx)
+        else:
+            self.object = ''
+            return super(ImprovedFormView, self).form_invalid(form)
+            
 
 
 
 
-class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, FormView):
+class ImprovedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin, FormView):
+    model = ImprovedSubmission
+    template_name = 'members/home/input-form-general.html'
+    form_class = ImprovedForm
+    charge_type = 'improved_results'
+    sub_type = 'Improved'
+
+
+    def post(self, request):
+        t0 = time.time()
+        form = ImprovedForm(request.POST)
+        if form.is_valid():
+            self.object = form.save(commit=False)
+
+            t0 = time.time()
+            sub = escape(self.object.submission)
+
+            args = self.check_user_has_sufficient_funds(self.charge_type, sub=sub)
+             # [ price_per_100_words, total_words, charged ]
+
+        # If they have insufficient funds, then end it
+            if not args:
+                return redirect('insufficient-funds')
+            
+            user_id = self.request.user.id
+            username = self.request.user.username
+            symbol = '$' if self.request.user.currency == 'USD' else '¥'
+        # Only one submission so must be 1
+            html_id = 1
+            
+            # Then pass to Celery to process
+            get_improved_results.delay(t0, username, user_id, sub, html_id, *args)
+              
+            # return redirect(self.success_url)
+            ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
+            return render(request, "members/home/sent-success.html", context=ctx)
+        else:
+            self.object = ''
+            return super(ImprovedFormView, self).form_invalid(form)
+        
+
+
+
+
+class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin, FormView):
     model = CorrectedSubmission
     template_name = 'members/home/input-form-general.html'
     form_class = CorrectedForm
-    success_url = 'sent-successfully/'
-
-
-    def get(self, request, *args, **kwargs):
-        # If they have some balance
-        if self.request.user.balance:
-            return super(CorrectedFormView, self).get(self, request, *args, **kwargs)
-        else:
-        # Otherwise redirect to top up page
-            return redirect('insufficient-funds')
+    charge_type = 'corrected_results'
+    sub_type = 'Corrected'
 
 
     def post(self, request):
@@ -478,22 +601,225 @@ class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, FormView):
             t0 = time.time()
             sub = escape(self.object.submission)
 
-            args = self.check_user_has_sufficient_funds('corrected_results', sub=sub)
+            args = self.check_user_has_sufficient_funds(self.charge_type, sub=sub)
+             # [ price_per_100_words, total_words, charged ]
 
         # If they have insufficient funds, then end it
             if not args:
                 return redirect('insufficient-funds')
             
             user_id = self.request.user.id
+            username = self.request.user.username
+            symbol = '$' if self.request.user.currency == 'USD' else '¥'
+        # Only one submission so must be 1
+            html_id = 1
             
             # Then pass to Celery to process
-            get_corrected_results.delay(t0, user_id, sub, *args)
+            get_corrected_results.delay(t0, username, user_id, sub, html_id, *args)
               
-            return redirect(self.success_url)
+            # return redirect(self.success_url)
+            ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
+            return render(request, "members/home/sent-success.html", context=ctx)
             
         else:
             self.object = ''
             return super(CorrectedFormView, self).form_invalid(form)
+
+
+
+
+
+
+
+class FileFieldFormView(BalanceCheckMixin,FormView):
+    
+    form_class = FileFieldForm
+    template_name = 'members/home/input-form-general.html'
+    success_url = 'upload-success.html' 
+    t0 = time.time()
+
+
+    def post(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+
+        file = self.request.FILES['file']
+        file_type = file.content_type
+        # print(file_type)
+        if file_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            sub = self.get_docx_text(file)
+            res = self.process_text(sub)            
+
+        elif file_type == 'application/pdf': 
+            sub = self.get_pdf_text(file)
+            res = self.process_text(sub)
+
+        elif file_type == 'text/rtf':
+            sub = self.get_rtf_text(file)
+            res = self.process_text(sub)
+
+        elif file_type == 'text/plain':
+            sub = self.get_txt_text(file)
+            res = self.process_text(sub)
+
+        elif file_type == 'application/zip':
+            subs = self.unzip_files(file)
+            for s in subs:
+        # Keep track of cost as this processes
+            # s[0] sub & s[1] filename
+                print(f'VAR: {s}')
+                res = self.process_text(s[0], s[1])
+            # Pass them straight through to Celery
+                # get_corrected_results.delay(t0, user_id, s[0], *res)
+                
+                print(s)
+
+# Handle folders that aren't zipped
+        # elif file_type == 'application/octet-stream':
+        #     for f in file:
+        #         f = BytesIO(f)
+        #         print(f)
+        #         return self.form_valid(f)
+
+        else:
+            print(f"Can't open file type: {file_type}")
+
+        print(f'RES {res}')
+        
+        # Then pass to Celery to process (not zips)
+        # if file_type != 'application/zip':
+            # get_corrected_results.delay(t0, user_id, sub, *res)
+            
+        # return redirect(self.success_url)
+        return super().form_valid(form)
+
+
+
+
+
+# Update IELTS form so that it has a waiting page like improved and corrected
+
+# Make sure data gets sanitised
+
+# Finish wiring up PDFs
+# (Reinstall Redis and) upload to Railway with Daphne and see it still works
+
+
+        
+    
+    def process_text(self, sub, file_name=None):
+        args = self.check_user_has_sufficient_funds('corrected_results', sub=sub, multi=True)
+        # [ price_per_100_words, total_words, charged ]
+
+        print(f'ARGS: {args}')
+# Insufficient Funds
+    # Reject if over 5000 words
+        if args[1] >= 5000:
+            args[3] = 'Rejected: Submit content less than 5000 words in length'
+      
+        file_name = file_name if file_name else self.request.FILES['file'].name
+        username = self.request.user.username
+        user_id = self.request.user.id
+
+        r = redis.Redis()
+    # Increase the id by 1 each time
+        id = r.hincrby(username,'num')
+        print(f'ID: {id}')    
+        curr = '$' if self.request.user.currency == 'USD' else '¥'
+        
+        # print(f'USER: {self.request.user.username}')
+        channel_name = r.hget(username, 'channel').decode()
+        if channel_name:
+            channel_layer = get_channel_layer()
+            
+        async_to_sync(channel_layer.send)(channel_name, {
+                'type': 'update',
+                'wordCount': args[1],
+                'cost': f'{curr}{args[2]}',
+                'fileName': file_name,
+                'id' : id,
+                'status': args[3],
+            })
+        
+        
+    # Only process if awaiting response, otherwise reject via ws and do nothing
+        if args[3] == 'Awaiting Response':
+            #Remove 'insufficient funds' info from args before passing through
+            args.pop()
+            get_corrected_results.delay(self.t0, username, user_id, sub, id, *args)
+        
+        # return [id, *args]
+        
+  
+    def get_docx_text(self, file):
+        doc = docx.Document(file)
+        fullText = []
+        for para in doc.paragraphs:
+            fullText.append(para.text)
+        final = '\n'.join(fullText)
+        print(final)
+        return final
+    
+
+    def get_pdf_text(self, file):
+
+        if isinstance(file, bytes):
+        # Zipped files don't need to be read
+            b = BytesIO(file)
+        else:
+            b = BytesIO(file.read())
+        with fitz.open('pdf',b) as doc:
+            text = ""
+            for page in doc:
+        # Produces weird unicode so needs replacing
+                text += page.get_text().replace('�', ' ')
+        print(text)
+        return text
+
+
+    def get_rtf_text(self, file):
+        text = rtf_to_text(file.read().decode())
+        print(text)
+        return text
+    
+
+    def get_txt_text(self, file):
+        text = ''
+        for line in file:
+            text += line.decode()
+        print(text)
+        return text
+
+
+    def unzip_files(self, input_zip):
+        input_zip = ZipFile(input_zip)
+        all_zips = []
+        for name in input_zip.namelist():
+            print(name)
+            if name.endswith('docx'):
+                txt = self.get_docx_text(BytesIO(input_zip.read(name)))
+
+            elif name.endswith('pdf'): 
+                txt = self.get_pdf_text(input_zip.read(name))
+
+            elif name.endswith('rtf'):
+                txt = rtf_to_text(input_zip.read(name).decode())
+
+            elif name.endswith('txt'):
+                txt = input_zip.read(name).decode()
+
+            else:
+                return "You've submitted a file that can't be processed."
+            all_zips.append((txt,f'{name} [ZIPPED]'))
+        return all_zips
+
 
 
 
@@ -591,21 +917,38 @@ class ImprovedResultsDetailView(LoginRequiredMixin, DetailViewMixin, DetailView)
 
 # Need to do some of check to add submissions that are incomplete to the top of the list
 class ResultsLogView(LoginRequiredMixin, ListView):
-
     paginate_by = 25
     template_name = 'members/home/log.html'
+   
+    
 
-    def get_queryset(self) -> QuerySet[any]:
+    def get_queryset(self):
+        
+        r = self.request
         id = self.request.user.id
         # (Download Checkbox) Submission Type - Time Submitted - Status (Complete/Being Processed/Failed)
         usage1 = (IeltsWritingTask2.objects.filter(owner=id,user_deleted=False).values('pk', 'time_created')
-            .annotate(type=Value('Ielts Writing Task 2'), url_link=Value('ielts-writing-task-2-results-detail')))
+            .annotate(type=Value('Ielts Writing Task 2'), url_link=Value('ielts-writing-task-2-results-detail'), status=Value('Completed')))
         usage2 = (CorrectedSubmission.objects.filter(owner=id,user_deleted=False).values('pk', 'time_created')
-            .annotate(type=Value('Corrected Submission'), url_link=Value('corrected-results-detail')))
+            .annotate(type=Value('Corrected Submission'), url_link=Value('corrected-results-detail'), status=Value('Completed')))
         usage3 = (ImprovedSubmission.objects.filter(owner=id,user_deleted=False).values('pk', 'time_created')
-            .annotate(type=Value('Improved Submission'), url_link=Value('improved-results-detail')))
-        return usage1.union(usage2,usage3).order_by('-time_created')
+            .annotate(type=Value('Improved Submission'), url_link=Value('improved-results-detail'), status=Value('Completed')))
+        
+        sorted_results = usage1.union(usage2,usage3).order_by('-time_created')
+        # print(sorted_results)
+        
+        # Add in whatever was submitted
+        format = {
+            'pk' : 'NA',
+            'time_created' : 'In Progress',
+            'type' : 'Whatever it is',
+            'url_link' : None,
+            'status' : 'Pending'
+        }
 
+        print(f'Request: {r.path}')
+
+        return sorted_results
 
 
 

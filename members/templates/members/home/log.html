@@ -101,13 +101,16 @@ th {
                                 <td><input type="checkbox" class="checkbox" id="{{ result.pk }}" name="checks" value="{{ result.url_link }}/{{ result.pk }}"></td>
                                 <td >{{ result.time_created }}</td>
                                 <td ><a href="{% url result.url_link result.pk %}">{{ result.type }}</a></td>
-                                <td >Completed</td>
+                                <td >{{ result.status }}</td>
                             </tr>
                             {% empty %}
                                 <tr><h3>You still have not submitted anything yet.</h3></tr>
                             {% endfor %}
                             </tbody>
                         </table>
+                        </div>
+                        </div>
+                        </div>
                        
                     </form>
                     </div>
@@ -156,7 +159,4 @@ th {
 {% endif %}
 
 <script src="{% static 'js/results.js' %}"></script>
-
-
-
 {% endblock javascripts %}

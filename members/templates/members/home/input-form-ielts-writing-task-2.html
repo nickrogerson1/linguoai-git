@@ -20,20 +20,12 @@
                 </h1>
             </div>
         <div class="card-body px-2 pt-2 pb-0">
-            <p>
-              There is a hard limit of 3000 characters per answer (around 600 words) which is more than double the 250 word minimum for IELTS Writing Task 2.
-              We suggest you write around 400 words.
-            <br><br>
-              As this service is currently in <strong>BETA</strong>, we are providing it at cost value.
-            </p>
-        
+          <h5>The cost of using this service is <strong>{{ per_word }} per word</strong> and you have to submit a minimum of 250 words. Thus, the minimum cost per submission is {{ min_flat_rate }}.</h5>
 
-        {% if browser %}
-        <br>
-        <h4 class="text-danger">As of {{ date }}, the IELTS Word Counter is not currently supported in Firefox. 
-          The service will still work but we recommend using another browser.</h4>
-        {% endif %}
-      </div>
+            <p>There is a hard limit of 3000 characters per answer (around 600 words) which is more than double the 250 word minimum for IELTS Writing Task 2.
+              We suggest you write around 400 words.</p>
+              <p>As this service is currently in <strong>BETA</strong>, we are providing it at cost value.</p>
+        </div>
 
         <div class="card">
             <div class="card-body pt-0">
@@ -45,21 +37,21 @@
                     <label for="explanation">Select your explanation language:</label>
                     {{ form.explanation_language }}
                   </div>
-                  <span class="text-danger">{{ form.currency.errors }}</span>
+                  <span class="text-danger">{{ form.explanation_language.errors }}</span>
                 </div>
 
                 <label for="question">Type or Paste In Your Question</label>
                 <div class="form-group" id="question">
                     {{ form.question }}
                 </div>
-                <p id="question-count">Word Count: 0&nbsp;&nbsp;|&nbsp;&nbsp;Character Count: 0</p>
+                <p id="question-count">Word Count: 0</p>
                 <span class="text-danger">{{ form.question.errors }}</span>
                 <br>
                 <label for="answer">Type or Paste In Your Answer</label>
                 <div class="form-group" id="answer">
                     {{ form.answer }}
                 </div>
-                <p id="answer-count">Word Count: 0&nbsp;&nbsp;|&nbsp;&nbsp;Character Count: 0</p>
+                <p id="answer-count">Word Count: 0</p>
                 <span class="text-danger">{{ form.answer.errors }}</span>
                 
                 <div class="text-center">
@@ -78,34 +70,7 @@
     </div>
 </div>
 <br><br>
-
-
-<div id='overlay'>
-    <div id="waiting-anim">
-    <span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-    </span>
-    <div class='base'>
-      <span></span>
-      <div class='face'></div>
-    </div>
-  </div>
-  <div class='longfazers'>
-    <span></span>
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-  <h1>Hold Tight!<br>We're working on it...</h1>
-</div>
 {% endblock content %}
-
-{% block fazerstylesheets %}
-<link href="{% static 'css/api-wait.css' %}" rel="stylesheet" />
-{% endblock fazerstylesheets %}
 
 {% block javascripts %}
 <script src="{% static 'js/ielts-form.js' %}"></script>

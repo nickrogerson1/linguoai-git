@@ -52,7 +52,7 @@ class BaseModel(models.Model):
     price_per_100_words = models.DecimalField(max_digits=6, decimal_places=3)
     charged = models.DecimalField(max_digits=7, decimal_places=2)
     usd_charge = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
-    usd_exchange_rate = models.DecimalField(max_digits=7, decimal_places=2)
+    usd_exchange_rate = models.DecimalField(max_digits=8, decimal_places=6)
     profit = models.DecimalField(max_digits=8, decimal_places=3)
     margin = models.DecimalField(max_digits=8, decimal_places=3)
     processing_time = models.DecimalField(max_digits=6, decimal_places=3)
@@ -63,6 +63,7 @@ class BaseModel(models.Model):
     comments = models.TextField()
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     
+
 
     class Meta:
         abstract = True

@@ -63,10 +63,15 @@ html = {
 
 # Add form class to include widgets (classes) in form
 class IeltsWritingTask2Form(forms.ModelForm):
+
     class Meta:
         model = IeltsWritingTask2
-        fields = ['question', 'answer']
+        fields = ['explanation_language', 'question', 'answer']
         widgets = {
+            'explanation_language' : forms.Select(attrs={ 
+                "class": "form-control"
+            }),
+
             'question' : forms.Textarea(attrs={ 
                 "class": "form-control",
                 "onInput" : "this.parentNode.dataset.replicatedValue = this.value",
@@ -153,3 +158,35 @@ class PasswordResetPass(SetPasswordForm):
             "class": "form-control"
             }),
     )
+
+
+
+    # Dynamically create fields
+# class UserDeleteForm(forms.Form):
+#     def __init__(self, *args, **kwargs):
+#         super(UserDeleteForm, self).__init__(*args, **kwargs)
+#         # dynamic fields here ...
+#         self.fields['checkbox'] = forms.BooleanField()
+
+
+
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
+
+class FileFieldForm(forms.Form):
+    file_field = MultipleFileField()

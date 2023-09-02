@@ -1,6 +1,15 @@
 {% extends "../layouts/base.html" %}
 
-{% block title %} Your message has been sent! {% endblock title%} 
+{% block stylesheets %}
+<style>
+th, td {
+  font-size: 1rem !important;
+}
+</style>
+
+{% endblock stylesheets %}
+
+{% block title %} Your submission is being processed!{% endblock title%} 
 
 {% block content %}
 
@@ -12,16 +21,103 @@
           <div class="card-body px-2 py-2">
             <div>
               <div class="alert text-center" role="alert">
-                  <h3>We have received your submission.</h3>
+                  <h3 id="heading">We are processing your submission.</h3>
                   <p>Please go to the log to check on the progress of your submission.</p>
                   <br>
                   <a href="{% url 'home' %}" >Go back to the dashboard</a>
               </div>
             </div>
           </div>
+
+          <div class="card">
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="text-center table tablesorter">
+                  <thead class="text-primary">
+                    <tr>
+                        <th>Time Elapsed</th>
+                        <th>Word Count</th>
+                        <th>Cost</th>
+                        <th>Submission Type</th>
+                        <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr id="row-1">
+                      <td>0 secs</td>
+                      <td>{{ word_count }}</td>
+                      <td>{{ symbol }}{{ cost }}</td>
+                      <td>{{ sub_type}}</td>
+                      <td>PENDING</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+
         </div>
       </div>
     </div>
   </div>
 </div>
+
+
 {% endblock content %}
+
+
+{% block javascripts %}
+
+
+<script>
+// Starts when row initiated then stops counting when status changes
+      const counter = () => {
+          let secs = 0
+          const cell = document.querySelector('#row-1 td:first-child')
+          const incrementer = () => {
+            secs++
+            const s = secs === 1 ? '' : 's'
+            cell.innerHTML = `${secs} sec${s}`
+            const status = document.querySelector('#row-1 td:last-child').innerHTML
+            if(status !== 'PENDING') {
+              clearInterval(interval)
+            }
+          }
+        const interval = setInterval(incrementer, 1000)
+      }
+
+    window.addEventListener('load', counter)
+
+
+
+    const ws = new WebSocket(`ws://${window.location.host}/ws/single-submission/`);
+
+      ws.onclose = e => {
+          console.error('Web Socket closed unexpectedly');
+          };
+
+
+      ws.onmessage = e => {
+      const data = JSON.parse(e.data);
+      console.log(data)
+      // If HTTP slow
+      if (data.ready) {
+        console.log(data.pk)
+        document.querySelector('#row-1 td:last-child').innerHTML = 'Completed'
+        document.querySelector('#balance').innerHTML = data.new_balance
+        document.querySelector('#heading').innerHTML = 'We have processed your submission!'
+      }
+
+      if(data.status === 'success'){
+          const { status, row, new_balance } = data
+          console.log(row)
+          document.querySelector(`#row-${row} td:last-child`).innerHTML = 'Completed'
+          document.querySelector('#balance').innerHTML = new_balance
+          document.querySelector('#heading').innerHTML = 'We have processed your submission!'
+        }
+      }
+    
+
+</script>
+{% endblock javascripts %}

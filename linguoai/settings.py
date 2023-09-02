@@ -38,6 +38,7 @@ CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://*.linguo.ai']
 
 
 INSTALLED_APPS = [
+    'daphne',
     'tz_detect',
     "home",
     "members",
@@ -99,7 +100,7 @@ TEMPLATES = [
 
 
 
-WSGI_APPLICATION = 'linguoai.wsgi.application'
+# WSGI_APPLICATION = 'linguoai.wsgi.application'
 
 
 DATABASES = {
@@ -185,7 +186,7 @@ ASSETS_ROOT = STATIC_URL
 base.tag_re = re.compile(base.tag_re.pattern, re.DOTALL)
 
 
-# ASGI_APPLICATION = "linguoai.asgi.application"
+ASGI_APPLICATION = "linguoai.asgi.application"
 
 # WEBPACK_LOADER = {
 #   'DEFAULT': {
@@ -202,6 +203,15 @@ WAGTAILADMIN_BASE_URL = 'cms/'
 
 
 OPENAI_API_KEY = env('OPENAI_API_KEY')
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 # Django deployment warnings edit
 # SECURE_SSL_REDIRECT = True

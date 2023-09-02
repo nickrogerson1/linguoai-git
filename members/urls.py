@@ -33,6 +33,9 @@ urlpatterns = [
     path('message-success/', TemplateView.as_view(template_name='members/home/message-success.html'), name='message-success'),
 
 
+    path('dropzone-files/', FileFieldFormView.as_view(), name='dropzone'),
+
+
     # Activate account
     re_path(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,50})/$',
         activate_account, name='activate'),
@@ -55,9 +58,9 @@ urlpatterns = [
     path('improved/', ImprovedFormView.as_view(), name='improved'),
     path('service-unavailable/', TemplateView.as_view(template_name="members/home/service-unavailable.html"), name="unavailable"),
 
-    path('ielts-writing-task-2/sent-successfully/', TemplateView.as_view(template_name="members/home/sent-success.html"), name='ielts-writing-task-2-sent'),
-    path('corrected/sent-successfully/', TemplateView.as_view(template_name="members/home/sent-success.html"), name='corrected-sent'),
-    path('improved/sent-successfully/', TemplateView.as_view(template_name="members/home/sent-success.html"), name='improved-sent'),
+    path('ielts-writing-task-2/submitted/', TemplateView.as_view(template_name="members/home/sent-success.html"), name='ielts-writing-task-2-sent'),
+    path('corrected/submitted/', TemplateView.as_view(template_name="members/home/sent-success.html"), name='corrected-sent'),
+    path('improved/submitted/', TemplateView.as_view(template_name="members/home/sent-success.html"), name='improved-sent'),
 
 
     path('log/', ResultsLogView.as_view(), name='log'),
@@ -87,29 +90,13 @@ urlpatterns = [
     re_path(r'^log/bulk-pdf/(?P<url_str>([\w-]+results/[0-9]+/)+)?$', get_bulk_mixed_pdf_task, name='get_bulk_pdf'),
     re_path(r'^log/bulk-docx/(?P<url_str>([\w-]+results/[0-9]+/)+)?$', get_bulk_mixed_docx, name='get_bulk_docx'),
 
-    path('corrected-results/pdf/<int:pk>/<int:type>/', get_pdf_version, name='get_corrected_pdf'),
+    path('corrected-results/pdf/<int:pk>/<int:type>/', get_pdf, name='get_corrected_pdf'),
     path('corrected-results/docx/<int:pk>/<int:type>/', get_docx, name='get_corrected_docx'),
-    path('improved-results/pdf/<int:pk>/', get_pdf_version, name='get_improved_pdf'),
+    path('improved-results/pdf/<int:pk>/', get_pdf, name='get_improved_pdf'),
     path('improved-results/docx/<int:pk>/', get_docx, name='get_improved_docx'),
-    path('ielts-writing-task-2-results/pdf/<int:pk>/', get_pdf_version, name='get_ielts_writing_pdf'),
+    path('ielts-writing-task-2-results/pdf/<int:pk>/', get_pdf, name='get_ielts_writing_pdf'),
     path('ielts-writing-task-2-results/docx/<int:pk>/', get_docx, name='get_ielts_writing_docx'),
 
     # Matches any html file
-    re_path(r'^.*\.*', pages, name='pages'),
-
-
-
-
-
-
-
-
-  # Sidebar pages
-    path('icons/', TemplateView.as_view(template_name="members/home/icons.html")),
-    path('map/', TemplateView.as_view(template_name="members/home/map.html")),
-    path('notifications/', TemplateView.as_view(template_name="members/home/notifications.html")),
-    path('user/', TemplateView.as_view(template_name="members/home/user.html")),
-    path('tables/', TemplateView.as_view(template_name="members/home/tables.html")),
-    path('typography/', TemplateView.as_view(template_name="members/home/typography.html")),
-    path('rtl/', TemplateView.as_view(template_name="members/home/rtl.html")),
+    re_path(r'^.*\.*', pages, name='pages')
 ]
