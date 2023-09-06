@@ -25,7 +25,7 @@ document.querySelector('#clear').addEventListener('click', clearInput)
 
 
 
-const ws = new WebSocket(`ws://${window.location.host}/ws/bulk-submission/`);
+const ws = new WebSocket(`wss://${window.location.host}/ws/bulk-submission/`);
 
 ws.onclose = e => {
     console.error('Web Socket closed unexpectedly');
@@ -42,7 +42,7 @@ const counter = row => {
     const status = document.querySelector(`#row-${row} td:last-child`).innerHTML
     if(status !== 'Awaiting Response') {
         clearInterval(interval)
-    }
+        }
     }
 const interval = setInterval(incrementer, 1000)
 }
@@ -70,6 +70,7 @@ const tr = document.createElement('tr')
 
     const td4 = document.createElement('td')
     td4.innerHTML = fileName
+    td4.className = 'inject-link'
 
     const td5 = document.createElement('td')
     td5.innerHTML = status
@@ -93,9 +94,13 @@ ws.onmessage = e => {
     addRow(wordCount, cost, fileName, id, status)
 
     } else if(data.status === 'success') {
-    
-        const { row, new_balance } = data
-        console.log(row)
+        const { row, new_balance, pk } = data
+    //Add link to the new db entry
+        const el = document.querySelector(`#row-${row} td.inject-link`)
+        const page = window.location.toString().includes('corrected') ? 'corrected' : 'improved'
+        const newLink = `<a href="/${page}-results/${pk}/">${el.innerHTML}</a>`
+        el.innerHTML = newLink
+    //Update other info
         document.querySelector(`#row-${row} td:last-child`).innerHTML = 'Completed'
         document.querySelector('#balance').innerHTML = new_balance
     }

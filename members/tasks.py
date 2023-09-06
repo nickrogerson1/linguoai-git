@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal as D
 
 
 from .api_funcs.ielts_score import *
@@ -11,44 +11,80 @@ from .models import *
 import time
 from celery import shared_task
 
+import requests
+
 import re
+import json
+import redis
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+import environ
+env = environ.Env()
+environ.Env.read_env()
+
+r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'))
+
+from .pricing import *
+
+from django.db import transaction
+
+
+# Update exchange rate every hour
+# celery beat worker updates Redis cache every hour
+# exchange rate is called when currency is CNY
+# if no exchange rate present (ie due to data loss) then call API itself and cache its value
+
+# from linguoai.celery import check_exchange_rate
+
+# OPTIONS
+# imf
+# rba - Reserve Bank of Australia
+# boc - Bank of Canada
+# snb - Swiss National Bank
+# cbr - Central Bank of Russia
+# nbu - National Bank of Ukraine
+# bnro - National Bank of Romania
+# boi - Bank of Israel
+# nob - Norges Bank (Norway monetary policy)
+# cbn - Central Bank of Nigeria
+# ecb
+
+def check_exchange_rate():
+    url = 'https://api.exchangerate.host/latest?base=cny&source=rba'
+    # data = {'source':'imf', 'base':'cny', 'symbols':'usd, gbp'}
+    res = requests.get(url).json()['rates']['USD']
+    # ['info']['rate']
+    print(res)
+    # r.set('cny_usd_rate', res)
 
 
 
 
-# Costs per 1000 tokens
-LLM_COSTS = {
-    # up to 4k
-'gpt-3' : {'input' :0.0015,
-            'output': 0.002},
-    # up to 8k
-'gpt-4' : {'input': 0.03,
-            'output': 0.06}
-}
+# Get exchange from API
+def get_exchange_rate():
+    cny_usd_rate = r.get('cny_usd_rate')
+    print(f'Rate: {cny_usd_rate}')
+    if cny_usd_rate:
+# bytes are returned, so needs converting
+        return float(cny_usd_rate)
+    else:
+# if there's no value (unlikely), call it and do it again
+        check_exchange_rate()
+        get_exchange_rate()
 
 
-# Pricing per 100 words
-PRICING = {
-    'ielts_writing_task_2': {
-        'USD': 0.08,
-        'CNY': 0.7
-    },
-    'corrected_results': {
-        'USD': 0.04,
-        'CNY': 0.3
-    },
-    'improved_results': {
-        'USD': 0.04,
-        'CNY': 0.3
-    }
-}
+
+
 
 
 
                                                                 
-def update_db(model, data, start_time, user_id, price, total_words, charged, 
+def update_db(model, data, start_time, user_id, html_id, price, total_words, charged, 
 sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
 
+# data = [result, model, prompt_tokens, completion_tokens, total_tokens] 
 
 # IELTS Writing task 2 update
     if answer:
@@ -86,18 +122,22 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
         model_used = 'gpt-4'
 
     # Work out cost for me
-    cost = round((data[2] / 1000) * LLM_COSTS[model_used]['input'] + (data[3] / 1000) * LLM_COSTS[model_used]['output'], 4)
+    cost = round(D(data[2] / 1000) * D(LLM_COSTS[model_used]['input']) + D(data[3] / 1000) * D(LLM_COSTS[model_used]['output']), 4)
 
-    user = User.objects.get(pk=user_id)
+    
 
 # Save charged before continuing to make USD calculations
     model.charged = charged
 
 # Deduct the amount from their balance and add total submission
 # Do this here before converted into dollars
-    user.balance -= Decimal(charged)
-    user.total_submissions += 1
-    user.save()
+
+# NEED A LOCK HERE!
+    with transaction.atomic():
+        user = User.objects.select_for_update().get(pk=user_id)
+        user.balance -= D(charged)
+        user.total_submissions += 1
+        user.save()
 
      # Add them to the current db
     model.owner = user
@@ -108,7 +148,7 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
     usd_exchange_rate = 1
 
     if user.currency == 'CNY':
-        usd_exchange_rate = 0.14
+        usd_exchange_rate = get_exchange_rate()
         charged = charged * usd_exchange_rate
     # Add this to the db to make it more coherent
         model.usd_charge = charged
@@ -127,26 +167,111 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
     model.profit = profit
     model.margin = margin
 
+
     # Record the time it took
     t1 = time.time()
     model.processing_time = round(t1 - start_time, 3)
+
+    print(f'USERNAME: {user.username}')
+    print(f'PRICE per 100 words: {price}')
+    print(f'PROCESSING TIME: {model.processing_time}')
+
+
     model.save()
 
-    return 
+    pk = model.pk
 
 
-    # Context only info
-    # Let the template know this was a new search and not a lookup
-    # model.new_search = True
-    # model.symbol = '$' if user.currency == 'USD' else '¥'
-    # model.balance = Decimal(u.balance).quantize(Decimal('0.01'))
-
-    # model.pk = model.pk
-
+# Inform websocket
+# CHANGE THIS FROM ADMIN!!
+    channel_name = r.hget(user.username, 'channel')
+# Check that there's a name
+    if channel_name:
+        print('Has a channel name')
+        channel_name = channel_name.decode()
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.send)(channel_name, {
+            'type': 'update',
+            'status': 'success',
+            'row' : html_id,
+            'new_balance' : float(user.balance),
+            'pk' : pk
+        })
     
+    return [pk, user.balance]
+    
+   
 
+
+
+
+
+
+
+from linguoai.celery import app
+from celery.result import AsyncResult
+import tiktoken
+from redbeat import RedBeatSchedulerEntry
+
+from django.core.cache import cache
+# from redis.lock import Lock
+
+# 40k tokens and 200 requests per min
 @shared_task
-def get_corrected_results(t0, user_id, sub, price_per_100_words, total_words, charged):
+def update_tokens_left(num_tokens):
+    with r.lock('update_openai'):
+        tokens_left, requests_left = r.hmget('openai_remain_usage',['tokens_left','requests_left'])
+        # Re-add tokens and a req after 1 minute
+        tokens_left_now = int(tokens_left) + num_tokens
+        # Always one request
+        requests_left = int(requests_left) + 1
+        # Save new values to Redis
+        r.hset('openai_remain_usage', mapping={'tokens_left' : tokens_left_now, 'requests_left' : requests_left})
+
+
+def check_and_reduce_usage_left(num_tokens):
+    with r.lock('update_openai'):
+        tokens_left, requests_left = (r.hmget('openai_remain_usage',['tokens_left','requests_left'])
+                    if r.exists('openai_remain_usage') else [40000,200])
+
+# If there are enough tokens and requests left, then process it  
+    if tokens_left and requests_left:
+        print(tokens_left)
+        tokens_left_now = int(tokens_left) - num_tokens
+        requests_left = int(requests_left) - 1
+        # Save new value to Redis
+        with r.lock('update_openai'):
+            r.hset('openai_remain_usage', mapping={'tokens_left' : tokens_left_now, 'requests_left' : requests_left})
+        update_tokens_left.apply_async(countdown=60, args=[num_tokens])
+    else:
+        time.sleep(2)
+        # Then check again
+        return check_and_reduce_usage_left(num_tokens)
+
+
+
+@shared_task(bind=True)
+def get_corrected_results(self, t0, username, user_id, sub, html_id, price_per_100_words, total_words, charged):
+    print(f'ID: {self.request.id}')
+
+    # state = app.events.State()
+    # task = state.tasks.get(self.request.id)
+    task_id = self.request.id
+    print(f'TASK ID {task_id}')
+
+    r.hset(username, mapping={'single_sub' : task_id})
+
+    # res = AsyncResult(self.request.id).ready()
+    # print(f'Status: {res}')
+    # return 'Happy Days'
+    enc = tiktoken.encoding_for_model("gpt-4")
+    num_tokens = len(enc.encode(sub))
+
+    print(f'Tokens Used: {num_tokens}')
+    print(f'Word Count: {total_words}')
+
+# Check to see whether API limit has been hit and can make a request
+    check_and_reduce_usage_left(num_tokens)
 
     # Long API call
     data = call_and_find_difference(sub)
@@ -154,24 +279,72 @@ def get_corrected_results(t0, user_id, sub, price_per_100_words, total_words, ch
     model = CorrectedSubmission()
 
     if data:
-        return update_db(model, data, t0, user_id, price_per_100_words, total_words, charged, sub=sub)
+        extra = update_db(model, data, t0, user_id, html_id, price_per_100_words, total_words, charged, sub=sub)
 
 
-@shared_task
-def get_improved_results(t0, user_id, sub, price_per_100_words, total_words, charged):
+    # Save PK and balance in case it beats HTTP
+    # Unnecessary for multi
+        self.request.kwargs = {
+            'pk' :extra[0],
+            'new_balance' : extra[1]
+        }
 
+
+
+
+@shared_task(bind=True)
+def get_improved_results(self,t0, username, user_id, sub, html_id, price_per_100_words, total_words, charged):
+   
+    task_id = self.request.id
+    print(f'TASK ID {task_id}')
+
+    r.hset(username, mapping={'single_sub' : task_id})
+
+    enc = tiktoken.encoding_for_model("gpt-4")
+    num_tokens = len(enc.encode(sub))
+
+    print(f'Tokens Used: {num_tokens}')
+    print(f'Word Count: {total_words}')
+
+# Check to see whether API limit has been hit and can make a request
+    check_and_reduce_usage_left(num_tokens)
+
+    # Long API call
     data = improved_submission(sub)
     # Create an instance to pass to next func
     model = ImprovedSubmission()
 
     if data:
-        return update_db(model, data, t0, user_id, price_per_100_words, total_words, charged, sub=sub)
+        extra = update_db(model, data, t0, user_id, html_id, price_per_100_words, total_words, charged, sub=sub)
+
+
+    # Save PK and balance in case it beats HTTP
+    # Unnecessary for multi
+        self.request.kwargs = {
+            'pk' :extra[0],
+            'new_balance' : extra[1]
+        }
 
 
 
 
-@shared_task
-def get_ielts_writing_task_2_scores(t0, user_id, q, a, lang, lang_code, price_per_100_words, total_words, charged):
+
+
+# def get_results(t0, username, user_id, sub, html_id, model, price_per_100_words, total_words, charged):
+
+    # if model == ImprovedSubmission:
+    #     data = improved_submission(sub)
+    # else:
+    #     data = call_and_find_difference(sub)
+
+#     if data:
+#         return update_db(model, data, t0, user_id, price_per_100_words, total_words, charged, sub=sub)
+
+
+
+
+# @shared_task
+def get_ielts_writing_task_2_scores(t0, username, user_id, q, a, lang, lang_code, html_id, price_per_100_words, total_words, charged):
  
  # Add all the openai data to the db
 # [html, model, prompt_tokens, completion_tokens, total_tokens]
@@ -195,7 +368,7 @@ def get_ielts_writing_task_2_scores(t0, user_id, q, a, lang, lang_code, price_pe
 
         # get_context_data_post(data, t0, price_per_100_words, total_words, charged, q, a)
 
-        return update_db(model, data, t0, user_id, price_per_100_words, total_words, charged, 
+        return update_db(model, data, t0, user_id, html_id, price_per_100_words, total_words, charged, 
                 question=question, answer=answer, score_res=score_res, band=band, lang=lang_code)
 
 
@@ -211,7 +384,9 @@ from .copies.pdf import get_pdf
 from django.http import HttpResponse
 
 
-@shared_task
+
+
+
 def get_bulk_pdf(sub_type, user, pks, type=None):
 
     # origin = request.path.split('/')[1]
@@ -262,7 +437,7 @@ def get_bulk_pdf(sub_type, user, pks, type=None):
 
 
 
-@shared_task
+
 def get_bulk_mixed_pdf(request, url_str):
 
     filename = f'{request.user}-pdfs.zip'
@@ -293,3 +468,8 @@ def get_bulk_mixed_pdf(request, url_str):
     }
         
     return HttpResponse(buffer.getvalue(), headers=headers)
+    
+
+
+
+

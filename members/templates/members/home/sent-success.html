@@ -47,7 +47,7 @@ th, td {
                       <td>0 secs</td>
                       <td>{{ word_count }}</td>
                       <td>{{ symbol }}{{ cost }}</td>
-                      <td>{{ sub_type}}</td>
+                      <td class="inject-link">{{ sub_type}}</td>
                       <td>PENDING</td>
                     </tr>
                   </tbody>
@@ -91,7 +91,7 @@ th, td {
 
 
 
-    const ws = new WebSocket(`ws://${window.location.host}/ws/single-submission/`);
+    const ws = new WebSocket(`wss://${window.location.host}/ws/single-submission/`);
 
       ws.onclose = e => {
           console.error('Web Socket closed unexpectedly');
@@ -104,6 +104,20 @@ th, td {
       // If HTTP slow
       if (data.ready) {
         console.log(data.pk)
+      //Add link to the new db entry
+        let page
+        if(window.location.toString().includes('corrected')){
+          page = 'corrected'
+        } else if(window.location.toString().includes('improved')) {
+          page = 'improved'
+        } else {
+          page = 'ielts-writing-task-2'
+        }
+
+        const el = document.querySelector('td.inject-link')
+        const newLink = `<a href="/${page}-results/${pk}/">${el.innerHTML}</a>`
+        el.innerHTML = newLink
+
         document.querySelector('#row-1 td:last-child').innerHTML = 'Completed'
         document.querySelector('#balance').innerHTML = data.new_balance
         document.querySelector('#heading').innerHTML = 'We have processed your submission!'

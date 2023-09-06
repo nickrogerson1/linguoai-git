@@ -5,8 +5,15 @@ import requests
 from celery.schedules import crontab
 
 
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "linguoai.settings")
-app = Celery("linguoai")
+app = Celery('linguoai',
+             backend=env('REDIS_URL'),
+             broker=env('REDIS_URL'))
 app.config_from_object("django.conf:settings", namespace="CELERY")
 
 

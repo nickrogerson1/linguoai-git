@@ -50,40 +50,13 @@ import redis
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
+import environ
+env = environ.Env()
+environ.Env.read_env()
 
-# Costs per 1000 tokens
-LLM_COSTS = {
-    # up to 4k
-'gpt-3' : {'input' :0.0015,
-            'output': 0.002},
-    # up to 8k
-'gpt-4' : {'input': 0.03,
-            'output': 0.06}
-}
+r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'))
 
-
-# Pricing per 100 words
-PRICING = {
-    'ielts_writing_task_2': {
-        'USD': 0.09,
-        'CNY': 0.7
-    },
-    'corrected_results': {
-        'USD': 0.04,
-        'CNY': 0.3
-    },
-    'improved_results': {
-        'USD': 0.04,
-        'CNY': 0.3
-    }
-}
-
-MIN_CHARGE = {
-    'USD': 0.05,
-    'CNY': 0.5
-}
-
-
+from .pricing import *
 
 
 class LoginUser(LoginView):
@@ -370,7 +343,7 @@ class BalanceCheckMixin:
         temp_balance = None
         
         if multi:
-            r = redis.Redis()
+            # r = redis.Redis()
             with r.lock('user_balance'):
                 temp_balance = r.hget(user, 'temp_balance')
 
@@ -475,32 +448,32 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
         return super().get_context_data(**kwargs)
 
 
-    def post(self, request):
-        t0 = time.time()
-        form = IeltsWritingTask2Form(request.POST)
-        if form.is_valid():
+    # def post(self, request):
+    #     t0 = time.time()
+    #     form = IeltsWritingTask2Form(request.POST)
+    #     if form.is_valid():
 
-            self.object = form.save(commit=False)
-            q = escape(self.object.question)
-            a = escape(self.object.answer)
+    #         self.object = form.save(commit=False)
+    #         q = escape(self.object.question)
+    #         a = escape(self.object.answer)
 
-            args = self.check_user_has_sufficient_funds('ielts_writing_task_2', q=q, a=a)
+    #         args = self.check_user_has_sufficient_funds('ielts_writing_task_2', q=q, a=a)
 
-        # If they have insufficient funds, then end it
-            if not args:
-                return redirect('insufficient-funds')
+    #     # If they have insufficient funds, then end it
+    #         if not args:
+    #             return redirect('insufficient-funds')
             
-            language = self.object.get_explanation_language_display().split(' ')[0]
-            lang_code = self.object.explanation_language
-            username = self.request.user.username
-            user_id = self.request.user.id
+    #         language = self.object.get_explanation_language_display().split(' ')[0]
+    #         lang_code = self.object.explanation_language
+    #         username = self.request.user.username
+    #         user_id = self.request.user.id
 
-            get_ielts_writing_task_2_scores(t0, username, user_id, q, a, language, lang_code, *args)
+    #         get_ielts_writing_task_2_scores(t0, username, user_id, q, a, language, lang_code, *args)
 
-            return redirect(self.success_url)
-        else:
-            self.object = ''
-            return super(IeltsWritingTask2View, self).form_invalid(form)
+    #         return redirect(self.success_url)
+    #     else:
+    #         self.object = ''
+    #         return super(IeltsWritingTask2View, self).form_invalid(form)
         
     def post(self, request):
         t0 = time.time()
@@ -631,43 +604,43 @@ class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin,
 
 
 
-class FileFieldFormView(BalanceCheckMixin,FormView):
+class FileFieldFormView(LoginRequiredMixin,BalanceCheckMixin,FormView):
     
     form_class = FileFieldForm
     template_name = 'members/home/input-form-general.html'
     success_url = 'upload-success.html' 
-    t0 = time.time()
-
+    
 
     def post(self, request, *args, **kwargs):
         form_class = self.get_form_class()
         form = self.get_form(form_class)
 
         if form.is_valid():
-            return self.form_valid(form)
+            t0 = time.time()
+            return self.form_valid(form, t0)
         else:
             return self.form_invalid(form)
 
-    def form_valid(self, form):
+    def form_valid(self, form, t0):
 
         file = self.request.FILES['file']
         file_type = file.content_type
         # print(file_type)
         if file_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             sub = self.get_docx_text(file)
-            res = self.process_text(sub)            
+            res = self.process_text(t0, sub)            
 
         elif file_type == 'application/pdf': 
             sub = self.get_pdf_text(file)
-            res = self.process_text(sub)
+            res = self.process_text(t0, sub)
 
         elif file_type == 'text/rtf':
             sub = self.get_rtf_text(file)
-            res = self.process_text(sub)
+            res = self.process_text(t0, sub)
 
         elif file_type == 'text/plain':
             sub = self.get_txt_text(file)
-            res = self.process_text(sub)
+            res = self.process_text(t0, sub)
 
         elif file_type == 'application/zip':
             subs = self.unzip_files(file)
@@ -675,7 +648,7 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
         # Keep track of cost as this processes
             # s[0] sub & s[1] filename
                 print(f'VAR: {s}')
-                res = self.process_text(s[0], s[1])
+                res = self.process_text(t0, s[0], s[1])
             # Pass them straight through to Celery
                 # get_corrected_results.delay(t0, user_id, s[0], *res)
                 
@@ -714,7 +687,7 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
 
         
     
-    def process_text(self, sub, file_name=None):
+    def process_text(self, t0, sub, file_name=None):
         args = self.check_user_has_sufficient_funds('corrected_results', sub=sub, multi=True)
         # [ price_per_100_words, total_words, charged ]
 
@@ -728,7 +701,6 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
         username = self.request.user.username
         user_id = self.request.user.id
 
-        r = redis.Redis()
     # Increase the id by 1 each time
         id = r.hincrby(username,'num')
         print(f'ID: {id}')    
@@ -748,12 +720,19 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
                 'status': args[3],
             })
         
+
+        print(f'PATH_INFO: {self.request.path_info}')
+        print(f'PATH: {self.request.path}')
+        
         
     # Only process if awaiting response, otherwise reject via ws and do nothing
         if args[3] == 'Awaiting Response':
             #Remove 'insufficient funds' info from args before passing through
             args.pop()
-            get_corrected_results.delay(self.t0, username, user_id, sub, id, *args)
+            if 'corrected' in self.request.path:
+                get_corrected_results.delay(t0, username, user_id, sub, id, *args)
+            else:
+                get_improved_results.delay(t0, username, user_id, sub, id, *args)
         
         # return [id, *args]
         

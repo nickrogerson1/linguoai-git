@@ -42,10 +42,10 @@ def fetch_from_openai(prompt,model,max_tokens,temp,count=1):
         print(repr(e))
 
     # Make three attempts to contact OpenAI
-        if count < 3:
-            print('Waiting 5 seconds...')
-            time.sleep(5)
-            count += 1
-            print(f'count: {count}')
-            return fetch_from_openai(prompt,model,max_tokens,temp,count)
-        return False
+        # if count < 3:
+            # print('Waiting 5 seconds...')
+            # time.sleep(5)
+            # count += 1
+            # print(f'count: {count}')
+    # return fetch_from_openai(prompt,model,max_tokens,temp,count)
+        # return False
