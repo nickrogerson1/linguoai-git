@@ -720,16 +720,13 @@ class FileFieldFormView(LoginRequiredMixin,BalanceCheckMixin,FormView):
                 'status': args[3],
             })
         
-
-        print(f'PATH_INFO: {self.request.path_info}')
-        print(f'PATH: {self.request.path}')
         
         
     # Only process if awaiting response, otherwise reject via ws and do nothing
         if args[3] == 'Awaiting Response':
             #Remove 'insufficient funds' info from args before passing through
             args.pop()
-            if 'corrected' in self.request.path:
+            if 'corrected' in self.request.path_info:
                 get_corrected_results.delay(t0, username, user_id, sub, id, *args)
             else:
                 get_improved_results.delay(t0, username, user_id, sub, id, *args)

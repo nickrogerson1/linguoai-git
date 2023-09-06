@@ -10,6 +10,20 @@
   #reveal-table{
     display: none;
   }
+
+ /* tr td:last-child {
+  color: white !important;
+  animation: glow 1s ease-in-out infinite alternate;
+ }
+
+ @-webkit-keyframes glow {
+  from {
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073;
+  }
+  to {
+    text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6, 0 0 60px #ff4da6, 0 0 70px #ff4da6, 0 0 80px #ff4da6;
+  }
+} */
 </style>
 {% endblock stylesheets %}
 
@@ -42,9 +56,17 @@
                 <ol>
                   <li>Uploaded files are processed immediately on submission and you cannot reverse it once you have dropped them below.</li>
                   <li>Make sure all your files <strong>ONLY contain text</strong> ie. no tables, graphs etc.</li>
+                  <li>The maximum you can submit is 5000 words per submission.</li>
+                  <li>The server can handle around 30,000 words a minute, so if you upload more than that, then expect to wait.</li>
                 </ol>
                 </figure>
-                <form action="/dropzone-files/" class="dropzone" id="dropzone-area">{% csrf_token %}</form>
+                <form action="
+                {% if 'corrected' in request.build_absolute_uri %}
+                {% url 'dropzone' 'corrected' %}
+                {% else %}
+                {% url 'dropzone' 'improved' %}
+                {% endif %}
+                " class="dropzone" id="dropzone-area">{% csrf_token %}</form>
             </div>
           </div>
         </div>

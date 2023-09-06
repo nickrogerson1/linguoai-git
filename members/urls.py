@@ -33,7 +33,7 @@ urlpatterns = [
     path('message-success/', TemplateView.as_view(template_name='members/home/message-success.html'), name='message-success'),
 
 
-    path('dropzone-files/', FileFieldFormView.as_view(), name='dropzone'),
+    re_path(r'dropzone-files/(?P<sub_type>\w+)/', FileFieldFormView.as_view(), name='dropzone'),
 
 
     # Activate account

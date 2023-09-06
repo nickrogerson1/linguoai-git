@@ -115,7 +115,7 @@ th, td {
         }
 
         const el = document.querySelector('td.inject-link')
-        const newLink = `<a href="/${page}-results/${pk}/">${el.innerHTML}</a>`
+        const newLink = `<a href="/${page}-results/${data.pk}/">${el.innerHTML}</a>`
         el.innerHTML = newLink
 
         document.querySelector('#row-1 td:last-child').innerHTML = 'Completed'
