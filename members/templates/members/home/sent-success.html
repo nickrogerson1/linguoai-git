@@ -101,10 +101,9 @@ th, td {
       ws.onmessage = e => {
       const data = JSON.parse(e.data);
       console.log(data)
-      // If HTTP slow
-      if (data.ready) {
+      
         console.log(data.pk)
-      //Add link to the new db entry
+      //Build the link for each message
         let page
         if(window.location.toString().includes('corrected')){
           page = 'corrected'
@@ -113,26 +112,24 @@ th, td {
         } else {
           page = 'ielts-writing-task-2'
         }
-
-        // Figure why ready is loading before success despite waiting
-        // Sort out the PDFs
-        // Test IELTS Writing Task 2 - even add in new band descriptors
-
         const el = document.querySelector('td.inject-link')
         const newLink = `<a href="/${page}-results/${data.pk}/">${el.innerHTML}</a>`
-        el.innerHTML = newLink
+        
 
+      // If HTTP slow
+      if (data.ready) {
         document.querySelector('#row-1 td:last-child').innerHTML = 'Completed'
         document.querySelector('#balance').innerHTML = data.new_balance
         document.querySelector('#heading').innerHTML = 'We have processed your submission!'
+        el.innerHTML = newLink
       }
 
       if(data.status === 'success'){
           const { status, row, new_balance } = data
-          console.log(row)
           document.querySelector(`#row-${row} td:last-child`).innerHTML = 'Completed'
           document.querySelector('#balance').innerHTML = new_balance
           document.querySelector('#heading').innerHTML = 'We have processed your submission!'
+          el.innerHTML = newLink
         }
       }
     
