@@ -43,7 +43,6 @@ class Consumer(WebsocketConsumer):
 
 from linguoai.celery import app
 from celery.result import AsyncResult
-import time
 
 class SingleConsumer(Consumer):
     # Has to check that the HTTP request wasn't beaten by the Celery worker
@@ -54,9 +53,6 @@ class SingleConsumer(Consumer):
     def connect(self):
         self.accept()
 
-        time.sleep(3)
-
-        # r = redis.Redis()
         username = self.scope['user'].username
         print(f'USERNAME {username}')
         task_id = r.hget(username, 'single_sub')
