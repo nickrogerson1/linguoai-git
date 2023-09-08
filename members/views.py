@@ -1062,16 +1062,3 @@ def report_bad_result(request, url):
         return JsonResponse({'report_success' : True}, status = 200)
         
         print('didn\t work')
-
-
-
-def get_bulk_pdf_task(request, pks, type=None):
-    sub_type = request.path.split('/')[1]
-    user = request.user.username
-    get_bulk_pdf.delay(sub_type, user, pks, type=type)
-    messages.success(request, 'We will process your PDFs as fast as we can.')
-    return redirect(reverse('corrected-results'))
-
-
-def get_bulk_mixed_pdf_task(request, url_str):
-    get_bulk_mixed_pdf.delay(request, url_str)

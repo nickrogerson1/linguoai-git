@@ -81,20 +81,20 @@ urlpatterns = [
     path('log-delete-files/', LogDeleteFiles.as_view(), name='log-delete'),
 
     # PDF & DOCX Requests
-    re_path(r'^corrected-results/bulk-pdf/(?P<type>[01])/(?P<pks>([0-9]+/)+)?$', get_bulk_pdf_task, name='get_bulk_corrected_pdf'),
+    re_path(r'^corrected-results/bulk-pdf/(?P<type>[01])/(?P<pks>([0-9]+/)+)?$', get_bulk_pdf, name='get_bulk_corrected_pdf'),
     re_path(r'^corrected-results/bulk-docx/(?P<type>[01])/(?P<pks>([0-9]+/)+)?$', get_bulk_docx, name='get_bulk_corrected_docx'),
-    re_path(r'^improved-results/bulk-pdf/(?P<pks>([0-9]+/)+)?$', get_bulk_pdf_task, name='get_bulk_improved_pdf'),
+    re_path(r'^improved-results/bulk-pdf/(?P<pks>([0-9]+/)+)?$', get_bulk_pdf, name='get_bulk_improved_pdf'),
     re_path(r'^improved-results/bulk-docx/(?P<pks>([0-9]+/)+)?$', get_bulk_docx, name='get_bulk_improved_docx'),
-    re_path(r'^ielts-writing-task-2-results/bulk-pdf/(?P<pks>([0-9]+/)+)?$', get_bulk_pdf_task, name='get_bulk_ielts_writing_pdf'),
+    re_path(r'^ielts-writing-task-2-results/bulk-pdf/(?P<pks>([0-9]+/)+)?$', get_bulk_pdf, name='get_bulk_ielts_writing_pdf'),
     re_path(r'^ielts-writing-task-2-results/bulk-docx/(?P<pks>([0-9]+/)+)?$', get_bulk_docx, name='get_bulk_ielts_writing_docx'),
-    re_path(r'^log/bulk-pdf/(?P<url_str>([\w-]+results/[0-9]+/)+)?$', get_bulk_mixed_pdf_task, name='get_bulk_pdf'),
+    re_path(r'^log/bulk-pdf/(?P<url_str>([\w-]+results/[0-9]+/)+)?$', get_bulk_mixed_pdf, name='get_bulk_pdf'),
     re_path(r'^log/bulk-docx/(?P<url_str>([\w-]+results/[0-9]+/)+)?$', get_bulk_mixed_docx, name='get_bulk_docx'),
 
-    path('corrected-results/pdf/<int:pk>/<int:type>/', get_pdf, name='get_corrected_pdf'),
+    path('corrected-results/pdf/<int:pk>/<int:type>/', get_pdf_version, name='get_corrected_pdf'),
     path('corrected-results/docx/<int:pk>/<int:type>/', get_docx, name='get_corrected_docx'),
-    path('improved-results/pdf/<int:pk>/', get_pdf, name='get_improved_pdf'),
+    path('improved-results/pdf/<int:pk>/', get_pdf_version, name='get_improved_pdf'),
     path('improved-results/docx/<int:pk>/', get_docx, name='get_improved_docx'),
-    path('ielts-writing-task-2-results/pdf/<int:pk>/', get_pdf, name='get_ielts_writing_pdf'),
+    path('ielts-writing-task-2-results/pdf/<int:pk>/', get_pdf_version, name='get_ielts_writing_pdf'),
     path('ielts-writing-task-2-results/docx/<int:pk>/', get_docx, name='get_ielts_writing_docx'),
 
     # Matches any html file

@@ -103,7 +103,7 @@ ws.onmessage = e => {
     //Update other info
         document.querySelector(`#row-${row} td:last-child`).innerHTML = 'Completed'
         document.querySelector('#balance').innerHTML = new_balance
-    }
+        }
     }
 
 const acceptedFiles = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document',

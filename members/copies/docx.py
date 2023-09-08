@@ -113,6 +113,9 @@ def get_docx(request, pk, type=None, multi=False, sub=None):
         # Overwrite the existing styles to preserve the original styles
             doc = Document(file_path)
             doc_deep = deepcopy(doc)
+        
+        # Then get rid of it
+            os.remove(file_path)
             
         # # Clear it then rebuild it
             for element in doc.element.body:
@@ -136,7 +139,6 @@ def get_docx(request, pk, type=None, multi=False, sub=None):
 
             response = HttpResponse(stream, content_type='application/vnd.openxmlformats')
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
-            os.remove(file_path)
             stream.close()
             return response
         

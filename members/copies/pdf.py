@@ -3,115 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from ..views import CorrectedSubmission, ImprovedSubmission, IeltsWritingTask2
 from ..api_funcs.corrections import find_difference
-import pdfkit
-
-
-# Main processing function for individual PDFs 
-# @login_required(login_url="/login/")
-def old_get_pdf(sub_type, user, pk, type=None, multi=False, sub=None):
-
-    if type:
-        type = int(type)
-
-    # sub_type = sub if sub else request.path.split('/')[1]
-    # user = request.user
-    options={"enable-local-file-access" : False}
-
-
-    if sub_type == 'corrected-results':
-        
-        look_up = CorrectedSubmission.objects.get(pk=pk)
-        sub = look_up.submission
-        result = look_up.result
-        date = look_up.time_created
-
-        if(type):
-            corrections = find_difference(sub, result)
-            template = get_template('members/pdfs/corrected-submission.html')
-            html = template.render({ 'corrections' : corrections, 'date' : date })
-        else:
-            template = get_template('members/pdfs/standard-submission.html')
-            html = template.render({ 'corrected' : True, 'sub' : sub, 'result' : result, 'date' : date })
-
-        pdf = pdfkit.from_string(html, options=options)
-        split = '' if type else 'split-'
-        filename = f'{user}-{split}corrections-{pk}.pdf'
-
-        if multi:
-            return [pdf, filename]
-
-        response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        return response
-    
-    if sub_type == 'improved-results':
-
-        look_up = ImprovedSubmission.objects.get(pk=pk)
-        sub = look_up.submission
-        improved = look_up.improved_sub
-        date = look_up.time_created
-
-        template = get_template('members/pdfs/standard-submission.html')
-        html = template.render({ 'sub' : sub, 'result' : improved, 'date' : date })
-        pdf = pdfkit.from_string(html, options=options)
-        filename = f'{user}-improved-{pk}.pdf'
-
-        print(f'Type: {type(pdf)}')
-
-        if multi:
-            return [pdf, filename]
-        
-        response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        return response
-    
-    # Can only be IELTS
-    else:
-        look_up = IeltsWritingTask2.objects.get(pk=pk)
-        question = look_up.question
-        answer = look_up.answer
-        score_res = look_up.score_res
-        band = look_up.band
-        date = look_up.time_created
-
-        cxt = {
-            'question' : question,
-            'answer' : answer,
-            'score_res' : score_res,
-            'band' : band,
-            'date' : date
-        }
-
-        template = get_template('members/pdfs/ielts-form-submission.html')
-        html = template.render( cxt )
-        pdf = pdfkit.from_string(html, options=options)
-        filename = f'{user}-ielts-writing-task-2-result-{pk}.pdf'
-
-        if multi:
-            return [pdf, filename]
-
-        response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        return response
-    
-
-# Helper function to handle raw data
-def get_pdf_version(request, pk, type=None):
-    sub_type = request.path.split('/')[1]
-    user = request.user.username
-    return get_pdf(sub_type, user, pk, type=type)
-
-
-
-
-
-
-
-
-
-
-
 from fpdf import FPDF
+
+# NOTE: 
+# Standard Corrected PDF doesn't work. Everything else works including bulk.
+
 
 
 class PDF(FPDF):
@@ -198,12 +94,13 @@ def custom_strftime(t):
 
 from io import BytesIO
 
-def get_pdf(request, pk, type=None, sub=None):
 
-    sub_type = sub if sub else request.path.split('/')[1]
-    user = request.user
-    multi = None
-    filename = f'{user}-improved-{pk}.pdf'
+
+def get_pdf(sub_type, user, pk, type=None, multi=False):
+    # get_pdf(sub_type, user, pk, type, multi=True)
+
+    # sub_type = sub if sub else request.path.split('/')[1]
+    # user = request.user
     
     pdf = PDF()
 
@@ -213,9 +110,13 @@ def get_pdf(request, pk, type=None, sub=None):
         sub = look_up.submission.replace('<br>', '\n')
         corrected = look_up.result.replace('<br>', '\n')
         date = custom_strftime(look_up.time_created)
+        filename = f'{user}-corrected-{pk}.pdf'
 
 
+# This should probably be changed at the template level
+# Only one option at the moment as PDF kit too slow
         if(type):
+# This section is reserved for printing the PDF in the side by side format
             corrections = find_difference(sub, corrected)
             template = get_template('members/pdfs/corrected-submission.html')
             html = template.render({ 'corrections' : corrections, 'date' : date })
@@ -247,6 +148,7 @@ def get_pdf(request, pk, type=None, sub=None):
         sub = look_up.submission.replace('<br>', '\n')
         improved = look_up.improved_sub.replace('<br>', '\n')
         date = custom_strftime(look_up.time_created)
+        filename = f'{user}-improved-{pk}.pdf'
 
         pdf.make_section("Your Improved Work", improved)
         pdf.make_section("Your Original Work", sub)
@@ -269,6 +171,7 @@ def get_pdf(request, pk, type=None, sub=None):
         score_res = look_up.score_res.replace('<br>', '\n')
         band = look_up.band
         date = custom_strftime(look_up.time_created)
+        filename = f'{user}-ielts-writing-task-2-{pk}.pdf'
 
 
         pdf.make_ielts(question,answer,score_res,band)
@@ -283,3 +186,110 @@ def get_pdf(request, pk, type=None, sub=None):
         response = HttpResponse(pdf, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
+    
+
+# Handler function for single PDF requests
+def get_pdf_version(request, pk):
+    sub_type = request.path.split('/')[1]
+    user = request.user.username
+    return get_pdf(sub_type, user, pk, type=type)
+
+
+
+
+
+
+
+
+from zipfile import ZipFile, ZIP_DEFLATED
+from io import BytesIO
+from django.http import HttpResponse
+
+
+def get_bulk_pdf(request, pks, type):
+
+    sub_type = request.path.split('/')[1]
+    user = request.user.username
+
+    # origin = request.path.split('/')[1]
+    if sub_type == 'corrected-results':
+        filename = f'{user}-pdf-corrections.zip'
+    elif sub_type == 'improved-results':
+        filename = f'{user}-pdf-improved.zip'
+    else:
+        filename = f'{user}-pdf-ielts-writing-task-2.zip'
+        
+
+    # Ignore last one as it's empty
+    pks = pks.split('/')[:-1]
+    print(f'PKS: {pks}')
+
+    # if just one file, return as is 
+    if len(pks) == 1:
+        return get_pdf(sub_type, user, pks[0])
+
+    # Otherwise zip them
+    buffer = BytesIO()
+
+    with ZipFile(buffer, 'w', ZIP_DEFLATED) as f:
+        for pk in pks:
+            fetch_file = get_pdf(sub_type, user, pk, multi=True)
+            pdf = fetch_file[0]
+            lf = fetch_file[1]
+            b = BytesIO(pdf)
+            f.writestr(lf, b.getvalue())
+
+    headers = {
+        'Content-Disposition': f'attachment; filename="{filename}"',
+        'Content-Type': 'application/zip'
+    }
+        
+    return HttpResponse(buffer.getvalue(), headers=headers)
+
+    # Save to S3 bucket for 24 hours & maybe update db or email it them
+    # print('Saved to S3 bucket!')
+    
+  
+
+    # channel_layer = get_channel_layer()
+    # async_to_sync(channel_layer.group_send)(
+    #         user, {"type": "send.message", 'message': 'data'}
+        # )
+
+
+
+
+# When called from the submission log
+def get_bulk_mixed_pdf(request, url_str):
+    user = request.user.username
+    filename = f'{user}-pdfs.zip'
+    url_list = url_str.split("/")[:-1]
+
+    # # Split them into chunks
+    pairs = [url_list[i:i+2] for i in range(0, len(url_list),2)]
+    print(f'Pairs: {pairs}')
+    # [['corrected-results', '134']]
+    # sub_type, pk
+
+    # # if just one file, return as is 
+    if len(pairs) == 1:
+        return get_pdf(pairs[0][0], user, pairs[0][1])
+
+    # # Otherwise zip them
+    buffer = BytesIO()
+
+    with ZipFile(buffer, 'w', ZIP_DEFLATED) as f:
+        for pair in pairs:
+            fetch_file = get_pdf(pair[0], user, pair[1], multi=True)
+            # get_pdf(sub_type, user, pk, type=None, multi=False)
+            pdf = fetch_file[0]
+            fn = fetch_file[1]
+            b = BytesIO(pdf)
+            f.writestr(fn, b.getvalue())
+
+    headers = {
+        'Content-Disposition': f'attachment; filename="{filename}"',
+        'Content-Type': 'application/zip'
+    }
+        
+    return HttpResponse(buffer.getvalue(), headers=headers)
