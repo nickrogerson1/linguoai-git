@@ -54,7 +54,6 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
-r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'))
 
 from .pricing import *
 
@@ -707,7 +706,7 @@ class FileFieldFormView(LoginRequiredMixin,BalanceCheckMixin,FormView):
         curr = '$' if self.request.user.currency == 'USD' else '¥'
         
         # print(f'USER: {self.request.user.username}')
-        channel_name = r.hget(username, 'channel').decode()
+        channel_name = r.hget(username, 'channel')
         if channel_name:
             channel_layer = get_channel_layer()
             

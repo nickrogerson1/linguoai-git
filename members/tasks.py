@@ -1,6 +1,5 @@
 from decimal import Decimal as D
 
-
 from .api_funcs.ielts_score import *
 from .api_funcs.corrections import call_and_find_difference
 from .api_funcs.improved import improved_submission
@@ -14,8 +13,8 @@ from celery import shared_task
 import requests
 
 import re
-import json
 import redis
+import tiktoken
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -24,7 +23,8 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
-r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'))
+r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'), decode_responses=True)
+
 
 from .pricing import *
 
@@ -204,20 +204,9 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
 
 
 
-
-
-
-from linguoai.celery import app
-from celery.result import AsyncResult
-import tiktoken
-
-from django.core.cache import cache
-# from redis.lock import Lock
-
 # 40k tokens and 200 requests per min
 @shared_task
 def update_tokens_left(num_tokens):
-
     with r.lock('update_openai'):
         tokens_left, requests_left = r.hmget('openai_remain_usage',['tokens','requests'])
         # Re-add tokens and a req after 1 minute
@@ -228,45 +217,28 @@ def update_tokens_left(num_tokens):
         r.hset('openai_remain_usage', mapping={'tokens' : tokens_left_now, 'requests' : requests_left})
 
 
+
 def check_and_reduce_usage_left(num_tokens):
      
-    with r.lock('update_openai'):
-        tokens_left, requests_left = (r.hmget('openai_remain_usage',['tokens','requests'])
-                    if r.exists('openai_remain_usage') else [40000,200])
+    lock = r.lock('update_openai')
+    lock.acquire()
+    tokens_left, requests_left = (r.hmget('openai_remain_usage',['tokens','requests'])
+                if r.exists('openai_remain_usage') else [40000,200])
 
-# If there are enough tokens and requests left, then process it  
-        if tokens_left and requests_left:
-            print(f'TOKENS LEFT: {tokens_left}')
-            tokens_left_now = int(tokens_left) - num_tokens
-            requests_left = int(requests_left) - 1
-            # Save new value to Redis
-            r.hset('openai_remain_usage', mapping={'tokens' : tokens_left_now, 'requests' : requests_left})
-            return update_tokens_left.apply_async(countdown=60, args=[num_tokens])
-
-    time.sleep(2)
-    # Then check again
-    return check_and_reduce_usage_left(num_tokens)
-
-
-# def check_and_reduce_usage_left(num_tokens):
-#     with r.lock('update_openai'):
-#         tokens_left, requests_left = (r.hmget('openai_remain_usage',['tokens_left','requests_left'])
-#                     if r.exists('openai_remain_usage') else [40000,200])
-
-# # If there are enough tokens and requests left, then process it  
-#     if tokens_left and requests_left:
-#         print(tokens_left)
-#         tokens_left_now = int(tokens_left) - num_tokens
-#         requests_left = int(requests_left) - 1
-#         # Save new value to Redis
-#         with r.lock('update_openai'):
-#             r.hset('openai_remain_usage', mapping={'tokens_left' : tokens_left_now, 'requests_left' : requests_left})
-#         update_tokens_left.apply_async(countdown=60, args=[num_tokens])
-#     else:
-#         time.sleep(2)
-#         # Then check again
-#         return check_and_reduce_usage_left(num_tokens)
-
+# If there are enough tokens and requests left, then process it
+    if tokens_left and requests_left:
+        tokens_left_now = int(tokens_left) - num_tokens
+        requests_left = int(requests_left) - 1
+        # Save new value to Redis
+        r.hset('openai_remain_usage', mapping={'tokens' : tokens_left_now, 'requests' : requests_left})
+        lock.release()
+        update_tokens_left.apply_async(countdown=60, args=[num_tokens])
+    else:
+# Otherwise wait for more availability
+        lock.release()
+        time.sleep(2)
+        return check_and_reduce_usage_left(num_tokens)
+    
 
 
 

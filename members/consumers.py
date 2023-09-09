@@ -10,7 +10,7 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
-r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'))
+r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'), decode_responses=True)
 
 class Consumer(WebsocketConsumer):
 
@@ -56,10 +56,6 @@ class SingleConsumer(Consumer):
         username = self.scope['user'].username
         print(f'USERNAME {username}')
         task_id = r.hget(username, 'single_sub')
-
-        if task_id:
-            task_id = task_id.decode()
-
         print(f'TASK ID {task_id}')
 
         status = AsyncResult(task_id).ready()
