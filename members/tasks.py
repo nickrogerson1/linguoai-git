@@ -210,7 +210,6 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
 from linguoai.celery import app
 from celery.result import AsyncResult
 import tiktoken
-from redbeat import RedBeatSchedulerEntry
 
 from django.core.cache import cache
 # from redis.lock import Lock
@@ -218,40 +217,61 @@ from django.core.cache import cache
 # 40k tokens and 200 requests per min
 @shared_task
 def update_tokens_left(num_tokens):
+
     with r.lock('update_openai'):
-        tokens_left, requests_left = r.hmget('openai_remain_usage',['tokens_left','requests_left'])
+        tokens_left, requests_left = r.hmget('openai_remain_usage',['tokens','requests'])
         # Re-add tokens and a req after 1 minute
         tokens_left_now = int(tokens_left) + num_tokens
         # Always one request
         requests_left = int(requests_left) + 1
         # Save new values to Redis
-        r.hset('openai_remain_usage', mapping={'tokens_left' : tokens_left_now, 'requests_left' : requests_left})
+        r.hset('openai_remain_usage', mapping={'tokens' : tokens_left_now, 'requests' : requests_left})
 
 
 def check_and_reduce_usage_left(num_tokens):
+     
     with r.lock('update_openai'):
-        tokens_left, requests_left = (r.hmget('openai_remain_usage',['tokens_left','requests_left'])
+        tokens_left, requests_left = (r.hmget('openai_remain_usage',['tokens','requests'])
                     if r.exists('openai_remain_usage') else [40000,200])
 
 # If there are enough tokens and requests left, then process it  
-    if tokens_left and requests_left:
-        print(tokens_left)
-        tokens_left_now = int(tokens_left) - num_tokens
-        requests_left = int(requests_left) - 1
-        # Save new value to Redis
-        with r.lock('update_openai'):
-            r.hset('openai_remain_usage', mapping={'tokens_left' : tokens_left_now, 'requests_left' : requests_left})
-        update_tokens_left.apply_async(countdown=60, args=[num_tokens])
-    else:
-        time.sleep(2)
-        # Then check again
-        return check_and_reduce_usage_left(num_tokens)
+        if tokens_left and requests_left:
+            print(f'TOKENS LEFT: {tokens_left}')
+            tokens_left_now = int(tokens_left) - num_tokens
+            requests_left = int(requests_left) - 1
+            # Save new value to Redis
+            r.hset('openai_remain_usage', mapping={'tokens' : tokens_left_now, 'requests' : requests_left})
+            return update_tokens_left.apply_async(countdown=60, args=[num_tokens])
+
+    time.sleep(2)
+    # Then check again
+    return check_and_reduce_usage_left(num_tokens)
+
+
+# def check_and_reduce_usage_left(num_tokens):
+#     with r.lock('update_openai'):
+#         tokens_left, requests_left = (r.hmget('openai_remain_usage',['tokens_left','requests_left'])
+#                     if r.exists('openai_remain_usage') else [40000,200])
+
+# # If there are enough tokens and requests left, then process it  
+#     if tokens_left and requests_left:
+#         print(tokens_left)
+#         tokens_left_now = int(tokens_left) - num_tokens
+#         requests_left = int(requests_left) - 1
+#         # Save new value to Redis
+#         with r.lock('update_openai'):
+#             r.hset('openai_remain_usage', mapping={'tokens_left' : tokens_left_now, 'requests_left' : requests_left})
+#         update_tokens_left.apply_async(countdown=60, args=[num_tokens])
+#     else:
+#         time.sleep(2)
+#         # Then check again
+#         return check_and_reduce_usage_left(num_tokens)
+
 
 
 
 @shared_task(bind=True)
 def get_corrected_results(self, t0, username, user_id, sub, html_id, price_per_100_words, total_words, charged):
-    print(f'ID: {self.request.id}')
 
     # state = app.events.State()
     # task = state.tasks.get(self.request.id)
@@ -306,7 +326,7 @@ def get_improved_results(self,t0, username, user_id, sub, html_id, price_per_100
     print(f'Word Count: {total_words}')
 
 # Check to see whether API limit has been hit and can make a request
-    check_and_reduce_usage_left(num_tokens)
+    # check_and_reduce_usage_left(num_tokens)
 
     # Long API call
     data = improved_submission(sub)
@@ -342,8 +362,24 @@ def get_improved_results(self,t0, username, user_id, sub, html_id, price_per_100
 
 
 
-# @shared_task
-def get_ielts_writing_task_2_scores(t0, username, user_id, q, a, lang, lang_code, html_id, price_per_100_words, total_words, charged):
+@shared_task(bind=True)
+def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lang_code, html_id, price_per_100_words, total_words, charged):
+        # def get_improved_results(self,t0, username, user_id, sub, html_id, price_per_100_words, total_words, charged):
+    task_id = self.request.id
+    print(f'TASK ID {task_id}')
+
+    r.hset(username, mapping={'single_sub' : task_id})
+
+    enc = tiktoken.encoding_for_model("gpt-4")
+    q_toks = len(enc.encode(q))
+    a_toks = len(enc.encode(a))
+    num_tokens = q_toks + a_toks
+
+    print(f'Tokens Used: {num_tokens}')
+    print(f'Word Count: {total_words}')
+
+# Check to see whether API limit has been hit and can make a request
+    # check_and_reduce_usage_left(num_tokens)
  
  # Add all the openai data to the db
 # [html, model, prompt_tokens, completion_tokens, total_tokens]
@@ -367,5 +403,13 @@ def get_ielts_writing_task_2_scores(t0, username, user_id, q, a, lang, lang_code
 
         # get_context_data_post(data, t0, price_per_100_words, total_words, charged, q, a)
 
-        return update_db(model, data, t0, user_id, html_id, price_per_100_words, total_words, charged, 
+        extra = update_db(model, data, t0, user_id, html_id, price_per_100_words, total_words, charged, 
                 question=question, answer=answer, score_res=score_res, band=band, lang=lang_code)
+    
+
+    # Save PK and balance in case it beats HTTP
+    # Unnecessary for multi
+        self.request.kwargs = {
+            'pk' :extra[0],
+            'new_balance' : extra[1]
+        }

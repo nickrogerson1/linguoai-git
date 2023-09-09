@@ -430,7 +430,7 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
     template_name = 'members/home/input-form-ielts-writing-task-2.html'
     form_class = IeltsWritingTask2Form
     charge_type = 'ielts_writing_task_2'
-    success_url = 'submitted/'
+    sub_type = 'Ielts Writing Task 2'
 
     def get(self, request, *args, **kwargs):
         # If they have some balance
@@ -501,7 +501,7 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
             html_id = 1
             
             # Then pass to Celery to process
-            get_ielts_writing_task_2_scores(t0, username, user_id, q, a, language, lang_code, html_id, *args)
+            get_ielts_writing_task_2_scores.delay(t0, username, user_id, q, a, language, lang_code, html_id, *args)
             
             # return redirect(self.success_url)
             ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}

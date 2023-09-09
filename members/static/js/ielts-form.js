@@ -61,8 +61,6 @@ const checkValidWordCount = e => {
         return answer.after(answer.nextElementSibling, warning)
     } 
 
-    console.log('I fired')
-    document.querySelector('#overlay').style.display = 'block'
     e.currentTarget.submit()
     
 }
