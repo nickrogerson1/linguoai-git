@@ -12,7 +12,7 @@ If the score ends in .25, then round down to the nearest integer. For example, 6
 
 State reasons for and against why you chose that band in {language}.
 
-Always start by stating the overall score like this %%%%%Band {{overall score}}%%%%%
+Always start by stating the overall score as stated by the IELTS scoring system like this %%%%%Band {{overall score}}%%%%%
 
 Return the answer in HTML.
 
@@ -187,8 +187,6 @@ Band 0
 
 
 
-
-
 # For all band descriptors:
 # Band 0 – Should only be used when a candidate did not attend or attempt the question in any way, used a language other than English, or where there is proof that a candidate’s answer has been totally memorised.
 
@@ -277,3 +275,4 @@ Band 0
 # Band 8 - A wide range of structures is flexibly used. The majority of sentences are error-free, and punctuation is well managed. Occasional, non-systematic errors and inappropriacies occur, but have minimal impact on communication.
 
 # Band 9 - A wide range of structures is used with full flexibility and control. Punctuation and grammar are used appropriately throughout. Minor errors are extremely rare and have minimal impact on communication.
+# '''

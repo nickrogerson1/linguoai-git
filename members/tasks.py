@@ -187,7 +187,7 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
 # Check that there's a name
     if channel_name:
         print('Has a channel name')
-        channel_name = channel_name.decode()
+        channel_name = channel_name
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.send)(channel_name, {
             'type': 'update',
