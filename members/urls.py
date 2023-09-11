@@ -5,6 +5,7 @@ from .copies.pdf import *
 from .payments.stripe import *
 from django.contrib.auth.views import *
 from django.views.generic import TemplateView
+from .file_handlers import FileFieldFormView
 
 urlpatterns = [
     # Auth
