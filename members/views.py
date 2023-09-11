@@ -370,7 +370,7 @@ class StandardSubMixin:
             return redirect('insufficient-funds')
 
     def get_context_data(self):
-        price = PRICING[self.charge_type]['USD']/100 if self.request.user.currency == 'USD' else PRICING[self.charge_type]['CNY']/100
+        price = PRICING[self.charge_type]['USD'] if self.request.user.currency == 'USD' else PRICING[self.charge_type]['CNY']
         min_charge = MIN_CHARGE['USD'] if self.request.user.currency == 'USD' else MIN_CHARGE['CNY']
         min_words = int(min_charge / price)
         symbol = '$' if self.request.user.currency == 'USD' else '¥'
@@ -428,7 +428,7 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
             return redirect('insufficient-funds')
 
     def get_context_data(self):
-        price = PRICING[self.charge_type]['USD']/100 if self.request.user.currency == 'USD' else PRICING[self.charge_type]['CNY']/100
+        price = PRICING[self.charge_type]['USD'] if self.request.user.currency == 'USD' else PRICING[self.charge_type]['CNY']
         min_flat_rate = 250 * price
         symbol = '$' if self.request.user.currency == 'USD' else '¥'
         kwargs = {'per_word' : symbol + str(price), 'min_flat_rate' : symbol + f'{min_flat_rate:.2f}'}

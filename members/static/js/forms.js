@@ -107,7 +107,7 @@ ws.onmessage = e => {
     }
 
 const acceptedFiles = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-'application/pdf','text/rtf','text/plain','application/zip']
+'application/pdf','text/rtf','text/plain','application/zip','']
 
 
 Dropzone.autoDiscover = false;

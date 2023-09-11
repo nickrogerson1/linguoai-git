@@ -9,7 +9,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .views import BalanceCheckMixin, FormView
 from .forms import FileFieldForm
-from .tasks import get_corrected_results, r
+from .tasks import get_corrected_results, get_improved_results, r
 from django.http import HttpResponse
 
 
@@ -19,41 +19,42 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
     form_class = FileFieldForm
     template_name = 'members/home/input-form-general.html'
     success_url = 'upload-success.html' 
-    t0 = time.time()
 
 
     def post(self, request, *args, **kwargs):
         form_class = self.get_form_class()
         form = self.get_form(form_class)
+        t0 = time.time()
+        user_id = request.user.id
 
 
     # MAKE SURE DATA GETS SANITISED!
         if form.is_valid():
-            return self.form_valid(form)
+            return self.form_valid(form, t0, user_id)
         else:
             return self.form_invalid(form)
 
-    def form_valid(self, form):
+    def form_valid(self, form, t0, user_id):
 
         file = self.request.FILES['file']
         file_type = file.content_type
         # print(file_type)
         if file_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             sub = self.get_docx_text(file)
-            res = self.process_text(sub)            
+            res = self.process_text(t0,sub)            
 
         elif file_type == 'application/pdf':
             sub = self.get_pdf_text(file)
-            res = self.process_text(sub)
+            res = self.process_text(t0,sub)
 
         elif file_type == 'text/rtf':
             print(f'Type: {type(file)}') 
             sub = self.get_rtf_text(file)
-            res = self.process_text(sub)
+            res = self.process_text(t0,sub)
 
         elif file_type == 'text/plain':
             sub = self.get_txt_text(file)
-            res = self.process_text(sub)
+            res = self.process_text(t0,sub)
 
         elif file_type == 'application/zip':
             subs = self.unzip_files(file)
@@ -62,11 +63,7 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
             # s[0] sub & s[1] filename
                 print(f'SUBS: {subs}')
                 print(f'VAR: {s}')
-                res = self.process_text(s[0], s[1])
-            # Pass them straight through to Celery
-                # get_corrected_results.delay(t0, user_id, s[0], *res)
-                
-                print(s)
+                res = self.process_text(t0,s[0],s[1])
 
 # Handle folders that aren't zipped
         elif file_type == 'application/octet-stream':
@@ -76,26 +73,26 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
 
             if file.name.endswith('docx'):
                 sub = self.get_docx_text(file)
-                res = self.process_text(sub)
+                res = self.process_text(t0,sub)
 
             elif file.name.endswith('pdf'):
                 sub = self.get_pdf_text(file)
-                res = self.process_text(sub)
+                res = self.process_text(t0,sub)
 
             elif file.name.endswith('rtf'):
                 for f in file:
                     b = BytesIO(f)
                     sub = self.get_rtf_text(b)
-                    res = self.process_text(sub)
+                    res = self.process_text(t0,sub)
 
             elif file.name.endswith('txt'):
                 sub = self.get_txt_text(file)
-                res = self.process_text(sub)
+                res = self.process_text(t0,sub)
 
             elif file.name.endswith('zip'):
                 subs = self.unzip_files(file)
                 for s in subs:
-                    res = self.process_text(s[0], s[1])
+                    res = self.process_text(t0,s[0],file_name=s[1])
 
             else:
                 print(f"Can't process file type {file.name}")  
@@ -110,18 +107,13 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
             response.status_code = 403
             return response
         
-        # Then pass to Celery to process (not zips)
-        # if file_type != 'application/zip':
-            # get_corrected_results.delay(t0, user_id, sub, *res)
-            
-        # return redirect(self.success_url)
         return super().form_valid(form)
 
 
 
         
     
-    def process_text(self, sub, file_name=None):
+    def process_text(self,t0,sub,file_name=None):
         args = self.check_user_has_sufficient_funds('corrected_results', sub=sub, multi=True)
         # [ price_per_100_words, total_words, charged ]
 
@@ -166,9 +158,10 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
         if args[3] == 'Awaiting Response':
             #Remove 'insufficient funds' info from args before passing through
             args.pop()
-            get_corrected_results.delay(self.t0, username, user_id, sub, id, *args)
-        
-        # return [id, *args]
+            if 'corrected' in self.request.path_info:
+                get_corrected_results.delay(t0, username, user_id, sub, id, *args)
+            else:
+                get_improved_results.delay(t0, username, user_id, sub, id, *args)
         
   
     def get_docx_text(self, file):

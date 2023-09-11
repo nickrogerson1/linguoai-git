@@ -9,19 +9,19 @@ LLM_COSTS = {
 }
 
 
-# Pricing per 100 words
+# Pricing per word
 PRICING = {
     'ielts_writing_task_2': {
-        'USD': 0.09,
-        'CNY': 0.7
+        'USD': 0.0009,
+        'CNY': 0.007
     },
     'corrected_results': {
-        'USD': 0.04,
-        'CNY': 0.3
+        'USD': 0.0004,
+        'CNY': 0.003
     },
     'improved_results': {
-        'USD': 0.04,
-        'CNY': 0.3
+        'USD': 0.0004,
+        'CNY': 0.003
     }
 }
 
