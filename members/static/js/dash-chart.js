@@ -17,7 +17,8 @@ function initDashboardPageCharts() {
 
         callbacks: {
             label: function(tooltipItems, data) {
-            return  currency + tooltipItems.yLabel;
+        // Don't show trailing zeros for 0 itself
+            return  tooltipItems.yLabel ? currency + tooltipItems.yLabel.toFixed(2) : currency + 0
             }
         },
         

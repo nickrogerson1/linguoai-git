@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['.railway.app', '.linguo.ai']
 
@@ -163,9 +163,15 @@ INTERNAL_IPS = [
 LOGIN_REDIRECT_URL = '/dash/'
 
 
+MEDIA_URL = 'media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.environ["RAILWAY_VOLUME_MOUNT_PATH"]
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
+img_dir = os.path.join(MEDIA_ROOT, 'images')
+if not os.path.exists(img_dir):
+  os.makedirs(img_dir)
+
+
 
 # For collecting the enduser's country
 GEOIP_PATH = "linguoai/geoip"
