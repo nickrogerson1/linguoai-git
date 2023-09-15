@@ -1,8 +1,8 @@
 from decimal import Decimal as D
 
 from .api_funcs.ielts_score import *
-from .api_funcs.corrections import call_and_find_difference
-from .api_funcs.improved import improved_submission
+from .api_funcs.corrections import get_corrected_submission
+from .api_funcs.improved import get_improved_submission
 
 
 from .models import *
@@ -252,9 +252,6 @@ def get_corrected_results(self, t0, username, user_id, sub, html_id, price_per_1
 
     r.hset(username, mapping={'single_sub' : task_id})
 
-    # res = AsyncResult(self.request.id).ready()
-    # print(f'Status: {res}')
-    # return 'Happy Days'
     enc = tiktoken.encoding_for_model("gpt-4")
     num_tokens = len(enc.encode(sub))
 
@@ -265,7 +262,7 @@ def get_corrected_results(self, t0, username, user_id, sub, html_id, price_per_1
     check_and_reduce_usage_left(num_tokens)
 
     # Long API call
-    data = call_and_find_difference(sub)
+    data = get_corrected_submission(sub)
     # Create an instance to pass to next func
     model = CorrectedSubmission()
 
@@ -298,10 +295,10 @@ def get_improved_results(self,t0, username, user_id, sub, html_id, price_per_100
     print(f'Word Count: {total_words}')
 
 # Check to see whether API limit has been hit and can make a request
-    # check_and_reduce_usage_left(num_tokens)
+    check_and_reduce_usage_left(num_tokens)
 
     # Long API call
-    data = improved_submission(sub)
+    data = get_improved_submission(sub)
     # Create an instance to pass to next func
     model = ImprovedSubmission()
 
@@ -318,18 +315,42 @@ def get_improved_results(self,t0, username, user_id, sub, html_id, price_per_100
 
 
 
+# For this to work, "model" also has to be passed through
+# @shared_task(bind=True)
+# def get_results(self,t0, username, user_id, sub, html_id, model, price_per_100_words, total_words, charged):
+   
+#     task_id = self.request.id
+#     print(f'TASK ID {task_id}')
 
+#     r.hset(username, mapping={'single_sub' : task_id})
 
+#     enc = tiktoken.encoding_for_model("gpt-4")
+#     num_tokens = len(enc.encode(sub))
 
-# def get_results(t0, username, user_id, sub, html_id, model, price_per_100_words, total_words, charged):
+#     print(f'Tokens Used: {num_tokens}')
+#     print(f'Word Count: {total_words}')
 
-    # if model == ImprovedSubmission:
-    #     data = improved_submission(sub)
-    # else:
-    #     data = call_and_find_difference(sub)
+# # Check to see whether API limit has been hit and can make a request
+#     check_and_reduce_usage_left(num_tokens)
+
+#     # Long API call
+#     data = get_improved_submission(sub)
+#     # Create an instance to pass to next func
+#     if model == ImprovedSubmission:
+#         data = get_improved_submission(sub)
+#     else:
+#         data = get_corrected_submission(sub)
 
 #     if data:
-#         return update_db(model, data, t0, user_id, price_per_100_words, total_words, charged, sub=sub)
+#         extra = update_db(model, data, t0, user_id, html_id, price_per_100_words, total_words, charged, sub=sub)
+
+
+#     # Save PK and balance in case it beats HTTP
+#     # Unnecessary for multi
+#         self.request.kwargs = {
+#             'pk' :extra[0],
+#             'new_balance' : extra[1]
+#         }
 
 
 
@@ -351,7 +372,7 @@ def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lan
     print(f'Word Count: {total_words}')
 
 # Check to see whether API limit has been hit and can make a request
-    # check_and_reduce_usage_left(num_tokens)
+    check_and_reduce_usage_left(num_tokens)
  
  # Add all the openai data to the db
 # [html, model, prompt_tokens, completion_tokens, total_tokens]

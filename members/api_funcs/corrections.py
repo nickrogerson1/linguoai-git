@@ -48,7 +48,7 @@ def find_difference(sub, res):
 
 
 
-def call_and_find_difference(original_text):
+def get_corrected_submission(original_text):
 
     messages = [
         {"role": "system", "content": "You are a writing editor."},

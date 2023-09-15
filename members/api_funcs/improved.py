@@ -1,7 +1,7 @@
 from .make_request import fetch_from_openai
 
 
-def improved_submission(original_text):
+def get_improved_submission(original_text):
 
     messages = [
         {"role": "system", "content": "You are a writing editor."},

@@ -22,8 +22,6 @@
 	}
 }
 
-
-
 /* Header */
 @media (max-width: 992px) {
 	#menu-buttons {
@@ -37,4 +35,10 @@
 
 	#menu-buttons a:first-child {
 		margin-right: 10px;
+}
+
+/* Update when new section added to offset the header */
+#benefits, #service, #pricing, #about, #faqs {
+	padding-top: 30px;
+	margin-top: -30px;
 }

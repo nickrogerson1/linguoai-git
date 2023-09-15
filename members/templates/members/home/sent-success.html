@@ -20,11 +20,10 @@ th, td {
         <div class="card" >
           <div class="card-body px-2 py-2">
             <div>
-              <div class="alert text-center" role="alert">
-                  <h3 id="heading">We are processing your submission.</h3>
-                  <p>Please go to the log to check on the progress of your submission.</p>
-                  <br>
-                  <a href="{% url 'home' %}" >Go back to the dashboard</a>
+              <div class="alert" role="alert">
+                  <h2 id="heading" class="text-center">We are processing your submission</h2>
+                  <p>We have received your submission and are now processing it. Processing times can vary from a few seconds to over a minute depending on a number of factors.</p>
+                  <p>Once your submission is complete, please click on the link in the Submission Type category to view your result.</p>
               </div>
             </div>
           </div>
@@ -47,7 +46,7 @@ th, td {
                       <td>0 secs</td>
                       <td>{{ word_count }}</td>
                       <td>{{ symbol }}{{ cost }}</td>
-                      <td class="inject-link">{{ sub_type}}</td>
+                      <td>{{ sub_type}}</td>
                       <td>PENDING</td>
                     </tr>
                   </tbody>
@@ -55,7 +54,6 @@ th, td {
               </div>
             </div>
           </div>
-
 
         </div>
       </div>
@@ -91,7 +89,7 @@ th, td {
 
 
 
-    const ws = new WebSocket(`wss://${window.location.host}/ws/single-submission/`);
+    const ws = new WebSocket(`ws://${window.location.host}/ws/single-submission/`);
 
       ws.onclose = e => {
           console.error('Web Socket closed unexpectedly');
@@ -101,34 +99,20 @@ th, td {
       ws.onmessage = e => {
       const data = JSON.parse(e.data);
       console.log(data)
-      
-      //Build the link for each message
-        let page
-        if(window.location.toString().includes('corrected')){
-          page = 'corrected'
-        } else if(window.location.toString().includes('improved')) {
-          page = 'improved'
-        } else {
-          page = 'ielts-writing-task-2'
-        }
-        const el = document.querySelector('td.inject-link')
-        const newLink = `<a href="/${page}-results/${data.pk}/">${el.innerHTML}</a>`
-        
-
       // If HTTP slow
       if (data.ready) {
+        console.log(data.pk)
         document.querySelector('#row-1 td:last-child').innerHTML = 'Completed'
         document.querySelector('#balance').innerHTML = data.new_balance
         document.querySelector('#heading').innerHTML = 'We have processed your submission!'
-        el.innerHTML = newLink
       }
 
       if(data.status === 'success'){
           const { status, row, new_balance } = data
+          console.log(row)
           document.querySelector(`#row-${row} td:last-child`).innerHTML = 'Completed'
           document.querySelector('#balance').innerHTML = new_balance
           document.querySelector('#heading').innerHTML = 'We have processed your submission!'
-          el.innerHTML = newLink
         }
       }
     

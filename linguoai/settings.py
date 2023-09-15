@@ -167,9 +167,9 @@ MEDIA_URL = 'media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_ROOT = os.environ["RAILWAY_VOLUME_MOUNT_PATH"]
 
-img_dir = os.path.join(MEDIA_ROOT, 'images')
-if not os.path.exists(img_dir):
-  os.makedirs(img_dir)
+# img_dir = os.path.join(MEDIA_ROOT, 'images')
+# if not os.path.exists(img_dir):
+#   os.makedirs(img_dir)
 
 
 

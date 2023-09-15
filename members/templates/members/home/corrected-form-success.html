@@ -1,67 +1,8 @@
-{% extends '../layouts/base-results.html' %}
+{% extends "../layouts/base-results.html" %}
 
 {% load static %}
 
 {% block stylesheets %}
-<!-- <link href="{% static 'css/forms.css' %}" rel="stylesheet" /> -->
-
-<style>
-.diff_chg {
-    color: red;
-}
-
-.diff_sub {
-    color: #c9bf5d;
-}
-
-.diff_add {
-    color: green;
-}
-
-td {
-    vertical-align: top;
-    padding-left: 3px;
-    max-width: 500px;
-    white-space: break-spaces;
-    color: black;
-}
-
-#guide {
-    border:1px solid black;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-#guide td, #guide tr {
-    border:1px solid black;
-}
-
-#guide td {
-    padding: 2px 20px;
-}
-
-#main-table th {
-    border: 1px solid white !important;
-    padding-bottom: 10px;
-    font-size: 25px;
-    font-weight: 300;
-}
-
-#result {
-    font-size: 0;
-}
-
-#dropdown {
-    color: white;
-    background-color: #2d3b5e;
-    font-size: 0.875rem;
-    font-weight: 600;
-    appearance: menulist;
-}
-
-
-</style>
-
 {% endblock stylesheets %}
 
 {% block content %}
@@ -70,89 +11,30 @@ td {
     <div class="row">
         <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
             <div class="alert alert-info" role="alert" id="success-alert">
-                The corrected text has been copied to your clipboard!
+                The explanation text has been copied to your clipboard!
               </div>
         <div class="card" >
             <div class="card-body px-2 py-2">
             <div>
-                <h1 class="text-center">Your Corrected Submission</h1>
-
-                <div class="row">
-
-                <div class="col-xl-5 col-md-6">
-                <div class="card mb-0">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table id="guide">
-                                <thead class="text-center">
-                                    <tr >
-                                        <th colspan="2">Colour Codes</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td class="diff_add">Green</td>
-                                    <td class="diff_add">Additions</td>
-                                </tr>
-                                <tr>
-                                    <td class="diff_sub">Yellow</td>
-                                    <td class="diff_sub">Substitutions</td>
-                                </tr>
-                                <tr>
-                                    <td class="diff_chg">Red</td>
-                                    <td class="diff_chg">Changes</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                <h1 class="text-center">IELTS Writing Task 2 Result</h1><br>
+                <h2 class="text-center mb-0">Band {{ result.band|safe }}</h2>
+                <br>
+                <div class="mb-2">
+                    <button type="button" id="copy-button" class="btn btn-sm std-button">Copy Text</button>
+                    <a href="{% url 'get_ielts_writing_pdf' result.pk %}"><button type="button" id="pdf-button" class="btn btn-sm std-button">Download PDF</button></a>
+                    <a href="{% url 'get_ielts_writing_docx' result.pk %}"><button type="button" id="docx-button" class="btn btn-sm std-button">Download DOCX</button></a>
                     </div>
-                 </div>
-                </div>
+                <h3 class="mb-2">Detailed Explanation:</h3>
+                <div id="result">{{ result.score_res|safe }}</div>
+                <br>
+                <h3 class="mb-2">Your Question:</h3>
+                <h4>{{ result.question|safe }}</h4>
+                <br>
+                <h3 class="mb-2">Your Answer:</h3>
+                <div>{{ result.answer|safe }}</div>
 
-                <div class="col-xl-7 col-md-6">
-                    <div class="card mb-0">
-                        <div class="card-body">
-                        <p>Here is your corrected submission. On the left side you can see the 
-                        original text you submitted with their respective substitutions and changes 
-                        highlighted for you. On the right side, you can see the changes the AI has made
-                        to your work also highlighted. 
-                        </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-                <div class="mb-2 form-row">
-                    <button type="button" id="copy-button" class="btn btn-secondary btn-sm form-group mt-0">Copy Edited Text</button>
-                    <form name="download" class="form-group ml-2 ">                        
-                        <select name="download" id="dropdown" class="form-control py-1">
-                            <option value="" selected="">Choose File Type</option>
-                            <option value="{% url 'get_corrected_pdf' result.pk 1 %}">Get PDF Version</option>
-                            <option value="{% url 'get_corrected_pdf' result.pk 0 %}">Get Split PDF Version</option>
-                            <option value="{% url 'get_corrected_docx' result.pk 1 %}">Get DOCX Version</option>
-                            <option value="{% url 'get_corrected_docx' result.pk 0 %}">Get Split DOCX Version</option>
-                          </select>
-                    </form>
-                </div>
-                    <div class="card mb-0">
-                        <div class="card-body">
-                            <div class="table-responsive overflow-hidden">
-                                <div>{{ result.corrections|safe }}</div>
-                                <div id="result">{{ result.result|safe }}</div>
-                            </div>
-                        </div>
-                    </div>
 {% endblock content %}
 
 {% block javascripts %}
-<script>
-    const getDocument = () => {
-// Make sure this is positive before firing so it doesn't fire on the first one and refresh the page
-        if(document.download.download.selectedIndex){
-            location = document.download.download.options[document.download.download.selectedIndex].value
-            console.log(location)
-        }
-    }
-    document.addEventListener('change', getDocument)
-    </script>
 {% endblock javascripts %}

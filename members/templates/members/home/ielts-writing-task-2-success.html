@@ -20,9 +20,9 @@
                 <h2 class="text-center mb-0">Band {{ result.band|safe }}</h2>
                 <br>
                 <div class="mb-2">
-                    <button type="button" id="copy-button" class="btn btn-secondary btn-sm">Copy Text</button>
-                    <a href="{% url 'get_ielts_writing_pdf' result.pk %}"><button type="button" id="pdf-button" class="btn btn-secondary btn-sm">Download PDF</button></a>
-                    <a href="{% url 'get_ielts_writing_docx' result.pk %}"><button type="button" id="docx-button" class="btn btn-secondary btn-sm">Download DOCX</button></a>
+                    <button type="button" id="copy-button" class="btn btn-sm std-button">Copy Text</button>
+                    <a href="{% url 'get_ielts_writing_pdf' result.pk %}"><button type="button" id="pdf-button" class="btn btn-sm std-button">Download PDF</button></a>
+                    <a href="{% url 'get_ielts_writing_docx' result.pk %}"><button type="button" id="docx-button" class="btn btn-sm std-button">Download DOCX</button></a>
                     </div>
                 <h3 class="mb-2">Detailed Explanation:</h3>
                 <div id="result">{{ result.score_res|safe }}</div>
