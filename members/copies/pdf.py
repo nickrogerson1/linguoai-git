@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from ..views import CorrectedSubmission, ImprovedSubmission, IeltsWritingTask2
 from ..api_funcs.corrections import find_difference
 from fpdf import FPDF
+from io import BytesIO
 
 # NOTE: 
 # Standard Corrected PDF doesn't work. Everything else works including bulk.
@@ -52,7 +53,7 @@ class PDF(FPDF):
             self.cell(0, 6, 'Your Answer:')
         else:
             self.cell(0, 6, 'Detailed Explanation:')
-            self.ln()
+            # self.ln()
 
         self.ln()
         self.add_font(fname='members/copies/ttf/Poppins/Poppins-ExtraLight.ttf')
@@ -82,7 +83,7 @@ class PDF(FPDF):
         self.add_ielts_body(answer, 'a')
 
 
-
+# To format the dates
 def suffix(d):
     return {1:'st',2:'nd',3:'rd'}.get(d%20, 'th')
 
@@ -90,17 +91,7 @@ def custom_strftime(t):
     date_format = '%A {S} %B %Y at %-I:%M %p'
     return t.strftime(date_format).replace('{S}', str(t.day) + suffix(t.day))
 
-
-
-from io import BytesIO
-
-
-
 def get_pdf(sub_type, user, pk, type=None, multi=False):
-    # get_pdf(sub_type, user, pk, type, multi=True)
-
-    # sub_type = sub if sub else request.path.split('/')[1]
-    # user = request.user
     
     pdf = PDF()
 
@@ -198,15 +189,12 @@ def get_pdf_version(request, pk):
 
 
 
-
-
-
 from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 from django.http import HttpResponse
 
 
-def get_bulk_pdf(request, pks, type):
+def get_bulk_pdf(request, pks, type=None):
 
     sub_type = request.path.split('/')[1]
     user = request.user.username
@@ -245,16 +233,6 @@ def get_bulk_pdf(request, pks, type):
     }
         
     return HttpResponse(buffer.getvalue(), headers=headers)
-
-    # Save to S3 bucket for 24 hours & maybe update db or email it them
-    # print('Saved to S3 bucket!')
-    
-  
-
-    # channel_layer = get_channel_layer()
-    # async_to_sync(channel_layer.group_send)(
-    #         user, {"type": "send.message", 'message': 'data'}
-        # )
 
 
 

@@ -58,7 +58,7 @@ html = {
             "class": "form-control",
             "onInput" : "this.parentNode.dataset.replicatedValue = this.value",
             # Maxlength is enforced at browser level
-            "maxlength" : "25000"
+            # "maxlength" : "25000"
         }
 
 # Add form class to include widgets (classes) in form
@@ -76,13 +76,13 @@ class IeltsWritingTask2Form(forms.ModelForm):
                 "class": "form-control",
                 "onInput" : "this.parentNode.dataset.replicatedValue = this.value",
                 "rows" : 5,
-                "maxlength" : "500"
+                "maxlength" : "1000"
             }),
             'answer' :  forms.Textarea(attrs={ 
             "class": "form-control",
             "onInput" : "this.parentNode.dataset.replicatedValue = this.value",
             # Maxlength is enforced at browser level
-            "maxlength" : "3000"
+            "maxlength" : "4000"
         })
         }
         # labels = {'question' : 'Type or Paste In Your Question',

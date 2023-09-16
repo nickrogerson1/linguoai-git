@@ -36,4 +36,6 @@
   background: #414357;
 }
 
-
+#reveal-table {
+  display: none;
+}

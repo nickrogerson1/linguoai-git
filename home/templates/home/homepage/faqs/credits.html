@@ -1,7 +1,6 @@
-
 <div id="credits" class="sub-section pt-5">
     
-    <h3>Topping Up</h3>
+    <h3>Payment</h3>
 
     {% include "./faq-template.html" 
     with question="Does credit I add to my account ever expire?" 
@@ -15,7 +14,12 @@
 
     {% include "./faq-template.html" 
     with question="Do I need a credit card to top up?" 
-    answer="Currently, yes." 
+    answer="USD customers need a credit or debit card." 
+    %}
+
+    {% include "./faq-template.html" 
+    with question="Can I pay with Wechat or Alipay?" 
+    answer="Yes, so long as you choose Chinese Renminbi (CNY) as your currency, otherwise you need a credit/debit card." 
     %}
 
 </div>

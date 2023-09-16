@@ -167,8 +167,12 @@
 	jQuery(document).ready( function(){
 		
 		jQuery('#block-contactform').on( 'formSubmitSuccess', function(){
+
 			jQuery.magnificPopup.close();
 			console.log('This fired!')
+			// setTimeout(function(){
+			// 	jQuery('#block-modal-contact').magnificPopup('close');
+			// }, 500);
 		});
 	});
 	</script>

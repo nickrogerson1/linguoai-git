@@ -20,7 +20,6 @@
                 <div class="clear"></div>
 
                 <div class="col-md-6">
-                    <!-- <div class="card border-0 dark shadow-sm h-shadow shadow-ts p-3" style="background: url('{% static 'one.jpg' %}') no-repeat top center / contain;"> -->
                         <div class="card-body">
                             <h3 class="card-title h2 fw-bold mb-4 text-black text-center">Pay For What You Use</h3>
                             <p class="card-text mb-0 text-black">Everything is Pay-As-You-Go. You just top up and the credits are added to your account. Credits do not expire and live for the lifetime of your account.</p>
@@ -38,12 +37,11 @@
                         </div>
                             <p class="card-text mt-3 text-black">For more information on pricing, please review <a href="blog/pricing/">this blog page</a>.</p>
                         </div>
-                    <!-- </div> -->
+                    <div class="text-center my-3"><a href="{% url 'register' %}" class="btn px-5 py-2 btn-primary">Sign Up</a></div>
                 </div>
 
                 <div class="col-md-6" >
                     <div id="credit-prices" class="card border-0 shadow-sm h-shadow shadow-ts p-3" style="background: url('{% static 'dollars.jpg' %}') no-repeat top center / cover;">
-                        <!-- <div class="card-body" > -->
                             <h3 class="card-title h2 fw-bold mb-4">Cost Per Service</h3>
                             <ul>
                                 <li>IELTS Writing Task 2: ${{ ielts_usd }} USD and ¥{{ ielts_cny }} CNY per word.</li>
@@ -51,7 +49,6 @@
                                 <li>Corrected Submissions: ${{ corrected_usd }} USD and ¥{{ corrected_cny }} CNY per word.</li>
                               </ul>
                         <p style="font-family: Inter, sans-serif; font-size: 16px;">Please be aware that some services have word count limits that can be found on their respective service pages.</p>
-                        <!-- </div> -->
                     </div>
 
             </div>

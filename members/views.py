@@ -369,7 +369,7 @@ class StandardSubMixin:
         # Otherwise redirect to top up page
             return redirect('insufficient-funds')
 
-    def get_context_data(self):
+    def get_context_data(self, *args, **kwargs):
         price = PRICING[self.charge_type]['USD'] if self.request.user.currency == 'USD' else PRICING[self.charge_type]['CNY']
         min_charge = MIN_CHARGE['USD'] if self.request.user.currency == 'USD' else MIN_CHARGE['CNY']
         min_words = int(min_charge / price)
@@ -427,40 +427,12 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
         # Otherwise redirect to top up page
             return redirect('insufficient-funds')
 
-    def get_context_data(self):
+    def get_context_data(self, *args, **kwargs):
         price = PRICING[self.charge_type]['USD'] if self.request.user.currency == 'USD' else PRICING[self.charge_type]['CNY']
         min_flat_rate = 250 * price
         symbol = '$' if self.request.user.currency == 'USD' else '¥'
         kwargs = {'per_word' : symbol + str(price), 'min_flat_rate' : symbol + f'{min_flat_rate:.2f}'}
         return super().get_context_data(**kwargs)
-
-
-    # def post(self, request):
-    #     t0 = time.time()
-    #     form = IeltsWritingTask2Form(request.POST)
-    #     if form.is_valid():
-
-    #         self.object = form.save(commit=False)
-    #         q = escape(self.object.question)
-    #         a = escape(self.object.answer)
-
-    #         args = self.check_user_has_sufficient_funds('ielts_writing_task_2', q=q, a=a)
-
-    #     # If they have insufficient funds, then end it
-    #         if not args:
-    #             return redirect('insufficient-funds')
-            
-    #         language = self.object.get_explanation_language_display().split(' ')[0]
-    #         lang_code = self.object.explanation_language
-    #         username = self.request.user.username
-    #         user_id = self.request.user.id
-
-    #         get_ielts_writing_task_2_scores(t0, username, user_id, q, a, language, lang_code, *args)
-
-    #         return redirect(self.success_url)
-    #     else:
-    #         self.object = ''
-    #         return super(IeltsWritingTask2View, self).form_invalid(form)
         
     def post(self, request):
         t0 = time.time()
@@ -495,7 +467,7 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
             return render(request, "members/home/sent-success.html", context=ctx)
         else:
             self.object = ''
-            return super(ImprovedFormView, self).form_invalid(form)
+            return super(IeltsWritingTask2View, self).form_invalid(form)
             
 
 

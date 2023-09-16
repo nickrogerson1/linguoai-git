@@ -5,26 +5,6 @@
 {% block stylesheets %}
 <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 <link href="{% static 'css/forms.css' %}" rel="stylesheet" />
-
-<style>
-  #reveal-table{
-    display: none;
-  }
-
- /* tr td:last-child {
-  color: white !important;
-  animation: glow 1s ease-in-out infinite alternate;
- }
-
- @-webkit-keyframes glow {
-  from {
-    text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073;
-  }
-  to {
-    text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6, 0 0 60px #ff4da6, 0 0 70px #ff4da6, 0 0 80px #ff4da6;
-  }
-} */
-</style>
 {% endblock stylesheets %}
 
 {% block content %}
@@ -45,75 +25,72 @@
                 </h1>
             </div>
 
-          <div class="card" id="top-card" >
-            <div class="card-body">
-              <h5>The cost of using this service is <strong>{{ per_word }} per word</strong> with a <u>minimum</u> charge of {{ min_charge }} per submission, which is around {{ min_words }} words.</h5>
-              
-              <div id="dropzone-block">
-                <h4>Upload <strong>.docx, .pdf, .rtf, .txt</strong> or any of those file types zipped in a <strong>.zip file</strong>.</h4>
-                <figure>
-                  <figcaption>Please note:</figcaption>
-                <ol>
-                  <li>Uploaded files are processed immediately on submission and you cannot reverse it once you have dropped them below.</li>
-                  <li>Make sure all your files <strong>ONLY contain text</strong> ie. no tables, graphs etc.</li>
-                  <li>The maximum you can submit is 5000 words per submission.</li>
-                  <li>The server can handle around 30,000 words a minute, so if you upload more than that, then expect to wait.</li>
-                </ol>
-                </figure>
-                <form action="
-                {% if 'corrected' in request.build_absolute_uri %}
-                {% url 'dropzone' 'corrected' %}
-                {% else %}
-                {% url 'dropzone' 'improved' %}
-                {% endif %}
-                " class="dropzone" id="dropzone-area">{% csrf_token %}</form>
-            </div>
-          </div>
-        </div>
-
-          <div class="card" id="reveal-table">
-            <div class="card-body">
-              <div class="table-responsive">
-                <table class="table tablesorter">
-                  <thead class="text-center text-primary">
-                    <tr>
-                        <th></th>
-                        <th>Time Elapsed</th>
-                        <th>Word Count</th>
-                        <th>Cost</th>
-                        <th>File Name</th>
-                        <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  </tbody>
-                </table>
+            <div class="card" id="top-card" >
+              <div class="card-body">
+                <p>The cost of using this service is <strong>{{ per_word }} per word</strong> with a <u>minimum</u> charge of {{ min_charge }} per submission, which is around <strong>{{ min_words }} words</strong>.</p>
+                <p>There is a maximum word limit being enforced of 5000 words. If you need more , then please contact us.</p>
+                <p>You can either send us your files or input them manually, but not both.</p>
+                <div id="dropzone-block">
+                  <h4>Upload <strong>.docx, .pdf, .rtf, .txt</strong> or any of those file types zipped in a <strong>.zip file</strong>.</h4>
+                  <figure>
+                    <figcaption>Please note:</figcaption>
+                  <ol>
+                    <li>Uploaded files are processed immediately on submission and you cannot reverse it once you have dropped them below.</li>
+                    <li>Make sure all your files <strong>ONLY contain text</strong> ie. no tables, graphs etc.</li>
+                    <li>The server can handle around 30,000 words a minute, so if you upload more than that, then expect to wait.</li>
+                  </ol>
+                  </figure>
+                  <form action="
+                  {% if 'corrected' in request.build_absolute_uri %}
+                  {% url 'dropzone' 'corrected' %}
+                  {% else %}
+                  {% url 'dropzone' 'improved' %}
+                  {% endif %}
+                  " class="dropzone" id="dropzone-area">{% csrf_token %}</form>
               </div>
             </div>
           </div>
-
+  
+            <div class="card" id="reveal-table">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table tablesorter">
+                    <thead class="text-center text-primary">
+                      <tr>
+                          <th></th>
+                          <th>Time Elapsed</th>
+                          <th>Word Count</th>
+                          <th>Cost</th>
+                          <th>File Name</th>
+                          <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+  
+        
         <div id="text-input">
-          <div class="card-body px-2 py-2">
-            <p class="text-center">
-              There is currently a hard limit of 25000 characters per submission (around 5000 words).
-            </p>
-        </div>
-        <div class="card">
-            <div class="card-body">
-              <form action="" method="post" id="manual-input-form">
-                   {% csrf_token %}
-
-                  <label for="submission">Type or Paste In Your Work Below:</label>
-                  <div class="form-group">
-                    {{ form.submission }}
-                  </div>
-                  <p id="sub-count">Word Count: 0</p>
-                  <span class="text-danger">{{ form.submission.errors }}</span>
-                  <div class="text-center">
-                    <input id="button" type="submit" value="SUBMIT" class="btn btn-fill btn-primary">
-                    <input id="clear" type="button" value="CLEAR FORM" class="btn btn-fill btn-primary">
-                  </div>
-                </form>
+          <div class="card">
+              <div class="card-body">
+                <form action="" method="post" id="manual-input-form">
+                     {% csrf_token %}
+  
+                      <label for="submission">Type or Paste In Your Work Below:</label>
+                      <div class="form-group">
+                        {{ form.submission }}
+                      </div>
+                      <p id="sub-count">Word Count: 0</p>
+                      <span class="text-danger">{{ form.submission.errors }}</span>
+                      <div class="text-center">
+                      <input id="button" type="submit" value="SUBMIT" class="btn btn-fill btn-primary">
+                      <input id="clear" type="button" value="CLEAR FORM" class="btn btn-fill btn-primary">
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -121,9 +98,8 @@
       </div>
     </div>
   </div>
-</div>
-<br><br>
-{% endblock content %}
+  <br><br>
+  {% endblock content %}
 
 {% block javascripts %}
 <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>

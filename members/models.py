@@ -4,7 +4,7 @@ from django_countries.fields import CountryField
 from django.utils.translation import gettext_lazy as _
 import datetime
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.validators import MaxLengthValidator
+from django.core.exceptions import ValidationError
 
 min_comment = "Whooaa, looks like the year you entered was a little early. Have a go at entering a year after 1920."
 max_comment = "Hang on, you can't be that young! Try entering your REAL year of birth."
@@ -70,6 +70,41 @@ class BaseModel(models.Model):
     
 
 
+def word_count(sub): return len(sub.strip().split())
+
+def max_word_count_general_validator(sub):
+    if word_count(sub) <= 5000:
+        return sub
+    else:
+        raise ValidationError('Your submission is greater than 5000 words in length. Please reduce the size of the content and resubmit it.')
+
+
+def min_word_count_ielts_q_validator(sub):
+    if word_count(sub) >= 15:
+        return sub
+    else:
+        raise ValidationError('Your question is less than 15 words in length. Please increase the length of your question.')
+    
+def max_word_count_ielts_q_validator(sub):
+    if word_count(sub) <= 150:
+        return sub
+    else:
+        raise ValidationError('Your question is greater than 150 words in length. Please reduce the length of your question.')
+    
+def min_word_count_ielts_a_validator(sub):
+    if word_count(sub) >= 250:
+        return sub
+    else:
+        raise ValidationError('Your answer is less than 250 words in length. Please increase the length of your answer.')
+    
+def max_word_count_ielts_a_validator(sub):
+    if word_count(sub) <= 600:
+        return sub
+    else:
+        raise ValidationError('Your answer is greater than 600 words in length. Please reduce the length of your answer.')
+
+
+
 class IeltsWritingTask2(BaseModel):
     CHOICES = [
         ('EN', 'English'),
@@ -91,8 +126,8 @@ class IeltsWritingTask2(BaseModel):
     ]
 
     explanation_language = models.CharField(max_length=2, choices=CHOICES, default='EN')
-    question = models.TextField(validators=[MaxLengthValidator(500)])
-    answer = models.TextField(validators=[MaxLengthValidator(3000)])
+    question = models.TextField(validators=[min_word_count_ielts_q_validator, max_word_count_ielts_q_validator])
+    answer = models.TextField(validators=[min_word_count_ielts_a_validator, max_word_count_ielts_a_validator])
     score_res = models.TextField()
     band = models.CharField(max_length=20)
 
@@ -105,7 +140,7 @@ class IeltsWritingTask2(BaseModel):
 
 
 class CorrectedSubmission(BaseModel):
-    submission = models.TextField(validators=[MaxLengthValidator(25000)])
+    submission = models.TextField(validators=[max_word_count_general_validator])
     result = models.TextField()
         
     def __str__(self):
@@ -113,7 +148,7 @@ class CorrectedSubmission(BaseModel):
 
 
 class ImprovedSubmission(BaseModel):
-    submission = models.TextField(validators=[MaxLengthValidator(25000)])
+    submission = models.TextField(validators=[max_word_count_general_validator])
     improved_sub = models.TextField()
 
     def __str__(self):
@@ -156,3 +191,4 @@ class UserReportedResults(models.Model):
 
     class Meta:
         verbose_name_plural = "User Reported Results"
+

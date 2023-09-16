@@ -1,6 +1,6 @@
 CNVS.Toggle = function() {
 	var __core = SEMICOLON.Core;
-
+	
 	return {
 		init: function(selector) {
 			if( __core.getSelector(selector, false, false).length < 1 ){
