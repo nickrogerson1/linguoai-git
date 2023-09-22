@@ -158,13 +158,14 @@ class BlogCategoryIndexPage(Page, PaginatorMixin):
         category_slug = request.GET.get('category')
         blogpages = BlogPage.objects.filter(categories__slug=category_slug).order_by('-first_published_at')
 
-        print(blogpages)
+        category_name = category_slug   
 
     # Work out what the category name is based on the slug and without doing a 2nd look up
-        for cat in blogpages[0].categories.all():
-            if cat.slug == category_slug:
-                category_name = cat.name
-                break
+        if blogpages:
+            for cat in blogpages[0].categories.all():
+                if cat.slug == category_slug:
+                    category_name = cat.name
+                    break
 
         return self.return_with_pagination(request, context, blogpages, 'cat', category_name, category_slug)
     
