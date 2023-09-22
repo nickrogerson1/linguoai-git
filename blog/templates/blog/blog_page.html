@@ -1,65 +1,13 @@
-{% load static %}
+{% extends "./base.html" %}
+
 {% load wagtailcore_tags wagtailimages_tags %}
 
+{% block content %}
 
-<!DOCTYPE html>
-<html dir="ltr" lang="en-US">
-<head>
-    <!-- Google tag (gtag.js) -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-MBH5S83P2X"></script>
-	<script>
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-
-	gtag('config', 'G-MBH5S83P2X');
-	</script>
-
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	<meta http-equiv="x-ua-compatible" content="IE=edge">
-	<meta name="author" content="SemiColonWeb">
-	<meta name="description" content="Get Canvas to build powerful websites easily with the Highly Customizable &amp; Best Selling Bootstrap Template, today.">
-
-	<!-- Font Imports -->
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=PT+Serif:ital@0;1&display=swap" rel="stylesheet">
-
-	<!-- Core Style -->
-	<link rel="stylesheet" href="{% static 'css/style.css' %}">
-
-	<!-- Font Icons -->
-	<link rel="stylesheet" href="{% static 'css/font-icons.css' %}">
-
-    {% comment %}
-	<!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-    {% endcomment %}
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-
-	<!-- Document Title
-	============================================= -->
-	<title>LinguoAI - {{ page.title }}</title>
-
-</head>
-
-<body class="stretched">
-
-	{% include './includes/header.html' %}
-	
-
-<!-- Document Wrapper
-============================================= -->
-<div id="wrapper">
-
-<!-- Content
-============================================= -->
-<section id="content">
-	<!-- <div class="content-wrap pt-0 bg-light"> -->
-		<div class="container">
 <!-- Entry Image
 ============================================= -->
-<div class="entry-image align-wide-full min-vh-50 d-flex align-items-center justify-content-center px-5" style="background: url({% static 'images/blog/full/2.jpg' %}) no-repeat center center / cover;">
+{% image page.main_image width-1200 as main_image %}
+<div class="entry-image align-wide-full min-vh-50 d-flex align-items-center justify-content-center px-5" style="background: url({{ main_image.url }}) no-repeat center center / cover;">
 
 	<div class="p-4 bg-white position-relative rounded text-sm-center mw-xs">
 
@@ -77,7 +25,7 @@
 						{% with authors=page.authors.all %}
 							{% if authors %}
 								{% for author in authors %}
-							<li><i class="uil uil-user"></i>{{ author.name }}</li>	
+							<li><a href="{% slugurl 'author' %}?author={{ author }}"><i class="uil uil-user"></i>{{ author.name }}</a></li>	
 								{% endfor %}
 							{% endif %}
 						{% endwith %}
@@ -85,7 +33,7 @@
 						{% with categories=page.categories.all %}
 							{% if categories %}
 								{% for cat in categories %}
-							<li>{{ cat }}</li>
+							<li><a href="{% slugurl 'cat' %}?category={{ cat }}">{{ cat }}</a></li>
 								{% endfor %}
 							{% endif %}
 						{% endwith %}
@@ -142,9 +90,9 @@
 								<i class="fa-brands fa-facebook-f"></i>
 							</a>
 
-							<a href="https://twitter.com/intent/tweet?text={{ page.get_full_url }}" class="social-icon si-small text-white border-transparent rounded-circle bg-twitter" title="Twitter">
-								<i class="fa-brands fa-twitter"></i>
-								<i class="fa-brands fa-twitter"></i>
+							<a href="https://twitter.com/intent/tweet?text={{ page.get_full_url }}" class="social-icon si-small text-white border-transparent rounded-circle bg-dark" title="X">
+								<i class="fa-brands fa-x-twitter"></i>
+								<i class="fa-brands fa-x-twitter"></i>
 							</a>
 
 							<a href="https://pinterest.com/pin/create/button/?url=&media={{ page.get_full_url }}" class="social-icon si-small text-white border-transparent rounded-circle bg-pinterest" title="Pinterest">
@@ -161,12 +109,9 @@
 					</div>
 				</div>
 			</div><!-- Post Single - Share End -->
-
 		</div>
 	</div><!-- .entry end -->
-
-
-					
+				
 <!-- Post Author Info
 			============================================= -->
 		{% with authors=page.authors.all %}
@@ -177,14 +122,23 @@
 				<div class="card-body p-4">
 					<div class="row">
 						<div class="col-auto">
-							{% image author.author_image fill-40x60 style="vertical-align: middle" %}
+							<a href="{% slugurl 'author' %}?author={{ author }}">
+								{% image author.author_image width-400 as author_image %}
+								
+									<img src="{{ author_image.url }}" alt="Author" class="me-3"
+									{% if author.name == 'LinguoAI' %}
+									width="120" height="100">
+									{% else %}
+									width="100" height="140">
+									{% endif %}
+							</a>
 						<!-- class="rounded-circle square square-md"> -->
 						
 									</div>
 									<div class="col">
 										<div class="d-flex align-items-start mb-2">
 											<div>
-												<h5 class="text-medium fw-semibold mb-0"><a href="#" class="text-dark">{{ author.name }}</a></h5>
+												<h5 class="text-medium fw-semibold mb-0"><a href="{% slugurl 'author' %}?author={{ author }}" class="text-dark">{{ author.name }}</a></h5>
 											</div>
 										</div>
 										<p class="mb-3">{{ author.profile }}</p>
@@ -195,33 +149,8 @@
 						</ul>
 					{% endif %}
 				{% endwith %}
-					</div><!-- Post Single - Author End -->
+				</div><!-- Post Single - Author End -->
+							
 
-				</div>
-			</div>
-		</section><!-- #content end -->
-
-	</div><!-- #wrapper end -->
-
-	
-	{% include './includes/footer.html' %}
-
-	<!-- Go To Top
-	============================================= -->
-	<div id="gotoTop" class="uil uil-angle-up"></div>
-
-	{% comment %}
-    <!-- JavaScript Mostly For the Header -->
-	<script src="{% static 'js/plugins.min.js' %}"></script>
-	<script src="{% static 'js/functions.js' %}"></script>
-	<script src="{% static 'js/jquery.js' %}"></script>
-
-	
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
-	{% endcomment %}
-	<!-- JavaScripts
-	============================================= -->
-	<script src="{% static 'js/functions.js' %}"></script>
-	{% block javascript %}{% endblock javascript %}
-</body>
-</html>
+{% endblock content %}
+			

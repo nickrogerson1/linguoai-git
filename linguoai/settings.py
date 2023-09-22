@@ -164,8 +164,9 @@ LOGIN_REDIRECT_URL = '/dash/'
 
 
 MEDIA_URL = 'media/'
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 MEDIA_ROOT = os.environ["RAILWAY_VOLUME_MOUNT_PATH"]
+# MEDIA_ROOT = 'https://linguo.ai/app/media/'
 
 # img_dir = os.path.join(MEDIA_ROOT, 'images')
 # if not os.path.exists(img_dir):
@@ -208,6 +209,8 @@ ASGI_APPLICATION = "linguoai.asgi.application"
 
 WAGTAIL_SITE_NAME = 'LinguoAI'
 WAGTAILADMIN_BASE_URL = 'cms/'
+WAGTAILIMAGES_IMAGE_MODEL = 'blog.CustomImage'
+
 
 
 OPENAI_API_KEY = env('OPENAI_API_KEY')

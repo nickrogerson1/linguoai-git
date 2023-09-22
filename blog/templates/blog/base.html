@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html dir="ltr" lang="en-US">
+    <head>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-MBH5S83P2X"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-MBH5S83P2X');
+        </script>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta http-equiv="x-ua-compatible" content="IE=edge">
+        <meta name="author" content="SemiColonWeb">
+        <!-- <meta name="description" content="Welcome to the LinguoAI blog. Learn more about our AI services and help they can help you learn."> -->
+
+        <link rel="icon" type="image/x-icon" href="{% static 'brain-fav.png' %}">
+
+        <!-- Font Imports -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=PT+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+        <!-- Core Style -->
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+        <!-- Font Icons -->
+        <link rel="stylesheet" href="{% static 'css/font-icons.css' %}">
+
+        <!-- Specific Page CSS goes HERE  -->
+        {% block stylesheets %}{% endblock stylesheets %}
+
+        {% comment %}
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+        {% endcomment %}
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- Document Title
+        ============================================= -->
+        <title>LinguoAI - {{ page.title }}</title>
+
+    </head>
+
+    <body class="stretched">
+
+        {% include './includes/header.html' %}
+        
+
+    <!-- Document Wrapper
+    ============================================= -->
+    <div id="wrapper">
+
+    <!-- Content
+    ============================================= -->
+    <section id="content">
+        <!-- <div class="content-wrap pt-0 bg-light"> -->
+            <div class="container">
+            
+
+
+
+                {% block content %}{% endblock content %}
+
+
+
+             
+            </div>
+        </section><!-- #content end -->
+
+    </div><!-- #wrapper end -->
+
+
+    {% include './includes/footer.html' %}
+
+    <!-- Go To Top
+    ============================================= -->
+    <div id="gotoTop" class="uil uil-angle-up"></div>
+
+    {% comment %}
+    <!-- JavaScript Mostly For the Header -->
+    <script src="{% static 'js/plugins.min.js' %}"></script>
+    <script src="{% static 'js/functions.js' %}"></script>
+    <script src="{% static 'js/jquery.js' %}"></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    {% endcomment %}
+    <!-- JavaScripts
+    ============================================= -->
+    <script src="{% static 'js/functions.js' %}"></script>
+
+    {% block javascript %}{% endblock javascript %}
+    </body>
+</html>

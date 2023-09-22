@@ -1,180 +1,168 @@
+{% extends "./base.html" %}
+
 {% load static %}
 {% load wagtailcore_tags wagtailimages_tags %}
 
-<!DOCTYPE html>
-<html dir="ltr" lang="en-US">
-<head>
-	 <!-- Google tag (gtag.js) -->
-	 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MBH5S83P2X"></script>
-	 <script>
-	 window.dataLayer = window.dataLayer || [];
-	 function gtag(){dataLayer.push(arguments);}
-	 gtag('js', new Date());
- 
-	 gtag('config', 'G-MBH5S83P2X');
-	 </script>
-
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	<meta http-equiv="x-ua-compatible" content="IE=edge">
-	<meta name="author" content="SemiColonWeb">
-	<meta name="description" content="Get Canvas to build powerful websites easily with the Highly Customizable &amp; Best Selling Bootstrap Template, today.">
-
-	<!-- Font Imports -->
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=PT+Serif:ital@0;1&display=swap" rel="stylesheet">
-
-	<!-- Core Style -->
-	<link rel="stylesheet" href="{% static 'css/style.css' %}">
-
-	<!-- Font Icons -->
-	<link rel="stylesheet" href="{% static 'css/font-icons.css' %}">
-
-	{% comment %}
-	<!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-    {% endcomment %}
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-
+{% block stylesheets %}
 	<style>
 		.list-items:not(:last-child) {
    		 margin-bottom: 10px !important;
 		}
 	</style>
+{% endblock stylesheets %}
 
-	<!-- Document Title
-	============================================= -->
-	<title>LinguoAI | Blog</title>
+{% block content %}
+	
+<div class="container mt-5">
 
-</head>
-
-<body class="stretched">
-
-	{% include './includes/header.html' %}
-
-	<!-- Document Wrapper
-	============================================= -->
-	<div id="wrapper">
-
-		<!-- Content
-		============================================= -->
-	<section id="content">
-		<div class="content-wrap">
-			<div class="container">
-
-				<div class="row justify-content-center mb-5">
-					<div class="col-xl-6 col-lg-8 text-center">
-						<h1 class="fw-bold mb-3 text-primary">
-						{% if page.slug == 'tags' %}
-						Search for posts tagged "{{ request.GET.tag }}":
-						{% else %}
-						Welcome to the LinguoAI Blog</h3>
-						{% endif %}
-						</h1>
-					</div>
-				</div>
-
-				<div class="post-grid row col-mb-30">
-
-
-			{% for post in blogpages %}
-				{% with post=post.specific %}
-
-				{% if post.slug != 'tags' %}
-				<!-- == 'Blog Tag Index'  -->
-
-				<div class="entry col-lg-4 col-md-6">
-					<div class="grid-inner shadow-sm card rounded-5">
-						<a href="{% static 'images/blocks/preview/card-6/1.jpg' %}" data-lightbox="image">
-							<img src="{% static 'images/blocks/preview/card-6/1-thumb.jpg' %}" alt="Image" class="card-img-top">
-						</a>
-						<div class="p-4">
-								{% with categories=post.categories.all %}
-									{% if categories %}
-										<ul>
-											{% for cat in categories %}
-											<li style="display: inline-block; float: left; margin-right: 10px;">
-											<span class="fw-medium text-primary mb-3" >{{ cat }}</span>
-											</li>
-											{% endfor %}
-										</ul>
-									{% endif %}
-								{% endwith %}
-
-							<div class="entry-title mt-3">	
-								<h3 class="text-transform-none ls-0 h5"><a href="{% pageurl post %}">{{ post.title }}</a></h3>
-							</div>
-							<div class="entry-meta">
-								<ul>
-									<li><i class="uil uil-schedule"></i>{{ post.date }}</li>
-								</ul>
-							</div>
-							<div class="entry-content mt-4">
-								<p class="mb-0">{{ post.intro }}</p>
-							</div>
-							<hr class="my-4">
-							
-								{% with authors=post.authors.all %}
-									{% if authors %}
-										<ul class="mb-0">
-											{% for author in authors %}
-											<div class="d-flex align-items-center list-items">
-												<img src="{% static 'demos/articles/images/authors/2.jpg' %}" alt="Author" class="rounded-circle me-3" width="48" height="48">
-												<div>
-												<li style="display: inline">
-													<span>Author: &nbsp{{ author.name }}</span>
-												</li>
-												</div>
-											</div>
-											{% endfor %}
-										</ul>
-									{% endif %}
-								{% endwith %}
-								
-							<div class="mt-3 text-center">
-							<a href="{% pageurl post %}">
-								<button type="button" class="btn btn-outline-primary" style="width:100%;">Read More</button>
-							</a>
-							</div>
-						</div>
-						</div>
-					</div>
-				{% endif %}
-			{% endwith %}
-		{% endfor %}		
-
-
-		{% comment %}
-		{% image author.author_image fill-40x60 style="vertical-align: middle" %}
-		{% endcomment %}
-
-
-			</div>
+	<div class="row justify-content-center mb-5">
+		<div class="col-xl-6 col-lg-8 text-center">
+			<h1 class="fw-bold mb-3 text-primary">
+			{% if page.slug == 'tags' %}
+			Posts tagged "{{ tag }}"
+			{% elif page.slug == 'cat' %}
+			Posts categorized as "{{ cat }}"
+			{% elif page.slug == 'author' %}
+			Posts written by "{{ author }}"
+			{% else %}
+			Welcome to the LinguoAI Blog</h3>
+			{% endif %}
+			</h1>
 		</div>
 	</div>
-</section><!-- #content end -->
 
-</div><!-- #wrapper end -->
+	<div class="post-grid row col-mb-30">
 
-{% include './includes/footer.html' %}
 
-	<!-- Go To Top
-	============================================= -->
-	<div id="gotoTop" class="uil uil-angle-up"></div>
+	{% for post in blogpages %}
+		{% with post=post.specific %}
 
-	{% comment %}
-    <!-- JavaScript Mostly For the Header -->
-	<script src="{% static 'js/plugins.min.js' %}"></script>
-	<script src="{% static 'js/functions.js' %}"></script>
-	<script src="{% static 'js/jquery.js' %}"></script>
+		{% comment %}
+		{% if post.slug not in 'tags,cat,author' %}
+		{% endcomment %}
+		
+		<div class="entry col-lg-4 col-md-6">
+			<div class="grid-inner shadow-sm card rounded-5">
+			{% image post.main_image width-400 as main_image %}
+				<a href="{{ main_image.url }}" data-lightbox="image">
+					<img src="{{ main_image.url }}" alt="{{ post.main_image.alt_text }}" class="card-img-top">
+				</a>
 
-	
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
-	{% endcomment %}
-	<!-- JavaScripts
-	============================================= -->
-	<script src="{% static 'js/functions.js' %}"></script>
-	{% block javascript %}{% endblock javascript %}
+				<div class="p-4">
+						{% with categories=post.categories.all %}
+							{% if categories %}
+								<ul>
+									{% for cat in categories %}
+									<li style="display: inline-block; float: left; margin-right: 10px;">
+									<span class="fw-medium text-primary mb-3" ><a href="{% slugurl 'cat' %}?category={{ cat.slug }}">{{ cat }}</a></span>
+									</li>
+									{% endfor %}
+								</ul>
+							{% endif %}
+						{% endwith %}
 
-</body>
-</html>
+					<div class="entry-title mt-3">	
+						<h3 class="text-transform-none ls-0 h5"><a href="{% pageurl post %}">{{ post.title }}</a></h3>
+					</div>
+					<div class="entry-meta">
+						<ul>
+							<li><i class="uil uil-schedule"></i>{{ post.date }}</li>
+						</ul>
+					</div>
+					<div class="entry-content mt-4">
+						<p class="mb-0">{{ post.intro }}</p>
+					</div>
+					<hr class="my-4">
+					
+						{% with authors=post.authors.all %}
+							{% if authors %}
+		
+								<ul class="mb-0">
+									{% for author in authors %}
+									{% image author.author_image width-400 as author_image %}
+									<div class="d-flex align-items-center list-items">
+										<img src="{{ author_image.url }}" alt="Author" class="me-3"
+										{% if author.name == 'LinguoAI' %}
+										width="68" height="48">
+										{% else %}
+										width="48" height="68">
+										{% endif %}
+										<div>
+										<li style="display: inline">
+											<span><a href="{% slugurl 'author' %}?author={{ author }}">Author: &nbsp{{ author.name }}</a></span>
+										</li>
+										</div>
+									</div>
+									{% endfor %}
+								</ul>
+							{% endif %}
+						{% endwith %}
+						
+					<div class="mt-3 text-center">
+					<a href="{% pageurl post %}">
+						<button type="button" class="btn btn-outline-primary" style="width:100%;">Read More</button>
+					</a>
+					</div>
+				</div>
+				</div>
+			</div>
+		
+	{% endwith %}
+{% endfor %}		
+
+
+
+{# Only show pagination if there is more than one page to click through 
+Use this to add as a reference when adding pagination
+https://learnwagtail.com/tutorials/how-to-paginate-your-wagtail-pages/
+Not sure this format will work well for hundreds of pages #}
+{% if blogpages.paginator.num_pages > 1 %}
+<div class="container mb-5">
+  <div class="container">
+	<div class="row">
+	  <div class="col-lg-12">
+		<div class="pagination">
+		  {% if blogpages.has_previous %}
+			<li class="page-item">
+			  <a href="?page=1{% if tag %}&tag={{ tag }}{% elif cat %}&category={{ cat_slug }}{% elif author %}&author={{ author }}
+			  {% endif %}
+				" class="page-link">
+				<span>&laquo;</span>
+			  </a>
+			</li>
+		  {% endif %}
+
+		  {% for page_num in blogpages.paginator.page_range %}
+			<li class="page-item {% if page_num == blogpages.number %} active{% endif %}">
+			  <a href="?page={{ page_num }}{% if tag %}&tag={{ tag }}{% elif cat %}&category={{ cat_slug }}{% elif author %}&author={{ author }}
+			  {% endif %} 
+			  " class="page-link">
+				{{ page_num }}
+			  </a>
+			</li>
+		  {% endfor %}
+
+		  {% if blogpages.has_next %}
+			<li class="page-item">
+			  <a href="?page={{ blogpages.paginator.num_pages }}{% if tag %}&tag={{ tag }}{% elif cat %}&category={{ cat_slug }}{% elif author %}&author={{ author }}
+				{% endif %}
+			" class="page-link">
+				<span>&raquo;</span>
+			  </a>
+			</li>
+		  {% endif %}
+		</div>
+	  </div>
+	</div>
+  </div>
+</div>
+{% endif %}
+
+{% comment %}
+{% image author.author_image fill-40x60 style="vertical-align: middle" %}
+{% endcomment %}
+
+
+	</div>
+</div>
+{% endblock content %}
