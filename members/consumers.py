@@ -9,7 +9,7 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
-r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'))
+r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'),decode_responses=True)
 
 class Consumer(WebsocketConsumer):
 
