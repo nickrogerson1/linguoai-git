@@ -50,38 +50,38 @@ const interval = setInterval(incrementer, 1000)
 
 const addRow = (wordCount, cost, fileName, id, status) => {
 
-const tr = document.createElement('tr')
-    tr.id = `row-${id}`
+    const tr = document.createElement('tr')
+        tr.id = `row-${id}`
 
-    const td0 = document.createElement('td')
-    td0.innerHTML = `${id}.`
+        const td0 = document.createElement('td')
+        td0.innerHTML = `${id}.`
 
-    const td1 = document.createElement('td')
-    td1.innerHTML = 0
-    td1.className = 'text-center'
+        const td1 = document.createElement('td')
+        td1.innerHTML = 0
+        td1.className = 'text-center'
 
-    const td2 = document.createElement('td')
-    td2.innerHTML = wordCount
-    td2.className = 'text-center'
+        const td2 = document.createElement('td')
+        td2.innerHTML = wordCount
+        td2.className = 'text-center'
 
-    const td3 = document.createElement('td')
-    td3.innerHTML = cost
-    td2.className = 'text-center'
+        const td3 = document.createElement('td')
+        td3.innerHTML = cost
+        td2.className = 'text-center'
 
-    const td4 = document.createElement('td')
-    td4.innerHTML = fileName
-    td4.className = 'inject-link'
+        const td4 = document.createElement('td')
+        td4.innerHTML = fileName
+        td4.className = 'inject-link'
 
-    const td5 = document.createElement('td')
-    td5.innerHTML = status
+        const td5 = document.createElement('td')
+        td5.innerHTML = status
 
-    tr.append(td0,td1,td2,td3,td4,td5)
+        tr.append(td0,td1,td2,td3,td4,td5)
 
-    document.querySelector('tbody').append(tr)
+        document.querySelector('tbody').append(tr)
 
-    // Start counter after initialization
-    counter(id)
-}
+        // Start counter after initialization
+        counter(id)
+    }
 
 
 ws.onmessage = e => {

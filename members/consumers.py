@@ -14,6 +14,8 @@ class Consumer(WebsocketConsumer):
 
     def connect(self):
         self.accept()
+        # Make sure there is no ID and it's clean when it fires up
+        r.delete(self.scope['user'].username)
         username = self.scope['user'].username
         print(f"CONSUMER USERNAME: {username}")
         
