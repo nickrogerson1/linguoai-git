@@ -170,7 +170,7 @@ th {
 
 
 <script>
-    const ws = new WebSocket(`ws://${window.location.host}/ws/log-submission/`);
+    const ws = new WebSocket(`wss://${window.location.host}/ws/log-submission/`);
 
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     console.log(tz);
@@ -178,6 +178,10 @@ th {
     ws.onclose = e => {
         console.error('Web Socket closed unexpectedly');
     };
+
+    ws.onopen = e => {
+        console.log('Web socket connected!')
+    }
 
 
     ws.onmessage = e => {
