@@ -672,7 +672,7 @@ class ResultsLogView(LoginRequiredMixin, ListView):
         usage3 = (ImprovedSubmission.objects.filter(owner=id,user_deleted=False).values('pk', 'time_created')
             .annotate(type=Value('Improved Submission'), url_link=Value('improved-results-detail'), status=Value('Completed')))
         
-        sorted_results = usage1.union(usage2,usage3).order_by('-time_created')
+        sorted_results = list(usage1.union(usage2,usage3).order_by('-time_created'))
         print(sorted_results)
 
         username = self.request.user.username
@@ -698,7 +698,7 @@ class ResultsLogView(LoginRequiredMixin, ListView):
                     'status' : 'Pending',
                 }
 
-                sorted_results = [pending_task] + list(sorted_results)
+                sorted_results = [pending_task] + sorted_results
 
         return sorted_results
 
