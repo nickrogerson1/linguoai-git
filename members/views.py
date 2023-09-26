@@ -36,6 +36,7 @@ from django.utils.encoding import force_bytes
 from django.core.mail import send_mail
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
 from .tasks import *
+from celery.result import AsyncResult
 
 
 import environ
@@ -327,10 +328,12 @@ class BalanceCheckMixin:
             # for CNY
             charged = Decimal(MIN_CHARGE['CNY']).quantize(TWO_PLACES) if cost < Decimal(MIN_CHARGE['CNY']).quantize(TWO_PLACES) else cost
 
+# REVIEW WHETHER THIS IS SUFFICIENT
+# What happens if they upload a 5k word file and it doesn't go through?
+# This should be locked while it is got and set
         temp_balance = None
         
         if multi:
-            # r = redis.Redis()
             with r.lock('user_balance'):
                 temp_balance = r.hget(user, 'temp_balance')
 
@@ -504,7 +507,7 @@ class ImprovedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin, 
             html_id = 1
             
             # Then pass to Celery to process
-            get_improved_results.delay(t0, username, user_id, sub, html_id, *args)
+            get_improved_results.delay(t0, username, user_id, sub, html_id, 'single', *args)
               
             # return redirect(self.success_url)
             ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
@@ -547,7 +550,7 @@ class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin,
             html_id = 1
             
             # Then pass to Celery to process
-            get_corrected_results.delay(t0, username, user_id, sub, html_id, *args)
+            get_corrected_results.delay(t0, username, user_id, sub, html_id, 'single', *args)
               
             # return redirect(self.success_url)
             ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
@@ -657,12 +660,9 @@ class ImprovedResultsDetailView(LoginRequiredMixin, DetailViewMixin, DetailView)
 class ResultsLogView(LoginRequiredMixin, ListView):
     paginate_by = 25
     template_name = 'members/home/log.html'
-   
-    
 
     def get_queryset(self):
         
-        r = self.request
         id = self.request.user.id
         # (Download Checkbox) Submission Type - Time Submitted - Status (Complete/Being Processed/Failed)
         usage1 = (IeltsWritingTask2.objects.filter(owner=id,user_deleted=False).values('pk', 'time_created')
@@ -673,18 +673,32 @@ class ResultsLogView(LoginRequiredMixin, ListView):
             .annotate(type=Value('Improved Submission'), url_link=Value('improved-results-detail'), status=Value('Completed')))
         
         sorted_results = usage1.union(usage2,usage3).order_by('-time_created')
-        # print(sorted_results)
-        
-        # Add in whatever was submitted
-        format = {
-            'pk' : 'NA',
-            'time_created' : 'In Progress',
-            'type' : 'Whatever it is',
-            'url_link' : None,
-            'status' : 'Pending'
-        }
+        print(sorted_results)
 
-        print(f'Request: {r.path}')
+        username = self.request.user.username
+        print(f'LOG VIEW USERNAME: {username}')
+
+        pending_items = r.lrange(f'{username}_pending', 0, -1)
+        print(f'PENDING ITEMS: {pending_items}')
+
+        if pending_items:
+    # Get the pending items and add them to the queryset
+    # Reversed so they get added in the order they were added
+            for item in reversed(pending_items):
+                print(f'TASK ID LOG: {item}')
+            
+                sub_type, task_id = item.split(',')
+        
+                # Add in whatever was submitted
+                pending_task = {
+                    'pk' : 'N/A',
+                    'time_created' : 'In Progress',
+                    'type' : sub_type,
+                    'url_link' : False,
+                    'status' : 'Pending',
+                }
+
+                sorted_results = [pending_task] + list(sorted_results)
 
         return sorted_results
 

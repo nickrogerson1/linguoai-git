@@ -137,7 +137,8 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
         curr = '$' if self.request.user.currency == 'USD' else '¥'
         
         # print(f'USER: {self.request.user.username}')
-        channel_name = r.hget(username, 'channel')
+        channel_name = r.get(f'{username}_channel_name')
+        print(f'CHANNEL NAME: {channel_name}')
         if channel_name:
             channel_layer = get_channel_layer()
             
@@ -159,9 +160,9 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
             #Remove 'insufficient funds' info from args before passing through
             args.pop()
             if 'corrected' in self.request.path_info:
-                get_corrected_results.delay(t0, username, user_id, sub, id, *args)
+                get_corrected_results.delay(t0, username, user_id, sub, id, 'multi', *args)
             else:
-                get_improved_results.delay(t0, username, user_id, sub, id, *args)
+                get_improved_results.delay(t0, username, user_id, sub, id, 'multi', *args)
         
   
     def get_docx_text(self, file):

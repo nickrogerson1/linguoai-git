@@ -4,7 +4,6 @@ from .api_funcs.ielts_score import *
 from .api_funcs.corrections import get_corrected_submission
 from .api_funcs.improved import get_improved_submission
 
-
 from .models import *
 
 import time
@@ -23,7 +22,7 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
-r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'), decode_responses=True)
+r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'))
 
 
 from .pricing import *
@@ -93,6 +92,7 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
         model.score_res = score_res
         model.band = band
         model.explanation_language = lang
+        sub_type = 'Ielts Writing Task 2'
 
 
 # The rest
@@ -105,9 +105,11 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
 
         if isinstance(model, CorrectedSubmission):
             model.result = result
+            sub_type = 'Corrected Submission'
 
         if isinstance(model, ImprovedSubmission):
             model.improved_sub = result
+            sub_type = 'Improved Submission'
 
    
 
@@ -180,10 +182,12 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
     model.save()
 
     pk = model.pk
-
+    # time_created = model.time_created.strftime('%b %d %Y, %-I:%M %p') # TIME IN UTC
+    # time_created = str(model.time_created)
+    time_created = time.mktime(model.time_created.timetuple()) * 1000
 
 # Inform websocket
-    channel_name = r.hget(user.username, 'channel')
+    channel_name = r.get(f'{user.username}_channel_name')
 # Check that there's a name
     if channel_name:
         print('Has a channel name')
@@ -194,10 +198,12 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
             'status': 'success',
             'row' : html_id,
             'new_balance' : float(user.balance),
-            'pk' : pk
+            'pk' : pk,
+            'time_created' : time_created,
+            'sub_type' : sub_type
         })
     
-    return [pk, user.balance]
+    return [pk, user.balance, time_created]
     
    
 
@@ -241,18 +247,27 @@ def check_and_reduce_usage_left(num_tokens):
     
 
 
-
 @shared_task(bind=True)
-def get_corrected_results(self, t0, username, user_id, sub, html_id, price_per_100_words, total_words, charged):
+def get_corrected_results(self, t0, username, user_id, sub, html_id, from_where, price_per_100_words, total_words, charged):
 
-    # state = app.events.State()
-    # task = state.tasks.get(self.request.id)
     task_id = self.request.id
     print(f'TASK ID {task_id}')
 
-    r.hset(username, mapping={'single_sub' : task_id})
+    # self.request.kwargs = { 'sub_type' : 'corrected' }
 
-    enc = tiktoken.encoding_for_model("gpt-4")
+    store_val = 'Corrected Submission,' + task_id
+    print(store_val)
+
+    # Added to all the pending tasks for this user
+    r.lpush(f'{username}_pending', store_val)
+    print('LRANGE 1: ' + str(r.lrange(f'{username}_pending',0,-1)))
+
+    # Replace old single value with new one (if there is one)
+    # and delete it after 2 minutes
+    if from_where == 'single':
+        r.set(f'{username}_single', task_id, ex=120)
+
+    enc = tiktoken.encoding_for_model('gpt-4')
     num_tokens = len(enc.encode(sub))
 
     print(f'Tokens Used: {num_tokens}')
@@ -263,6 +278,7 @@ def get_corrected_results(self, t0, username, user_id, sub, html_id, price_per_1
 
     # Long API call
     data = get_corrected_submission(sub)
+
     # Create an instance to pass to next func
     model = CorrectedSubmission()
 
@@ -273,22 +289,41 @@ def get_corrected_results(self, t0, username, user_id, sub, html_id, price_per_1
     # Save PK and balance in case it beats HTTP
     # Unnecessary for multi
         self.request.kwargs = {
-            'pk' :extra[0],
-            'new_balance' : extra[1]
+            'pk' : extra[0],
+            'new_balance' : extra[1],
+            'time_created' : extra[2],
+            'sub_type' : 'corrected'
         }
+
+    # Remove completed item from list
+    r.lrem(f'{username}_pending', 1, store_val)
+    print('LRANGE 2: ' + str(r.lrange(f'{username}_pending',0,-1)))
+
+       
+
 
 
 
 
 @shared_task(bind=True)
-def get_improved_results(self,t0, username, user_id, sub, html_id, price_per_100_words, total_words, charged):
-   
+def get_improved_results(self,t0, username, user_id, sub, html_id, from_where, price_per_100_words, total_words, charged):
+
     task_id = self.request.id
     print(f'TASK ID {task_id}')
 
-    r.hset(username, mapping={'single_sub' : task_id})
+    store_val = 'Improved Submission,' + task_id
+    print(store_val)
 
-    enc = tiktoken.encoding_for_model("gpt-4")
+    # Added to all the pending tasks for this user
+    r.lpush(f'{username}_pending', store_val)
+    print('LRANGE 1: ' + str(r.lrange(f'{username}_pending',0,-1)))
+
+    # Replace old single value with new one (if there is one)
+    # and delete it after 2 minutes
+    if from_where == 'single':
+        r.set(f'{username}_single', task_id, ex=120)
+
+    enc = tiktoken.encoding_for_model('gpt-4')
     num_tokens = len(enc.encode(sub))
 
     print(f'Tokens Used: {num_tokens}')
@@ -299,71 +334,49 @@ def get_improved_results(self,t0, username, user_id, sub, html_id, price_per_100
 
     # Long API call
     data = get_improved_submission(sub)
+
     # Create an instance to pass to next func
     model = ImprovedSubmission()
 
     if data:
         extra = update_db(model, data, t0, user_id, html_id, price_per_100_words, total_words, charged, sub=sub)
 
-
     # Save PK and balance in case it beats HTTP
     # Unnecessary for multi
         self.request.kwargs = {
-            'pk' :extra[0],
-            'new_balance' : extra[1]
+            'pk' : extra[0],
+            'new_balance' : extra[1],
+            'time_created' : extra[2],
+            'sub_type' : 'improved'
         }
 
-
-
-# For this to work, "model" also has to be passed through
-# @shared_task(bind=True)
-# def get_results(self,t0, username, user_id, sub, html_id, model, price_per_100_words, total_words, charged):
-   
-#     task_id = self.request.id
-#     print(f'TASK ID {task_id}')
-
-#     r.hset(username, mapping={'single_sub' : task_id})
-
-#     enc = tiktoken.encoding_for_model("gpt-4")
-#     num_tokens = len(enc.encode(sub))
-
-#     print(f'Tokens Used: {num_tokens}')
-#     print(f'Word Count: {total_words}')
-
-# # Check to see whether API limit has been hit and can make a request
-#     check_and_reduce_usage_left(num_tokens)
-
-#     # Long API call
-#     data = get_improved_submission(sub)
-#     # Create an instance to pass to next func
-#     if model == ImprovedSubmission:
-#         data = get_improved_submission(sub)
-#     else:
-#         data = get_corrected_submission(sub)
-
-#     if data:
-#         extra = update_db(model, data, t0, user_id, html_id, price_per_100_words, total_words, charged, sub=sub)
-
-
-#     # Save PK and balance in case it beats HTTP
-#     # Unnecessary for multi
-#         self.request.kwargs = {
-#             'pk' :extra[0],
-#             'new_balance' : extra[1]
-#         }
+    # Remove completed item from list
+    r.lrem(f'{username}_pending', 1, store_val)
+    print('LRANGE 2: ' + str(r.lrange(f'{username}_pending',0,-1)))
 
 
 
 
 @shared_task(bind=True)
 def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lang_code, html_id, price_per_100_words, total_words, charged):
-        # def get_improved_results(self,t0, username, user_id, sub, html_id, price_per_100_words, total_words, charged):
+
     task_id = self.request.id
     print(f'TASK ID {task_id}')
 
-    r.hset(username, mapping={'single_sub' : task_id})
+    store_val = 'Ielts Writing Task 2,' + task_id
+    print(store_val)
 
-    enc = tiktoken.encoding_for_model("gpt-4")
+    # Added to all the pending tasks for this user
+    r.lpush(f'{username}_pending', store_val)
+    print('LRANGE 1: ' + str(r.lrange(f'{username}_pending',0,-1)))
+
+    # Replace old single value with new one (if there is one)
+    # and delete it after 2 minutes
+    # if from_where == 'single':
+    r.set(f'{username}_single', task_id, ex=120)
+
+
+    enc = tiktoken.encoding_for_model('gpt-4')
     q_toks = len(enc.encode(q))
     a_toks = len(enc.encode(a))
     num_tokens = q_toks + a_toks
@@ -373,18 +386,17 @@ def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lan
 
 # Check to see whether API limit has been hit and can make a request
     check_and_reduce_usage_left(num_tokens)
- 
- # Add all the openai data to the db
-# [html, model, prompt_tokens, completion_tokens, total_tokens]
+
+    # Long API call
     data = get_ielts_writing_task_2_score(q,a,lang)
 
     model = IeltsWritingTask2()
 
     if data:
-
-        # Pull out the band and replace it with nothing
+         # Pull out the band and replace it with nothing
         reg = r'%%%%%([a-zA-Z0-9_\. ]+)%%%%%'
         m = re.search(reg, data[0], flags=re.I)
+
         band = m.group(1).replace('Band ', '')
 
         # Remove \n and change to <br>
@@ -394,15 +406,18 @@ def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lan
         score = re.sub(reg, '', data[0])
         score_res = score.replace('\n', '<br>').replace('<br>','',2)
 
-        # get_context_data_post(data, t0, price_per_100_words, total_words, charged, q, a)
-
         extra = update_db(model, data, t0, user_id, html_id, price_per_100_words, total_words, charged, 
                 question=question, answer=answer, score_res=score_res, band=band, lang=lang_code)
-    
 
     # Save PK and balance in case it beats HTTP
     # Unnecessary for multi
         self.request.kwargs = {
-            'pk' :extra[0],
-            'new_balance' : extra[1]
+            'pk' : extra[0],
+            'new_balance' : extra[1],
+            'time_created' : extra[2],
+            'sub_type' : 'ielts-writing-task-2'
         }
+
+    # Remove completed item from list
+    r.lrem(f'{username}_pending', 1, store_val)
+    print('LRANGE 2: ' + str(r.lrange(f'{username}_pending',0,-1)))

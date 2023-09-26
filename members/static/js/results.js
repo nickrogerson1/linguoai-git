@@ -1,6 +1,8 @@
 const checkBox = document.querySelector('#select-all-items')
 const checkboxes = document.querySelectorAll('.checkbox')
-const applyToAll = () => checkboxes.forEach(x => checkBox.checked ? x.checked = true : x.checked = false)
+
+const applyToAll = () => checkboxes.forEach(x => checkBox.checked && !x.disabled ? x.checked = true : x.checked = false)
+
 // Turn it on and off when all or some selected
 const turnMainOnOff = () => {
     const allChecked = [...checkboxes].every(x => x.checked)

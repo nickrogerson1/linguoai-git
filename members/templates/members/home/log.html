@@ -89,7 +89,7 @@ th {
                             <thead class=" text-primary">
                             <tr>
                                 <th><input type="checkbox" id="select-all-items" name="" value=""></th>
-                                <th>Date Created</th>
+                                <th>Time Created</th>
                                 <th>Submission Type</th>
                                 <th>Status</th>
                             </tr>
@@ -97,11 +97,21 @@ th {
                             {% endif %}
                             <tbody>
                             {% for result in object_list %}
+
+                            {% if result.url_link %}
                             <tr>
-                                <td><input type="checkbox" class="checkbox" id="{{ result.pk }}" name="checks" value="{{ result.url_link }}/{{ result.pk }}"></td>
-                                <td >{{ result.time_created }}</td>
-                                <td ><a href="{% url result.url_link result.pk %}">{{ result.type }}</a></td>
-                                <td >{{ result.status }}</td>
+                            <td><input type="checkbox" class="checkbox" id="{{ result.pk }}" name="checks" value="{{ result.url_link }}/{{ result.pk }}"></td>
+                            {% else %}
+                            <tr class="pending-row">
+                            <td><input type="checkbox" class="checkbox" name="checks" value="" disabled></td>
+                            {% endif %}
+                                <td>{{ result.time_created }}</td>
+                                {% if result.url_link %}
+                                <td><a href="{% url result.url_link result.pk %}">{{ result.type }}</a></td>
+                                {% else %}
+                                <td>{{ result.type }}</td>
+                                {% endif %}
+                                <td>{{ result.status }}</td>
                             </tr>
                             {% empty %}
                                 <tr><h3>You still have not submitted anything yet.</h3></tr>
@@ -119,7 +129,7 @@ th {
 
 
             {% if object_list %}
-                <div class="pagination">
+                <div class="pagination mb-2 ml-2">
                     <span class="step-links">
                         {% if page_obj.has_previous %}
                             <a href="?page=1">&laquo; first</a>
@@ -157,6 +167,63 @@ th {
     }) 
 </script>
 {% endif %}
+
+
+<script>
+    const ws = new WebSocket(`ws://${window.location.host}/ws/log-submission/`);
+
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    console.log(tz);
+
+    ws.onclose = e => {
+        console.error('Web Socket closed unexpectedly');
+    };
+
+
+    ws.onmessage = e => {
+        const data = JSON.parse(e.data);
+        console.log(data)
+
+
+// IS this IF necessary?
+     if(data.status === 'success' || data.ready === true ) {
+
+            const { pk, new_balance, time_created, sub_type } = data
+
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }; //dayPeriod: 'long', hourCycle: 'h12'
+            const timeCreated = new Date(time_created).toLocaleDateString('en-us', options)
+
+            let link;
+            if (sub_type === 'Corrected Submission'){
+                link = `/corrected-results/${pk}/`
+            } else if (sub_type === 'Improved Submission'){
+                link = `/improved-results/${pk}/`
+            } else {
+                link = `/ielts-writing-task-2-results/${pk}/`
+            }
+
+            const pendingRows = document.querySelectorAll('.pending-row')
+            console.log(pendingRows)
+
+            const ind = [...pendingRows].findLastIndex(row => row.children[2].innerHTML === sub_type)
+            console.log(ind)
+
+            // Update rows with new values
+            pendingRows[ind].classList.remove('pending-row') 
+            pendingRows[ind].children[0].children[0].disabled = false
+            pendingRows[ind].children[1].innerHTML = timeCreated
+            pendingRows[ind].children[2].innerHTML = `<a href="${link}">${sub_type}</a>`
+            pendingRows[ind].children[3].innerHTML = 'Completed'
+            
+            // Update with the new balance
+            document.querySelector('#balance').innerHTML = new_balance
+        }
+    }
+
+
+</script>
+
+
 
 <script src="{% static 'js/results.js' %}"></script>
 {% endblock javascripts %}
