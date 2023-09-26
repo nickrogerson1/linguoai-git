@@ -1,5 +1,4 @@
 import json
-
 from channels.generic.websocket import WebsocketConsumer
 import redis
 import json
@@ -19,21 +18,16 @@ class Consumer(WebsocketConsumer):
         print(f"CONSUMER USERNAME: {username}")
         
     # Cache the username and channel
-        # r.hset(self.scope['user'].username, mapping={'channel' : self.channel_name})
         r.set(f"{username}_channel_name", self.channel_name, ex=300)
         print(f'CHANNEL NAME: {self.channel_name}')
         self.send(json.dumps({'message':"Connected"}))
         
 
     def disconnect(self, close_code):
-        #  r = redis.Redis()
     # Remove the user from Redis
-        #  r.delete(self.scope['user'].username)
+         r.delete(self.scope['user'].username)
          print(f"CONSUMER USERNAME DISCONNECT: {self.scope['user'].username}")
          self.close()
-
-    # def receive(self, text_data=None, bytes_data=None):
-    #     print(f'WS received: {text_data}')
 
     
     def update(self, vals):
