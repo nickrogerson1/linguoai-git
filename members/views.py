@@ -310,57 +310,57 @@ class BalanceCheckMixin:
         TWO_PLACES = Decimal("0.01")
 
     # Check the cost before starting
-        user = self.request.user.username
+        username = self.request.user.username
         currency = self.request.user.currency
-        price_per_100_words = PRICING[results_type]['USD'] if currency == 'USD' else PRICING[results_type]['CNY']
+        price_per_word = PRICING[results_type]['USD'] if currency == 'USD' else PRICING[results_type]['CNY']
 
         if sub:
             total_words = len(sub.strip().split())
         else:
             total_words = len((q + ' ' + a).strip().split())
 
-        cost = Decimal(round((total_words / 100) * price_per_100_words, 2)).quantize(TWO_PLACES)
+        cost = Decimal(total_words * price_per_word).quantize(TWO_PLACES)
+
+        print(results_type)
+        print(f'TOTAL WORDS: {total_words}')
+        print(f'COST: {cost}')
 
     # Enforce Minimum charge
         if currency == 'USD':
             charged = Decimal(MIN_CHARGE['USD']).quantize(TWO_PLACES) if cost < Decimal(MIN_CHARGE['USD']).quantize(TWO_PLACES) else cost
         else:
-            # for CNY
+            # for CNY 
             charged = Decimal(MIN_CHARGE['CNY']).quantize(TWO_PLACES) if cost < Decimal(MIN_CHARGE['CNY']).quantize(TWO_PLACES) else cost
 
-# REVIEW WHETHER THIS IS SUFFICIENT
-# What happens if they upload a 5k word file and it doesn't go through?
-# This should be locked while it is got and set
-        temp_balance = None
+        print(f'CHARGED: {charged}')
         
-        if multi:
-            with r.lock('user_balance'):
-                temp_balance = r.hget(user, 'temp_balance')
+        with r.lock('temp_balance'):
+            # Work out their remaining balance
+            temp_balance = r.get(f'{username}_temp_balance')
+            user_balance = Decimal(float(temp_balance)).quantize(TWO_PLACES) if temp_balance else self.request.user.balance
 
-        print(f'REQ BALANCE: {type(self.request.user.balance)}')
+            print(f'POSTGRES BALANCE: {self.request.user.balance}')
+            print(f'TEMP BALANCE {temp_balance}')
+            print(f'USER BALANCE: {user_balance}')
 
-        user_balance = Decimal(float(temp_balance)).quantize(TWO_PLACES) if temp_balance else self.request.user.balance
-        print(f'TEMP BALANCE {temp_balance}')
-        print(f'USER BALANCE: {user_balance}')
-
-        # If they don't have enough money:
-        if user_balance < charged:
-            if multi:
-                return [ price_per_100_words, total_words, charged, 'Rejected: Insufficient Funds']
-            else:
-            # Only send warning when redirecting
-                messages.warning(self.request, "Ooops, looks like you don't have enough credit to make that submission.")
-                return False
+            # If they don't have enough money:
+            if user_balance < charged:
+                if multi:
+                    return [ price_per_word, total_words, charged, 'Rejected: Insufficient Funds']
+                else:
+                # Only send warning when redirecting
+                    messages.warning(self.request, "Ooops, looks like you don't have enough credit to make that submission.")
+                    return False
         
-        # Otherwise reduce temp_balance
-        if multi:
-            with r.lock('user_balance'):
-                user_balance = float(user_balance - charged)
-                print(f'599 - {type(user_balance)}')
-                r.hset(user, mapping={'temp_balance' : user_balance})
-                return [ price_per_100_words, total_words, charged, 'Awaiting Response' ]
-            
-        return [ price_per_100_words, total_words, charged ]
+            # Otherwise reduce temp_balance
+            user_balance = float(user_balance - charged)
+            print(f'USER BALANCE: {user_balance}')
+            # Set this to expire in ten minutes to make sure they can't go back
+            # and submit more while the API call is running
+            r.setex(f'{username}_temp_balance', 600, user_balance)
+        
+        return [ price_per_word, total_words, charged ]
+
 
 class StandardSubMixin:
 

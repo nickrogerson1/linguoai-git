@@ -22,8 +22,8 @@ th, td {
             <div>
               <div class="alert" role="alert">
                   <h2 id="heading" class="text-center">We are processing your submission</h2>
-                  <p>We have received your submission and are now processing it. Processing times can vary from a few seconds to over a minute depending on a number of factors.</p>
-                  <p>Once your submission is complete, please click on the link in the Submission Type category to view your result.</p>
+                  <p id="para">We have received your submission and are now processing it. Processing times can vary from a few seconds to over a minute depending on a number of factors.<br><br>
+                  Once your submission is complete, please click on the link in the Submission Type category to view your result.</p>
               </div>
             </div>
           </div>
@@ -46,7 +46,7 @@ th, td {
                       <td>0 secs</td>
                       <td>{{ word_count }}</td>
                       <td>{{ symbol }}{{ cost }}</td>
-                      <td>{{ sub_type}}</td>
+                      <td>{{ sub_type }}</td>
                       <td>PENDING</td>
                     </tr>
                   </tbody>
@@ -97,25 +97,35 @@ th, td {
 
 
       ws.onmessage = e => {
-      const data = JSON.parse(e.data);
-      console.log(data)
-      // If HTTP slow
-      if (data.ready) {
-        console.log(data.pk)
-        document.querySelector('#row-1 td:last-child').innerHTML = 'Completed'
-        document.querySelector('#balance').innerHTML = data.new_balance
-        document.querySelector('#heading').innerHTML = 'We have processed your submission!'
-      }
+        const data = JSON.parse(e.data);
 
-      if(data.status === 'success'){
-          const { status, row, new_balance } = data
-          console.log(row)
-          document.querySelector(`#row-${row} td:last-child`).innerHTML = 'Completed'
-          document.querySelector('#balance').innerHTML = new_balance
-          document.querySelector('#heading').innerHTML = 'We have processed your submission!'
+        if(data.status === 'success' || data.ready){
+            const { status, new_balance, pk } = data
+          
+            const el = document.querySelector('#row-1')
+ 
+            let page; 
+            const loc = window.location.toString()
+            if(loc.includes('corrected')){
+                page = 'corrected'
+              } else if (loc.includes('improved')){
+                page = 'improved'
+              } else {
+                page = 'ielts-writing-task-2'
+            }
+
+            const newLink = `<a href="/${page}-results/${pk}/">${el.children[3].innerHTML}</a>`
+            el.children[3].innerHTML = newLink
+            el.children[4].innerHTML = 'Completed'
+
+            page = page.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ')
+
+            document.querySelector('#balance').innerHTML = new_balance.toFixed(2)
+            document.querySelector('#heading').innerHTML = 'We have processed your submission!'
+            document.querySelector('#para').innerHTML = `
+            We have finished processing your submission. Please click on the ${page} link in the Submission Type category to view your result.`
+            document.querySelector('title').innerHTML = 'Your submission has been processed!'
         }
-      }
-    
-
+    }
 </script>
 {% endblock javascripts %}

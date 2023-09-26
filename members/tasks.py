@@ -187,7 +187,7 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
     time_created = time.mktime(model.time_created.timetuple()) * 1000
 
 # Inform websocket
-    channel_name = r.get(f'{user.username}_channel_name')
+    channel_name = r.hget(user.username, 'channel')
 # Check that there's a name
     if channel_name:
         print('Has a channel name')

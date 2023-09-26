@@ -11,8 +11,8 @@ def get_ielts_writing_task_2_score(q,a,language):
         ]
 
     messages=messages
-    model='gpt-4'
-    # model='gpt-3.5-turbo'
+    # model='gpt-4'
+    model='gpt-3.5-turbo'
     max_tokens=600
     temperature=1.0
 

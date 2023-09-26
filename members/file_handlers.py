@@ -121,10 +121,6 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
 # Insufficient Funds
     # Reject if over 5000 words
         if args[1] >= 5000:
-            # args[3] = 'Rejected: Submit content less than 5000 words in length'
-            # response = HttpResponse()
-            # response.status_code = 500
-            # response = HttpResponseBadRequest()
             return 'Too Long'
       
         file_name = file_name if file_name else self.request.FILES['file'].name
@@ -137,32 +133,25 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
         curr = '$' if self.request.user.currency == 'USD' else '¥'
         
         # print(f'USER: {self.request.user.username}')
-        channel_name = r.get(f'{username}_channel_name')
+        channel_name = r.hget(username, 'channel')
         print(f'CHANNEL NAME: {channel_name}')
         if channel_name:
             channel_layer = get_channel_layer()
             
-        async_to_sync(channel_layer.send)(channel_name, {
-                'type': 'update',
-                'wordCount': args[1],
-                'cost': f'{curr}{args[2]}',
-                'fileName': file_name,
-                'id' : id,
-                'status': args[3],
-            })
+            async_to_sync(channel_layer.send)(channel_name, {
+                    'type': 'update',
+                    'wordCount': args[1],
+                    'cost': f'{curr}{args[2]}',
+                    'fileName': file_name,
+                    'id' : id,
+                    'status': 'Awaiting Response',
+                })
         
-        # print(f"sub_type: {self.request.POST.get('sub_type')}")
-        
-        
-        
-    # Only process if awaiting response, otherwise reject via ws and do nothing
-        if args[3] == 'Awaiting Response':
-            #Remove 'insufficient funds' info from args before passing through
-            args.pop()
-            if 'corrected' in self.request.path_info:
-                get_corrected_results.delay(t0, username, user_id, sub, id, 'multi', *args)
-            else:
-                get_improved_results.delay(t0, username, user_id, sub, id, 'multi', *args)
+
+        if 'corrected' in self.request.path_info:
+            get_corrected_results.delay(t0, username, user_id, sub, id, 'multi', *args)
+        else:
+            get_improved_results.delay(t0, username, user_id, sub, id, 'multi', *args)
         
   
     def get_docx_text(self, file):

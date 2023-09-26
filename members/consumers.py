@@ -1,4 +1,3 @@
-import json
 from channels.generic.websocket import WebsocketConsumer
 import redis
 import json
@@ -14,19 +13,18 @@ class Consumer(WebsocketConsumer):
 
     def connect(self):
         self.accept()
-        # Make sure there is no ID and it's clean when it fires up
         r.delete(self.scope['user'].username)
         username = self.scope['user'].username
         print(f"CONSUMER USERNAME: {username}")
         
     # Cache the username and channel
-        r.set(f"{username}_channel_name", self.channel_name, ex=300)
+        r.hset(self.scope['user'].username, mapping={'channel' : self.channel_name})
         print(f'CHANNEL NAME: {self.channel_name}')
         self.send(json.dumps({'message':"Connected"}))
         
 
     def disconnect(self, close_code):
-    # Remove the user from Redis
+    # Remove the user from Redis - clears the id
          r.delete(self.scope['user'].username)
          print(f"CONSUMER USERNAME DISCONNECT: {self.scope['user'].username}")
          self.close()
@@ -66,8 +64,7 @@ class SingleConsumer(Consumer):
         
     # Cache the username and channel
         print(f"CONSUMER USERNAME CACHING: {username}")
-        # r.hset(username, mapping={'channel' : self.channel_name})
-        r.set(f"{username}_channel_name", self.channel_name, ex=300)
+        r.hset(username, mapping={'channel' : self.channel_name})
         
         print(f'CHANNEL NAME: {self.channel_name}')
         self.send(json.dumps({'ready': status, 'pk' : pk, 'new_balance' : new_balance}))
@@ -121,6 +118,6 @@ class LogConsumer(Consumer):
         # Cache the username and channel
         print(f"CONSUMER USERNAME CACHING: {username}")
         print(f'CHANNEL NAME: {self.channel_name}')
-        r.set(f"{username}_channel_name", self.channel_name, ex=300)
+        r.hset(self.scope['user'].username, mapping={'channel' : self.channel_name})
         
         
