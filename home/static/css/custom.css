@@ -42,3 +42,10 @@
 	padding-top: 30px;
 	margin-top: -30px;
 }
+
+/* Centre the sign-up buttons when on smaller devices */
+@media (max-width: 991px){
+	.signup-btn {
+		text-align: center;
+	}
+}

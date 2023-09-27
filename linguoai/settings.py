@@ -225,6 +225,17 @@ CHANNEL_LAYERS = {
 }
 
 
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
+#         "LOCATION": env('REDIS_URL'),
+#         "OPTIONS": {
+#             "db": "10",
+#             "parser_class": "redis.connection.PythonParser",
+#             "pool_class": "redis.BlockingConnectionPool",
+#         },
+#     }
+# }
 
 # Django deployment warnings edit
 # SECURE_SSL_REDIRECT = True

@@ -73,8 +73,6 @@ class TokenGenerator(PasswordResetTokenGenerator):
             six.text_type(user.pk) + six.text_type(timestamp) +
             six.text_type(user.is_active)
         )
-account_activation_token = TokenGenerator()
-
 
 
 
@@ -112,9 +110,11 @@ class Registration(CreateView):
     def send_activation_email(self, request, user):
             
             print(user.pk)
+            account_activation_token = TokenGenerator()
+            
             message = render_to_string('registration/activate_account.html', {
                 'name': user.first_name,
-                'domain': 'localhost:8000',
+                'domain': 'linguo.ai',
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': account_activation_token.make_token(user),
                 # 'protocol': 'https' if request.is_secure() else 'http'
@@ -137,6 +137,9 @@ def activate_account(request, uidb64, token):
         user = User.objects.get(pk=uid)
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
+
+    account_activation_token = TokenGenerator()
+
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.save()

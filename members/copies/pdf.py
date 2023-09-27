@@ -180,7 +180,7 @@ def get_pdf(sub_type, user, pk, type=None, multi=False):
     
 
 
-from weasyprint import HTML
+# from weasyprint import HTML
 import time
 
 # Handler function for single PDF requests
@@ -191,39 +191,39 @@ def get_pdf_version(request, pk, type):
     # If it's positive then they want the side-by-side version
     check_type = int(type)
 
-    if check_type:
-        print('Side-by-side')
+    # if check_type:
+    #     print('Side-by-side')
         
-        look_up = CorrectedSubmission.objects.get(pk=pk)
-        sub = look_up.submission
-        result = look_up.result
-        date = look_up.time_created
+    #     look_up = CorrectedSubmission.objects.get(pk=pk)
+    #     sub = look_up.submission
+    #     result = look_up.result
+    #     date = look_up.time_created
 
-        # if(type):
-        corrections = find_difference(sub, result)
-        template = get_template('members/pdfs/corrected-submission.html')
-        html = template.render({ 'corrections' : corrections, 'date' : date })
+    #     # if(type):
+    #     corrections = find_difference(sub, result)
+    #     template = get_template('members/pdfs/corrected-submission.html')
+    #     html = template.render({ 'corrections' : corrections, 'date' : date })
 
-        t0 = time.time()
-
-
-
-        pdf = HTML(string=html).write_pdf()
-
-        t1 = time.time()
-
-        print(f'TIME TAKEN: {t1-t0}')
+    #     t0 = time.time()
 
 
-        split = '' if type else 'split-'
-        filename = f'{user}-{split}corrections-{pk}.pdf'
 
-        # if multi:
-        #     return [pdf, filename]
+    #     pdf = HTML(string=html).write_pdf()
 
-        response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        return response
+    #     t1 = time.time()
+
+    #     print(f'TIME TAKEN: {t1-t0}')
+
+
+    #     split = '' if type else 'split-'
+    #     filename = f'{user}-{split}corrections-{pk}.pdf'
+
+    #     # if multi:
+    #     #     return [pdf, filename]
+
+    #     response = HttpResponse(pdf, content_type='application/pdf')
+    #     response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    #     return response
     
     return get_pdf(sub_type, user, pk, type)
 

@@ -17,6 +17,10 @@ def max_year(v):
     return MaxValueValidator(five_years_ago, max_comment)(v)
 
 class User(AbstractUser):
+    email = models.EmailField(_("email address"), unique=True, validators=[EmailValidator()], error_messages={
+            "unique": _("That email address has already been registered. Please use another one."),
+        })
+    first_name = models.CharField(_("Name"), max_length=150)
     country = CountryField()
     year = models.PositiveIntegerField(default=twenty_years_ago(), validators=[MinValueValidator(1920, min_comment), max_year])
     balance = models.DecimalField(default=0, max_digits=10, decimal_places=2)

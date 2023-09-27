@@ -4,6 +4,8 @@ from django.views.generic import FormView
 from .forms import ContactForm
 from django.http import JsonResponse
 from django.core.mail import send_mail
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 
 # Handles issue of importing from another folder/app
 import sys
@@ -11,7 +13,7 @@ sys.path.append('.')
 from members.pricing import *
 
 
-
+# @method_decorator(cache_page(60 * 5), name='dispatch')
 class Homepage(FormView):
 
     form_class = ContactForm
