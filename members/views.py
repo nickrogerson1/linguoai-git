@@ -126,7 +126,7 @@ class Registration(CreateView):
                 'Activate your LinguoAI account.',
                 message,
                 '"Linguo AI" <activation@linguo.ai>',
-                ['linguoaisite@gmail.com'],
+                [user.email],
                 html_message = message
             ) 
 
@@ -828,13 +828,13 @@ def report_bad_result(request, url):
             END OF MESSAGE
             '''
 
-        # send_mail(
-        #     'Bad Result Reported',
-        #     body,
-        #     '"Linguo AI" <admin@linguo.ai>',
-        #     ['linguoaisite@gmail.com'],
-        #     html_message = body
-        #     )   
+        send_mail(
+                'Bad Result Reported',
+                body,
+                '"Linguo AI" <admin@linguo.ai>',
+                ['linguoaisite@gmail.com'],
+                html_message = body
+            )   
         
 
         # Tell the modal it can close
