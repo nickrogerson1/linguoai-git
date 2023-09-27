@@ -144,12 +144,14 @@ td {
 
 {% block javascripts %}
 <script>
-    const getDocument = () => {
+       const getDocument = () => {
 // Make sure this is positive before firing so it doesn't fire on the first one and refresh the page
-        if(document.download.download.selectedIndex){
-            location = document.download.download.options[document.download.download.selectedIndex].value
+        const dropdown = document.download.download
+        if(dropdown.selectedIndex){
+            location = dropdown.options[dropdown.selectedIndex].value
             console.log(location)
         }
+        dropdown.selectedIndex = 0
     }
     document.addEventListener('change', getDocument)
     </script>

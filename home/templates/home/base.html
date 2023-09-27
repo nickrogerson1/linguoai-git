@@ -202,6 +202,29 @@
 		document.querySelector('#block-contactform')
 		.addEventListener('submit', checkEmailValid)
 
+
+// Make sure the FAQs don't get stuck under the navigation for wide screens
+		const offsetMore = e => {
+			e.preventDefault()
+
+			const el = document.querySelector(e.srcElement.hash);
+			const headerOffset = 30;
+			const elPosition = el.getBoundingClientRect().top;
+			const offsetPosition = elPosition + window.pageYOffset - headerOffset;
+  
+			window.scrollTo({
+				top: offsetPosition,
+				behavior: 'smooth'
+			});
+		}
+
+		const faqSections = document.querySelectorAll('.list-group-item')
+		const media = window.matchMedia('(min-width: 991px)')
+
+		if (media.matches){
+			faqSections.forEach(x => x.addEventListener('click', offsetMore))
+		}
+
 	</script>
 
 {% block javascript %}{% endblock javascript %}
