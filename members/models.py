@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser, User
 from django_countries.fields import CountryField
 from django.utils.translation import gettext_lazy as _
 import datetime
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, EmailValidator
 from django.core.exceptions import ValidationError
 
 min_comment = "Whooaa, looks like the year you entered was a little early. Have a go at entering a year after 1920."
