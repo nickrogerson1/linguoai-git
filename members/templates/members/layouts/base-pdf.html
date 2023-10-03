@@ -10,11 +10,11 @@
     <!-- <link rel="icon" type="image/png" href="/Users/nickrogerson/Desktop/LinguoAI/Linguo-ai/LinguoAI/members/static/img/favicon.png"> -->
 
     <title>
-        Django Dashboard Black - {% block title %}{% endblock %} | AppSeed
+        LinguoAI {% block title %}{% endblock %}
     </title>
 
     <!--     Fonts and icons     -->
-    <link href="static/css/Poppins/Poppins-Medium.ttf" rel="stylesheet"/>
+    <link href="{% static 'css/Poppins/Poppins-Medium.ttf' %}" rel="stylesheet"/>
     
 
 
@@ -25,7 +25,7 @@
     <!-- <link href="/Users/nickrogerson/Desktop/LinguoAI/Linguo-ai/LinguoAI/members/static/css/nucleo-icons.css" rel="stylesheet"/> -->
  
     <!-- <link href="/Users/nickrogerson/Desktop/LinguoAI/Linguo-ai/LinguoAI/members/static/css/black-dashboard.css" rel="stylesheet"/> -->
-    <link href="/Users/nickrogerson/Desktop/LinguoAI/Linguo-ai/LinguoAI/members/static/css/custom1.css" rel="stylesheet"/>
+    <link href="{% static 'css/custom1.css' %}" rel="stylesheet"/>
 
 
 
@@ -52,11 +52,8 @@
         </div>
     </div>
 
-    {% include '../includes/scripts-pdf.html' %}
+    {% include '../includes/scripts.html' %}
 
-    {% comment %}
-
-    {% endcomment %}
     <!-- Specific Page JS goes HERE  -->
     {% block javascripts %}{% endblock javascripts %}
 
