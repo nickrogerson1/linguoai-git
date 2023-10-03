@@ -9,7 +9,7 @@ from .api_funcs.corrections import find_difference
 
 
 class CustomUserAdmin(UserAdmin):
-    list_display = ("username", "country", "year", "balance", "is_staff")
+    list_display = ("username", "country", "year", "balance", "_currency", "is_staff")
     # fieldsets = UserAdmin.fieldsets + ((None, {"fields": ["country"]}),)
     add_fieldsets = UserAdmin.add_fieldsets + ((None, {"fields": ["country"]}),)
 
@@ -32,6 +32,10 @@ class CustomUserAdmin(UserAdmin):
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
 
+    @admin.display(description="currency")
+    def _currency(self, obj):
+        return obj.currency
+    
 
 # Update the user when submissions are deleted from the database by admin
 class AdminMixin:

@@ -24,4 +24,9 @@ span.one-line {
 
 .tim-icons {
 	margin-right: 4px;
-} 
+}
+
+/* Increase size of login and register submit buttons */
+.lg-submit-btn {
+	padding: 11px 70px;
+}
