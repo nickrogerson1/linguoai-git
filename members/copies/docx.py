@@ -13,8 +13,10 @@ from bs4 import BeautifulSoup
 from ..views import CorrectedSubmission, ImprovedSubmission, IeltsWritingTask2
 from ..api_funcs.corrections import find_difference
 
-
-import re
+from docx.text.paragraph import Paragraph
+from docx.oxml.xmlchemy import OxmlElement
+from docx.shared import RGBColor
+from docx.shared import Pt
 
 import pathlib
 
@@ -96,7 +98,7 @@ def get_docx(request, pk, type=None, multi=False, sub=None):
             
         
 
-            print(changed_classes)
+            # print(changed_classes)
 
         # No other option but to save, reload and delete this file
             output = pypandoc.convert_text(source=changed_classes, format='html', to='markdown')
@@ -105,15 +107,11 @@ def get_docx(request, pk, type=None, multi=False, sub=None):
             file_path = f'{str(pathlib.Path(__file__).parent.resolve())}/{filename}'
             pypandoc.convert_text(source=output, format='markdown', to='docx', outputfile=file_path, extra_args=['--reference-doc=members/copies/docx_template.docx'])
             
-        # Just the table - nothing else
-            # with open(filename, 'rb') as f:
-            #     stream = BytesIO(f.read())
-            # stream.seek(0)
 
-        # Overwrite the existing styles to preserve the original styles
+        # Overwrite the existing doc to preserve the original styles
             doc = Document(file_path)
             doc_deep = deepcopy(doc)
-        
+      
         # Then get rid of it
             os.remove(file_path)
             
@@ -122,12 +120,22 @@ def get_docx(request, pk, type=None, multi=False, sub=None):
                 element.clear()
 
         # Rebuild the doc
-            doc.add_heading('Corrected Version')
-            for element in doc_deep.element.body:
-                print(element)
-                doc.element.body.append(element)
+            doc.add_heading('Corrected Version\n').alignment = 1
 
-            doc.add_heading(f'This submission was made on {date}', 3)
+    # This is a hack to mix low-level and high-level code which I don't really get
+    # Otherwise the date will get shown before the table
+            for element in doc_deep.element.body:
+                doc.element.body.append(element)
+                
+                new_p = OxmlElement("w:p")
+                element.addnext(new_p)
+                new_para = Paragraph(new_p, element)
+                run = new_para.add_run(f'\n\nThis submission was made on {date}')
+                run.font.color.rgb = RGBColor.from_string('4F81BD')
+                run.bold = True
+                run.font.size = Pt(12)
+                run.font.name = 'Calibri'
+                break
                 
             # Stream it and prepare for sending
             stream = BytesIO()

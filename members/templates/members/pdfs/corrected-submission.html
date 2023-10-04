@@ -1,111 +1,123 @@
-{% extends '../layouts/base-pdf.html' %}
-
 {% load static %}
 
-{% block stylesheets %}
-<style>
-.diff_chg {
-    color: red;
-}
+<head>
+    <style>
+    .diff_chg {
+        color: red;
+    }
 
-.diff_sub {
-    color: #c9bf5d;
-}
+    .diff_sub {
+        color: #c9bf5d;
+    }
 
-.diff_add {
-    color: green;
-}
+    .diff_add {
+        color: green;
+    }
 
-td {
-    vertical-align: top;
-    padding-left: 3px;
-    max-width: 500px;
-    white-space: break-spaces;
-    color: black;
-}
+    td {
+        vertical-align: top;
+        padding-left: 3px;
+        max-width: 500px;
+        white-space: break-spaces;
+        color: black;
+    }
 
-#guide {
-    border:1px solid black;
-    margin-left: auto;
-    margin-right: auto;
-}
+    #guide {
+        border:1px solid black;
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-#guide td, #guide tr {
-    border:1px solid black;
-}
+    #guide td, #guide tr {
+        border:1px solid black;
+    }
 
-#guide td {
-    padding: 2px 20px;
-}
+    table {
+        border-collapse: collapse;
+    }
 
-#main-table th {
-    border: 1px solid white !important;
-    padding-bottom: 10px;
-    font-size: 25px;
-    font-weight: 300;
-}
+    #guide th {
+        text-align: center;
+        font-weight: 300;
+    }
 
-@font-face {
-    font-family: Poppins-Medium;
-    src: url("static/fonts/Poppins/Poppins-Medium.ttf");
-}
+    #guide td {
+        padding: 2px 20px;
+    }
 
-.white-content {
-    font-family: Poppins-Medium;
-}
+    #main-table th {
+        border: 1px solid white !important;
+        text-align: center;
+        padding-bottom: 10px;
+        font-size: 25px;
+        font-weight: 300;
+    }
 
-</style>
+    .main-table td {
+        border: 1px solid black !important;
+    }
 
-{% endblock stylesheets %}
+    .main-table td:nth-child(even) {
+        padding: 10px;
+    }
 
-{% block content %}
-<div class="white-content">
-    <div class="container-fluid">
-    <div class="row">
-        <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
-        <div class="card" >
-            <div class="card-body px-2 py-2">
-                <h2 class="card-title">Your Corrected Submission:</h2>
-                <div class="col-xl-5 col-md-6 mb-0">
-                    <div class="card-body">
-                        <div class="table-responsive overflow-hidden">
-                            <table id="guide">
-                                <thead class="text-center">
-                                    <tr >
-                                        <th colspan="3">Colour Codes</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td class="diff_add">Green | Additions</td>
-                                
-                                    <td class="diff_sub">Yellow | Substitutions</td>
-                                
-                                    <td class="diff_chg">Red | Changes</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="table-responsive overflow-hidden">
-                                {{ corrections|safe }}
-                            </div>
-                        </div>
-                    </div>
-                <h5>This submission was made on {{ date }}</h5>
-            </div>
+    @font-face {
+        font-family: Poppins-Medium;
+        src: url("{% static '/fonts/Poppins/Poppins-Medium.ttf' %}");
+    }
+
+    @font-face {
+        font-family: JetBrains Mono;
+        src: url("{% static '/fonts/JetBrainsMono-Light.ttf' %}");
+    }
+
+    .main-content {
+        font-family: Poppins-Medium;
+    }
+
+    .logo-default {
+        font-family: JetBrains Mono;
+        font-size: 20px;
+    }
+
+    h2 {
+        font-weight: 300;
+        text-align: center;
+    }
+
+    @page {
+        margin: 10px 20px;
+    }
+
+    .theme-color {
+        color: #4F81BD;
+    }
+    </style>
+</head>
+<body>
+    <h3 class="logo-default">linguo::ai</h3>
+        <div class="main-content">
+            <h2 class="theme-color">Your Corrected Submission</h2>
+                <table id="guide">
+                    <thead>
+                        <tr >
+                            <th colspan="3">Colour Codes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td class="diff_add">Green | Additions</td>
+                    
+                        <td class="diff_sub">Yellow | Substitutions</td>
+                    
+                        <td class="diff_chg">Red | Changes</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <br>          
+                <div class="table-responsive overflow-hidden main-table">
+                    {{ corrections|safe }} 
+                </div>
+            <h5 class="theme-color">This submission was made on {{ date }}</h5>
         </div>
-        </div>
-    </div>
-    </div>
-</div>
-<br><br>
-
-{% endblock content %}
-
-{% block javascripts %}
-
-{% endblock javascripts %}
+</body>
