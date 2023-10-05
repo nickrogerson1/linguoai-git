@@ -61,10 +61,10 @@
         padding: 10px;
     }
 
-    @font-face {
+    /* @font-face {
         font-family: Poppins-Medium;
         src: url("{% static '/fonts/Poppins/Poppins-Medium.ttf' %}");
-    }
+    } */
 
     @font-face {
         font-family: JetBrains Mono;
@@ -98,6 +98,7 @@
     <h3 class="logo-default">linguo::ai</h3>
         <div class="main-content">
             <h2 class="theme-color">Your Corrected Submission</h2>
+            <div class="page">
                 <table id="guide">
                     <thead>
                         <tr >
@@ -114,6 +115,7 @@
                     </tr>
                     </tbody>
                 </table>
+            </div>
                 <br>          
                 <div class="table-responsive overflow-hidden main-table">
                     {{ corrections|safe }} 

@@ -92,7 +92,7 @@ def custom_strftime(t):
     date_format = '%A {S} %B %Y at %-I:%M %p'
     return t.strftime(date_format).replace('{S}', str(t.day) + suffix(t.day))
 
-def get_pdf(sub_type, user, pk, type=True, multi=False):
+def get_pdf(sub_type, user, pk, base_uri, type=True, multi=False):
     
     pdf = PDF()
 
@@ -108,7 +108,7 @@ def get_pdf(sub_type, user, pk, type=True, multi=False):
             corrections = find_difference(sub, result)
             template = get_template('members/pdfs/corrected-submission.html')
             html = template.render({ 'corrections' : corrections, 'date' : date })
-            pdf = HTML(string=html).write_pdf()
+            pdf = HTML(string=html,base_url=base_uri).write_pdf()
             filename = f'{user}-parallel-corrections-{pk}.pdf'
 
             if multi:
@@ -166,7 +166,8 @@ def get_pdf_version(request, pk, type=False):
     if type:
         type = int(type)
 
-    return get_pdf(sub_type, user, pk, type)
+    base_uri = request.build_absolute_uri()
+    return get_pdf(sub_type, user, pk, base_uri, type)
 
 
 
@@ -199,9 +200,11 @@ def get_bulk_pdf(request, pks, type=False):
     # Otherwise zip them
     buffer = BytesIO()
 
+    base_uri = request.build_absolute_uri()
+
     with ZipFile(buffer, 'w', ZIP_DEFLATED) as f:
         for pk in pks:
-            fetch_file = get_pdf(sub_type, user, pk, type, multi=True)
+            fetch_file = get_pdf(sub_type, user, pk, base_uri, type, multi=True)
             pdf = fetch_file[0]
             lf = fetch_file[1]
             b = BytesIO(pdf)
@@ -232,13 +235,15 @@ def get_bulk_mixed_pdf(request, url_str):
     # # if just one file, return as is 
     if len(pairs) == 1:
         return get_pdf(pairs[0][0], user, pairs[0][1])
+    
+    base_uri = request.build_absolute_uri()
 
     # # Otherwise zip them
     buffer = BytesIO()
 
     with ZipFile(buffer, 'w', ZIP_DEFLATED) as f:
         for pair in pairs:
-            fetch_file = get_pdf(pair[0], user, pair[1], multi=True)
+            fetch_file = get_pdf(pair[0], user, pair[1], base_uri, multi=True)
             # get_pdf(sub_type, user, pk, type=None, multi=False)
             pdf = fetch_file[0]
             fn = fetch_file[1]
