@@ -120,6 +120,6 @@
                 <div class="table-responsive overflow-hidden main-table">
                     {{ corrections|safe }} 
                 </div>
-            <h5 class="theme-color">This submission was made on {{ date }}</h5>
+            <h5 class="theme-color">This submission was made on {{ date|date:'DATE_FORMAT' }}</h5>
         </div>
 </body>

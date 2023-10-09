@@ -116,7 +116,7 @@ ws.onmessage = e => {
 
     } else if(data.status === 'success') {
 
-        const { taskId, new_balance, pk } = data
+        const { taskId, newBalance, pk } = data
 
     // Check the taskId exists before continuing
         if(!document.querySelector(`#${taskId}`)) return
@@ -128,7 +128,7 @@ ws.onmessage = e => {
         el.innerHTML = newLink
     //Update other info
         document.querySelector(`#${taskId} td:last-child`).innerHTML = 'Completed'
-        document.querySelector('#balance').innerHTML = new_balance.toFixed(2)
+        document.querySelector('#balance').innerHTML = newBalance.toFixed(2)
 
         } else if(data.status === 'failed') {
  
