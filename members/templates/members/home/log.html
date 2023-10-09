@@ -187,7 +187,7 @@ th {
         const interval = setInterval(decrementer, 1000)
     }
 
-    const ws = new WebSocket(`ws://${window.location.host}/ws/log-submission/`);
+    const ws = new WebSocket(`wss://${window.location.host}/ws/log-submission/`);
 
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     console.log(tz);
