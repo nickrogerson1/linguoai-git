@@ -64,7 +64,7 @@
                                         {{ use.usage_type }}
                                     </td>
                                     <td>
-                                        {{ use.time_created }}
+                                        {{ use.time_created|date:'SHORT_DATE_FORMAT'  }}
                                     </td>
                                     <td>
                                         {% if user.currency == 'USD' %}
@@ -115,7 +115,7 @@
                                         ${% else %}¥{% endif %}{{ purchase.amount }}
                                     </td>
                                     <td>
-                                        {{ purchase.time_created }}
+                                        {{ purchase.time_created|date:'SHORT_DATE_FORMAT'  }}
                                     </td>
                                 </tr>
                                 {% endfor %}

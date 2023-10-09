@@ -38,7 +38,6 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmVie
 from .tasks import *
 from celery.result import AsyncResult
 
-
 import environ
 env = environ.Env()
 environ.Env.read_env()
@@ -50,8 +49,6 @@ from .pricing import *
 class LoginUser(LoginView):
     redirect_authenticated_user = True
     form_class = LoginForm
-
-
 
 
 from django.contrib.gis.geoip2 import GeoIP2
@@ -73,7 +70,6 @@ class TokenGenerator(PasswordResetTokenGenerator):
             six.text_type(user.pk) + six.text_type(timestamp) +
             six.text_type(user.is_active)
         )
-
 
 
 class Registration(CreateView):
@@ -111,10 +107,10 @@ class Registration(CreateView):
             
             print(user.pk)
             account_activation_token = TokenGenerator()
-            
+
             message = render_to_string('registration/activate_account.html', {
                 'name': user.first_name,
-                'domain': 'linguo.ai',
+                'domain': 'localhost:8000',
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': account_activation_token.make_token(user),
                 # 'protocol': 'https' if request.is_secure() else 'http'
@@ -336,6 +332,8 @@ class BalanceCheckMixin:
             charged = Decimal(MIN_CHARGE['CNY']).quantize(TWO_PLACES) if cost < Decimal(MIN_CHARGE['CNY']).quantize(TWO_PLACES) else cost
 
         print(f'CHARGED: {charged}')
+# REVIEW WHETHER THIS IS SUFFICIENT
+# This should be locked while it is got and set 
         
         with r.lock('temp_balance'):
             # Work out their remaining balance
@@ -462,11 +460,9 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
             username = self.request.user.username
             user_id = self.request.user.id
             symbol = '$' if self.request.user.currency == 'USD' else '¥'
-        # Only one submission so must be 1
-            html_id = 1
             
             # Then pass to Celery to process
-            get_ielts_writing_task_2_scores.delay(t0, username, user_id, q, a, language, lang_code, html_id, *args)
+            get_ielts_writing_task_2_scores.delay(t0, username, user_id, q, a, language, lang_code, *args)
             
             # return redirect(self.success_url)
             ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
@@ -506,12 +502,12 @@ class ImprovedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin, 
             user_id = self.request.user.id
             username = self.request.user.username
             symbol = '$' if self.request.user.currency == 'USD' else '¥'
-        # Only one submission so must be 1
-            html_id = 1
+
+            args += ['', symbol]
             
             # Then pass to Celery to process
-            get_improved_results.delay(t0, username, user_id, sub, html_id, 'single', *args)
-              
+            get_improved_results.delay(t0, username, user_id, sub, 'single', *args)
+            # time.sleep(7)
             # return redirect(self.success_url)
             ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
             return render(request, "members/home/sent-success.html", context=ctx)
@@ -549,14 +545,15 @@ class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin,
             user_id = self.request.user.id
             username = self.request.user.username
             symbol = '$' if self.request.user.currency == 'USD' else '¥'
-        # Only one submission so must be 1
-            html_id = 1
+
+            args += ['', symbol]
             
             # Then pass to Celery to process
-            get_corrected_results.delay(t0, username, user_id, sub, html_id, 'single', *args)
-              
+            get_corrected_results.delay(t0, username, user_id, sub, 'single', *args)
+            
             # return redirect(self.success_url)
             ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
+            # time.sleep(7)
             return render(request, "members/home/sent-success.html", context=ctx)
             
         else:
@@ -683,26 +680,29 @@ class ResultsLogView(LoginRequiredMixin, ListView):
 
         pending_items = r.lrange(f'{username}_pending', 0, -1)
         print(f'PENDING ITEMS: {pending_items}')
-
+        # time.sleep(2)
         if pending_items:
     # Get the pending items and add them to the queryset
     # Reversed so they get added in the order they were added
             for item in reversed(pending_items):
                 print(f'TASK ID LOG: {item}')
-            
+
                 sub_type, task_id = item.split(',')
+
+                if not AsyncResult(task_id).ready():
         
-                # Add in whatever was submitted
-                pending_task = {
-                    'pk' : 'N/A',
-                    'time_created' : 'In Progress',
-                    'type' : sub_type,
-                    'url_link' : False,
-                    'status' : 'Pending',
-                }
+                    # Add in whatever was submitted
+                    pending_task = {
+                        'pk' : 'N/A',
+                        'time_created' : 'In Progress',
+                        'type' : sub_type,
+                        'url_link' : False,
+                        'task_id' : f'r-{task_id}',
+                        'status' : 'Pending',
+                    }
 
-                sorted_results = [pending_task] + sorted_results
-
+                    sorted_results = [pending_task] + sorted_results
+        # time.sleep(5)
         return sorted_results
 
 
@@ -829,11 +829,11 @@ def report_bad_result(request, url):
             '''
 
         send_mail(
-                'Bad Result Reported',
-                body,
-                '"Linguo AI" <admin@linguo.ai>',
-                ['linguoaisite@gmail.com'],
-                html_message = body
+            'Bad Result Reported',
+            body,
+            '"Linguo AI" <admin@linguo.ai>',
+            ['linguoaisite@gmail.com'],
+            html_message = body
             )   
         
 

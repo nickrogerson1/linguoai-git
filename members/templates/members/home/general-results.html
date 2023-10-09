@@ -119,7 +119,7 @@ th {
                             {% for result in object_list %}
                             <tr>
                                 <td><input type="checkbox" class="checkbox" id="{{ result.pk }}" name="checks" value="{{ result.pk }}"></td>
-                                <td class="w-25">{% firstof result.time_sent result.time_created %}</td>
+                                <td class="w-25">{% firstof result.time_sent result.time_created|date:'DATE_FORMAT' %}</td>
                                 <td><a href="{% url detail result.pk %}">{{ result.submission|safe|truncatewords:50 }}</a></td>
                             </tr>
                             {% empty %}

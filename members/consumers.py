@@ -1,3 +1,5 @@
+import json
+
 from channels.generic.websocket import WebsocketConsumer
 import redis
 import json
@@ -23,18 +25,20 @@ class Consumer(WebsocketConsumer):
         self.send(json.dumps({'message':"Connected"}))
         
 
-    def disconnect(self, close_code):
+    def disconnect(self, task_id):
     # Remove the user from Redis - clears the id
-         r.delete(self.scope['user'].username)
-         print(f"CONSUMER USERNAME DISCONNECT: {self.scope['user'].username}")
-         self.close()
+        r.delete(self.scope['user'].username)
+        print(f"CONSUMER USERNAME DISCONNECT: {self.scope['user'].username}")
+        self.close()
 
-    
+
+    def receive(self, text_data):
+        print(text_data)
+
+
     def update(self, vals):
         self.send(json.dumps(vals))
         
-
-
 
 
 
@@ -67,19 +71,23 @@ class SingleConsumer(Consumer):
         r.hset(username, mapping={'channel' : self.channel_name})
         
         print(f'CHANNEL NAME: {self.channel_name}')
-        self.send(json.dumps({'ready': status, 'pk' : pk, 'new_balance' : new_balance}))
+        self.send(json.dumps({
+            'initial': True,
+            'ready': status, 
+            'pk' : pk, 
+            'newBalance' : new_balance,
+            'taskId' : f'r-{task_id}'    
+        }))
 
 
 
 
 
 # Look for the last result matching the sub_type and then add in the link and change to completed and time_created
-
 class LogConsumer(Consumer):
 
     def connect(self):
         self.accept()
-
         username = self.scope['user'].username
         print(f'CONNECT USERNAME: {username}')
 
@@ -88,36 +96,39 @@ class LogConsumer(Consumer):
 
         if pending_items:
         # Check their status
-            print('MADE IT HERE!')
 
             for item in pending_items:
                 print(f'CONSUMER TASK ID: {item}')
             
                 sub_type, task_id = item.split(',')
-                # sub_type = sub_type.split(' ')[0].lower()
+                kwargs = AsyncResult(task_id).kwargs
+                print(f'KWARGS: {kwargs}')
 
-                status = AsyncResult(task_id).ready()
-                print(f'Status: {status}')
+                status = 'success' if bool(kwargs) else ''
+                print(f'STATUS: {status}')
 
-            # If it's somehow already finished, then get the result
-                print(f'ASYNC KWARGS: {AsyncResult(task_id).kwargs}')
-            # Get the PK to make the new url link
-                pk = AsyncResult(task_id).kwargs['pk'] if status else ''
-            # Send it back as Float as Decimals are not serializable
-                new_balance = float(AsyncResult(task_id).kwargs['new_balance']) if status else ''
-                time_created = AsyncResult(task_id).kwargs['time_created'] if status else ''
+        # Due to the 40 sec delay before pending tasks are destroyed for slow HTTP requests,
+        # Need to check for pending tasks that were actually processed and those that timed out
+                if bool(kwargs):
+                # Get the PK to make the new url link
+                    pk = kwargs['pk']
+                # Send it back as Float as Decimals are not serializable
+                    new_balance = float(kwargs['new_balance'])
+                    time_created = kwargs['time_created']
+                else:
+                    pk = new_balance = time_created = ''
 
                 self.send(json.dumps({
-                    'ready': status, 
+                    'status': status, 
                     'pk' : pk, 
-                    'new_balance' : new_balance,
-                    'time_created' : time_created,
-                    'sub_type' : sub_type
+                    'newBalance' : new_balance,
+                    'timeCreated' : time_created,
+                    'subType' : sub_type,
+                    'taskId' : f'r-{task_id}',
                 }))
-        
+            
         # Cache the username and channel
         print(f"CONSUMER USERNAME CACHING: {username}")
         print(f'CHANNEL NAME: {self.channel_name}')
         r.hset(self.scope['user'].username, mapping={'channel' : self.channel_name})
-        
         

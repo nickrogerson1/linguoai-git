@@ -102,10 +102,11 @@ th {
                             <tr>
                             <td><input type="checkbox" class="checkbox" id="{{ result.pk }}" name="checks" value="{{ result.url_link }}/{{ result.pk }}"></td>
                             {% else %}
-                            <tr class="pending-row">
+                            <tr id="{{ result.task_id }}">
                             <td><input type="checkbox" class="checkbox" name="checks" value="" disabled></td>
                             {% endif %}
-                                <td>{{ result.time_created }}</td>
+                                <td>{% firstof result.time_created|date:'DATE_FORMAT' result.time_created %}</td>
+                              
                                 {% if result.url_link %}
                                 <td><a href="{% url result.url_link result.pk %}">{{ result.type }}</a></td>
                                 {% else %}
@@ -170,7 +171,23 @@ th {
 
 
 <script>
-    const ws = new WebSocket(`wss://${window.location.host}/ws/log-submission/`);
+    const countdown = (taskId, retryCount, secs) => {
+        const status = document.querySelector(`#${taskId} td:last-child`)
+        const decrementer = () => {
+            secs-- 
+            console.log(`Seconds: ${secs}`)
+            const s = secs === 1 ? '' : 's'
+            const getOrd = n => ['st','nd','rd'][((n+90)%100-10)%10-1]||'th'
+            status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying in ${secs} sec${s}`
+            if(!secs || Math.sign(secs) === -1){
+                status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying...`
+                clearInterval(interval)
+            }
+        }
+        const interval = setInterval(decrementer, 1000)
+    }
+
+    const ws = new WebSocket(`ws://${window.location.host}/ws/log-submission/`);
 
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     console.log(tz);
@@ -183,51 +200,65 @@ th {
         console.log('Web socket connected!')
     }
 
-
     ws.onmessage = e => {
         const data = JSON.parse(e.data);
         console.log(data)
 
 
-// IS this IF necessary?
-     if(data.status === 'success' || data.ready === true ) {
+     if(data.status === 'success') {
 
-            const { pk, new_balance, time_created, sub_type } = data
+            const { pk, newBalance, timeCreated, subType, taskId } = data
 
-            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }; //dayPeriod: 'long', hourCycle: 'h12'
-            const timeCreated = new Date(time_created).toLocaleDateString('en-us', options)
+            const options = { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short', hour: 'numeric', minute: 'numeric', hour12: true }; //dayPeriod: 'long', hourCycle: 'h12'
+            const formattedTimeCreated = new Date(timeCreated).toLocaleDateString('en-gb', options)
 
             let link;
-            if (sub_type === 'Corrected Submission'){
+            if (subType === 'Corrected Submission'){
                 link = `/corrected-results/${pk}/`
-            } else if (sub_type === 'Improved Submission'){
+            } else if (subType === 'Improved Submission'){
                 link = `/improved-results/${pk}/`
             } else {
                 link = `/ielts-writing-task-2-results/${pk}/`
             }
 
-            const pendingRows = document.querySelectorAll('.pending-row')
-            console.log(pendingRows)
+            const row = document.querySelector(`#${taskId}`)
 
-            const ind = [...pendingRows].findLastIndex(row => row.children[2].innerHTML === sub_type)
-            console.log(ind)
+            if(row){
 
-            // Update rows with new values
-            pendingRows[ind].classList.remove('pending-row') 
-            pendingRows[ind].children[0].children[0].disabled = false
-            pendingRows[ind].children[1].innerHTML = timeCreated
-            pendingRows[ind].children[2].innerHTML = `<a href="${link}">${sub_type}</a>`
-            pendingRows[ind].children[3].innerHTML = 'Completed'
-            
+            row.children[0].children[0].disabled = false
+            row.children[1].innerHTML = formattedTimeCreated
+            row.children[2].innerHTML = `<a href="${link}">${subType}</a>`
+            row.children[3].innerHTML = 'Completed'
             // Update with the new balance
-            document.querySelector('#balance').innerHTML = new_balance
+            document.querySelector('#balance').innerHTML = newBalance
         }
-    }
+    
+    } else if(data.status === 'failed') {
 
+        let { taskId, retryCount, delay } = data
 
+        // Check the taskId exists before continuing
+        if(!document.querySelector(`#${taskId}`)) return
+
+        retryCount++
+        console.log('Trying again...')
+
+        const maxRetries = 6
+
+        if (retryCount <= maxRetries){
+            countdown(taskId, retryCount, delay) 
+
+        } else {
+
+        const row = document.querySelector(`#${taskId}`)
+        row.children[1].innerHTML = 'DNF'
+        row.children[3].innerHTML = 'Failed'
+        row.children[1].style.cssText = row.children[2].style.cssText = row.children[3].style.cssText = 'color:red !important'
+        
+        }
+    }  
+}
 </script>
-
-
 
 <script src="{% static 'js/results.js' %}"></script>
 {% endblock javascripts %}

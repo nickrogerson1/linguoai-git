@@ -225,6 +225,12 @@ CHANNEL_LAYERS = {
 }
 
 
+DATE_FORMAT = 'D, jS M y, g:i a'
+SHORT_DATE_FORMAT = 'jS M y, P'
+
+# Stop localization
+USE_L10N = False
+
 # CACHES = {
 #     "default": {
 #         "BACKEND": "django.core.cache.backends.redis.RedisCache",

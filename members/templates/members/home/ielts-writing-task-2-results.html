@@ -155,7 +155,7 @@ td {
                                 {% for result in object_list %}
                                 <tr>
                                     <td><input type="checkbox" class="checkbox" id="{{ result.pk }}" name="checks" value="{{ result.pk }}"></td>
-                                    <td>{{ result.time_created }}</td>
+                                    <td>{{ result.time_created|date:'DATE_FORMAT' }}</td>
                                     <td>{{ result.band }}</td>
                                     <td><a href="{% url 'ielts-writing-task-2-results-detail' result.pk %}">{{ result.question|safe }}</a></td>
                                 </tr>

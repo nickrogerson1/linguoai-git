@@ -22,8 +22,6 @@ const checkValidWordCount = e => {
         answerWordCount = answer.dataset.replicatedValue.trim().split(/\s+/).length;
     }
 
-    console.log(answerWordCount)
-
 
     // Send back errors if not enough or too many words
 
@@ -61,8 +59,7 @@ const checkValidWordCount = e => {
         return answer.after(answer.nextElementSibling, warning)
     } 
 
-    e.currentTarget.submit()
-    
+    e.currentTarget.submit()  
 }
 
 document.querySelector('#ielts-form-submit').addEventListener('submit', checkValidWordCount)

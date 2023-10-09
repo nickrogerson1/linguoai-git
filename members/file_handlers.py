@@ -5,8 +5,6 @@ import fitz
 from zipfile import ZipFile
 import time
 
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 from .views import BalanceCheckMixin, FormView
 from .forms import FileFieldForm
 from .tasks import get_corrected_results, get_improved_results, r
@@ -109,49 +107,30 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
         
         return super().form_valid(form)
 
-
-
-        
+  
     
     def process_text(self,t0,sub,file_name=None):
         args = self.check_user_has_sufficient_funds('corrected_results', sub=sub, multi=True)
         # [ price_per_100_words, total_words, charged ]
 
         print(f'ARGS: {args}')
-# Insufficient Funds
+
     # Reject if over 5000 words
         if args[1] >= 5000:
             return 'Too Long'
       
         file_name = file_name if file_name else self.request.FILES['file'].name
         username = self.request.user.username
-        user_id = self.request.user.id
-
-    # Increase the id by 1 each time
-        id = r.hincrby(username,'num')
-        print(f'ID: {id}')    
+        user_id = self.request.user.id  
         curr = '$' if self.request.user.currency == 'USD' else '¥'
-        
-        # print(f'USER: {self.request.user.username}')
-        channel_name = r.hget(username, 'channel')
-        print(f'CHANNEL NAME: {channel_name}')
-        if channel_name:
-            channel_layer = get_channel_layer()
-            
-            async_to_sync(channel_layer.send)(channel_name, {
-                    'type': 'update',
-                    'wordCount': args[1],
-                    'cost': f'{curr}{args[2]}',
-                    'fileName': file_name,
-                    'id' : id,
-                    'status': 'Awaiting Response',
-                })
-        
 
+        args += [file_name, curr]
+        print(f'ARGS:   ${args}')
+        
         if 'corrected' in self.request.path_info:
-            get_corrected_results.delay(t0, username, user_id, sub, id, 'multi', *args)
+            get_corrected_results.delay(t0, username, user_id, sub, 'multi', *args)
         else:
-            get_improved_results.delay(t0, username, user_id, sub, id, 'multi', *args)
+            get_improved_results.delay(t0, username, user_id, sub, 'multi', *args)
         
   
     def get_docx_text(self, file):

@@ -62,7 +62,9 @@ def get_corrected_submission(original_text):
     max_tokens=600
     temperature=1.0
 
-    res = fetch_from_openai(messages,model,max_tokens,temperature)
+    try:
+        res = fetch_from_openai(messages,model,max_tokens,temperature)
+    except Exception as e: raise
 
     if res:
         corrected_version = find_difference(original_text, res[0])

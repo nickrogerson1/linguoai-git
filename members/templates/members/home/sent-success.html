@@ -17,6 +17,9 @@ th, td {
   <div class="container-fluid">
     <div class="row">
       <div class="col-12 col-lg-10 offset-lg-1 pt-4 mt-5">
+        <div class="alert alert-danger" role="alert" id="danger-alert">
+          This attempt failed. Bear with us!
+        </div>
         <div class="card" >
           <div class="card-body px-2 py-2">
             <div>
@@ -42,7 +45,7 @@ th, td {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr id="row-1">
+                    <tr>
                       <td>0 secs</td>
                       <td>{{ word_count }}</td>
                       <td>{{ symbol }}{{ cost }}</td>
@@ -51,6 +54,7 @@ th, td {
                     </tr>
                   </tbody>
                 </table>
+                <h4 id="update-text">We are trying to get your result. Hold tight!</h4>
               </div>
             </div>
           </div>
@@ -69,63 +73,160 @@ th, td {
 
 
 <script>
+const updateText = document.querySelector('#update-text')
+let stop = false
+
+
 // Starts when row initiated then stops counting when status changes
-      const counter = () => {
-          let secs = 0
-          const cell = document.querySelector('#row-1 td:first-child')
-          const incrementer = () => {
-            secs++
-            const s = secs === 1 ? '' : 's'
-            cell.innerHTML = `${secs} sec${s}`
-            const status = document.querySelector('#row-1 td:last-child').innerHTML
-            if(status !== 'PENDING') {
-              clearInterval(interval)
-            }
+const counter = () => {
+      let secs = 0
+      const cell = document.querySelector(`tr td:first-child`)
+      const incrementer = () => {
+        secs++
+        const s = secs === 1 ? '' : 's'
+        cell.innerHTML = `${secs} sec${s}`
+        const status = document.querySelector(`tr td:last-child`).innerHTML
+        if(status !== 'PENDING') {
+          clearInterval(interval)
+        }
+      }
+    const interval = setInterval(incrementer, 1000)
+  }
+
+
+
+  const countdown = (retryCount, secs, taskId, maxRetries) => {
+    let interval
+    // const status = document.querySelector('#countdown-secs')
+      const decrementer = () => {
+        if (stop) return
+        secs-- 
+        console.log(`Seconds: ${secs}`)
+        const s = secs === 1 ? '' : 's'
+        const getOrd = n => ['st','nd','rd'][((n+90)%100-10)%10-1]||'th'
+        updateText.innerHTML = `Something went wrong. We will retry in ${secs} second${s}.`
+        updateText.style.color = 'red'
+        if(!secs || Math.sign(secs) === -1){
+          if(retryCount <= maxRetries){
+            updateText.innerHTML = `The ${retryCount}${getOrd(retryCount)} attempt is now underway. Hang on in there...`
+          } else {
+            // updateText.innerHTML = `Submission failed to process. You have NOT been charged.`
           }
-        const interval = setInterval(incrementer, 1000)
+          clearInterval(interval)
+        }
+      }
+  // Check the taskId is on the page
+    if(document.querySelector(`#${taskId}`)){
+      interval = setInterval(decrementer, 1000)
+    }
+  }
+
+
+
+
+window.addEventListener('load', counter)
+
+$(document).ready(function() {
+  $("#danger-alert").hide();
+})
+function showAlert () {
+    $("#danger-alert").fadeTo(2000, 500).slideUp(500, function() {
+    $("#danger-alert").slideUp(500);
+    });
+};
+
+const ws = new WebSocket(`ws://${window.location.host}/ws/single-submission/`);
+
+ws.onclose = e => {
+  console.error('Web Socket closed unexpectedly');
+  };
+
+
+ws.onmessage = e => {
+  const data = JSON.parse(e.data);
+  console.log(data)
+
+
+  const { taskId } = data 
+  console.log(`Task ID: ${taskId}`)
+
+  // Set the row's ID on ws connection
+  if(data.initial){
+    document.querySelector('tbody tr').id = taskId
+  }
+
+  // Check it's the right taskId before continuing
+  if(!document.querySelector(`#${taskId}`)) return
+   
+
+  
+
+  if(data.status === 'failed'){
+    let { retryCount, delay } = data
+
+// Increment this as it's not including the 1st attempt
+    retryCount++
+// 7
+    const maxRetries = 6
+
+    if (retryCount <= maxRetries){
+      showAlert()
+      countdown(retryCount, delay, taskId, maxRetries) 
+
+    } else {
+    // Turn off the countdown
+      stop = true
+      updateText.innerHTML = `Submission failed to process. You have NOT been charged.`
+      document.querySelector('#danger-alert').innerHTML = 'Submission Failed To Process'
+      showAlert()
+      const el = document.querySelector(`#${taskId}`)
+      const curr = el.children[2].innerHTML.startsWith('$') ? '$' : '¥'
+      el.children[2].innerHTML = curr + 0
+      el.children[4].innerHTML = 'Failed'
+      el.children[4].style.cssText = 'color:red !important'
+
+      document.querySelector('#heading').innerHTML = 'Sorry, we are unable to process your submission right now.'
+      document.querySelector('#para').innerHTML = `
+      Unfortunately, we have tried to process your submission ${retryCount} times but have not been able to successfully process it. 
+      Please wait another 10 minutes and then try again.<br><br>If you continue to have problems, then please contact us via the <a href="https://linguo.ai/contact-us/">contact form</a>.`
+    }
+  }
+
+
+
+
+
+  if(data.status === 'success' || data.ready){
+    // Make sure the update is gone when complete.
+      updateText.remove()
+
+      const { status, newBalance, pk } = data
+    
+      const el = document.querySelector(`#${taskId}`)
+
+      let page; 
+      const loc = window.location.toString()
+      if(loc.includes('corrected')){
+          page = 'corrected'
+        } else if (loc.includes('improved')){
+          page = 'improved'
+        } else {
+          page = 'ielts-writing-task-2'
       }
 
-    window.addEventListener('load', counter)
+      const newLink = `<a href="/${page}-results/${pk}/">${el.children[3].innerHTML}</a>`
+      el.children[3].innerHTML = newLink
+      el.children[4].innerHTML = 'Completed'
 
+      page = page.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ')
 
-
-    const ws = new WebSocket(`ws://${window.location.host}/ws/single-submission/`);
-
-      ws.onclose = e => {
-          console.error('Web Socket closed unexpectedly');
-          };
-
-
-      ws.onmessage = e => {
-        const data = JSON.parse(e.data);
-
-        if(data.status === 'success' || data.ready){
-            const { status, new_balance, pk } = data
-          
-            const el = document.querySelector('#row-1')
- 
-            let page; 
-            const loc = window.location.toString()
-            if(loc.includes('corrected')){
-                page = 'corrected'
-              } else if (loc.includes('improved')){
-                page = 'improved'
-              } else {
-                page = 'ielts-writing-task-2'
-            }
-
-            const newLink = `<a href="/${page}-results/${pk}/">${el.children[3].innerHTML}</a>`
-            el.children[3].innerHTML = newLink
-            el.children[4].innerHTML = 'Completed'
-
-            page = page.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ')
-
-            document.querySelector('#balance').innerHTML = new_balance.toFixed(2)
-            document.querySelector('#heading').innerHTML = 'We have processed your submission!'
-            document.querySelector('#para').innerHTML = `
-            We have finished processing your submission. Please click on the ${page} link in the Submission Type category to view your result.`
-            document.querySelector('title').innerHTML = 'Your submission has been processed!'
-        }
-    }
+      document.querySelector('#balance').innerHTML = newBalance.toFixed(2)
+      document.querySelector('#heading').innerHTML = 'We have processed your submission!'
+      document.querySelector('#para').innerHTML = `
+      We have finished processing your submission. Please click on the ${page} link in the Submission Type category to view your result.`
+      document.querySelector('title').innerHTML = 'Your submission has been processed!'
+      updateText.innerHTML = `Submission failed to process. You have NOT been charged.`
+  }
+}
 </script>
 {% endblock javascripts %}

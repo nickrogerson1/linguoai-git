@@ -16,4 +16,6 @@ def get_improved_submission(original_text):
     max_tokens=600
     temperature=1.0
 
-    return fetch_from_openai(messages,model,max_tokens,temperature)
+    try:
+        return fetch_from_openai(messages,model,max_tokens,temperature)
+    except Exception as e: raise

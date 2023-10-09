@@ -25,22 +25,22 @@ document.querySelector('#clear').addEventListener('click', clearInput)
 
 
 
-const ws = new WebSocket(`wss://${window.location.host}/ws/bulk-submission/`);
+const ws = new WebSocket(`ws://${window.location.host}/ws/bulk-submission/`);
 
 ws.onclose = e => {
     console.error('Web Socket closed unexpectedly');
     };
 
 // Starts when row initiated then stops counting when status changes
-const counter = row => {
+const counter = taskId => {
     let secs = 0
-    const cell = document.querySelector(`#row-${row} td:nth-child(2)`)
+    const cell = document.querySelector(`#${taskId} td:nth-child(2)`)
     const incrementer = () => {
     secs++
     const s = secs === 1 ? '' : 's'
     cell.innerHTML = `${secs} sec${s}`
-    const status = document.querySelector(`#row-${row} td:last-child`).innerHTML
-    if(status !== 'Awaiting Response') {
+    const status = document.querySelector(`#${taskId} td:last-child`).innerHTML
+    if(status === 'Completed' || status === 'Failed') {
         clearInterval(interval)
         }
     }
@@ -48,12 +48,30 @@ const interval = setInterval(incrementer, 1000)
 }
 
 
-const addRow = (wordCount, cost, fileName, id, status) => {
+const countdown = (taskId, retryCount, secs) => {
+    const status = document.querySelector(`#${taskId} td:last-child`)
+      const decrementer = () => {
+        secs-- 
+        console.log(`Seconds: ${secs}`)
+        const s = secs === 1 ? '' : 's'
+        const getOrd = n => ['st','nd','rd'][((n+90)%100-10)%10-1]||'th'
+        status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying in ${secs} sec${s}`
+        if(!secs || Math.sign(secs) === -1){
+            status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying...`
+            clearInterval(interval)
+        }
+      }
+    const interval = setInterval(decrementer, 1000)
+  }
+
+
+const addRow = (wordCount, cost, fileName, taskId, status) => {
 
     const tr = document.createElement('tr')
-        tr.id = `row-${id}`
+        tr.id = `${taskId}`
 
         const td0 = document.createElement('td')
+        const id = document.querySelector('table').rows.length++
         td0.innerHTML = `${id}.`
 
         const td1 = document.createElement('td')
@@ -80,8 +98,11 @@ const addRow = (wordCount, cost, fileName, id, status) => {
         document.querySelector('tbody').append(tr)
 
         // Start counter after initialization
-        counter(id)
+        counter(taskId)
     }
+
+
+
 
 
 ws.onmessage = e => {
@@ -90,21 +111,49 @@ ws.onmessage = e => {
 
 
     if(data.wordCount){
-    const { wordCount, cost, fileName, id, status } = data
-    addRow(wordCount, cost, fileName, id, status)
+    const { wordCount, cost, fileName, taskId, status } = data
+    addRow(wordCount, cost, fileName, taskId, status)
 
     } else if(data.status === 'success') {
-        const { row, new_balance, pk } = data
+
+        const { taskId, new_balance, pk } = data
+
+    // Check the taskId exists before continuing
+        if(!document.querySelector(`#${taskId}`)) return
+
     //Add link to the new db entry
-        const el = document.querySelector(`#row-${row} td.inject-link`)
+        const el = document.querySelector(`#${taskId} td.inject-link`)
         const page = window.location.toString().includes('corrected') ? 'corrected' : 'improved'
         const newLink = `<a href="/${page}-results/${pk}/">${el.innerHTML}</a>`
         el.innerHTML = newLink
     //Update other info
-        document.querySelector(`#row-${row} td:last-child`).innerHTML = 'Completed'
-        document.querySelector('#balance').innerHTML = new_balance
+        document.querySelector(`#${taskId} td:last-child`).innerHTML = 'Completed'
+        document.querySelector('#balance').innerHTML = new_balance.toFixed(2)
+
+        } else if(data.status === 'failed') {
+ 
+        let { taskId, retryCount, delay } = data
+
+        // Check the taskId exists before continuing
+        if(!document.querySelector(`#${taskId}`)) return
+
+        retryCount++
+
+        const maxRetries = 6
+
+        if(retryCount <= maxRetries){
+        countdown(taskId, retryCount, delay) 
+
+        } else {
+
+        const el = document.querySelector(`#${taskId}`)
+        const curr = el.children[3].innerHTML.startsWith('$') ? '$' : '¥'
+        el.children[3].innerHTML = curr + 0
+        el.children[5].innerHTML = 'Failed'
+        el.children[5].style.cssText = 'color:red !important'
         }
-    }
+    }  
+}
 
 const acceptedFiles = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 'application/pdf','text/rtf','text/plain','application/zip','']
