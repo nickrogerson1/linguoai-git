@@ -38,6 +38,13 @@ def strip_tags(html):
     s.feed(html)
     return s.get_data()
 
+def suffix(d):
+    return {1:'st',2:'nd',3:'rd'}.get(d%20, 'th')
+
+def custom_strftime(t):
+    date_format = '%A {S} %B %Y at %-I:%M %p'
+    return t.strftime(date_format).replace('{S}', str(t.day) + suffix(t.day))
+
 
 @login_required(login_url="/login/")
 def get_docx(request, pk, type=None, multi=False, sub=None):
@@ -47,14 +54,13 @@ def get_docx(request, pk, type=None, multi=False, sub=None):
 
     sub_type = sub if sub else request.path.split('/')[1]
     user = request.user
-    date_format = '%A %-d %B %Y at %-I:%M %p'
     
     if sub_type == 'corrected-results':
 
         look_up = CorrectedSubmission.objects.get(pk=pk)
         sub = look_up.submission
         result = look_up.result
-        date = look_up.time_created.strftime(date_format)
+        date = custom_strftime(look_up.time_created)
 
         if(type):
             corrections = find_difference(sub, result)
@@ -180,7 +186,7 @@ def get_docx(request, pk, type=None, multi=False, sub=None):
         look_up = ImprovedSubmission.objects.get(pk=pk)
         sub = strip_tags(look_up.submission)
         improved = strip_tags(look_up.improved_sub)
-        date = look_up.time_created.strftime(date_format)
+        date = custom_strftime(look_up.time_created)
     
     # Build document
         doc = Document()
@@ -213,7 +219,7 @@ def get_docx(request, pk, type=None, multi=False, sub=None):
         answer = strip_tags(look_up.answer)
         score_res = BeautifulSoup(look_up.score_res).get_text('\n')
         band = look_up.band
-        date = look_up.time_created.strftime(date_format)
+        date = custom_strftime(look_up.time_created)
     
     # Build document
         doc = Document()
