@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg-dev \
     libopenjp2-7-dev \
     libffi-dev \
-    libglib2.0-dev
+    libglib2.0-dev \
+    pandoc
 
 WORKDIR /app
 

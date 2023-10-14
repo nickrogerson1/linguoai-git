@@ -187,20 +187,19 @@ def get_bulk_pdf(request, pks, type=False):
         filename = f'{user}-pdf-improved.zip'
     else:
         filename = f'{user}-pdf-ielts-writing-task-2.zip'
-        
 
+    base_uri = request.build_absolute_uri()
+        
     # Ignore last one as it's empty
     pks = pks.split('/')[:-1]
     print(f'PKS: {pks}')
 
     # if just one file, return as is 
     if len(pks) == 1:
-        return get_pdf(sub_type, user, pks[0])
+        return get_pdf(sub_type, user, pks[0], base_uri)
 
     # Otherwise zip them
     buffer = BytesIO()
-
-    base_uri = request.build_absolute_uri()
 
     with ZipFile(buffer, 'w', ZIP_DEFLATED) as f:
         for pk in pks:

@@ -233,7 +233,7 @@ def check_and_reduce_usage_left(num_tokens, task_id):
                 if r.exists('openai_remain_usage') else [40000,200])
 
 # If there are enough tokens and requests left, then process it
-    if tokens_left and requests_left:
+    if tokens_left > 0 and requests_left > 0:
         tokens_left_now = int(tokens_left) - num_tokens
         requests_left = int(requests_left) - 1
         # Save new value to Redis
