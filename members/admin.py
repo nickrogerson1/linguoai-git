@@ -7,6 +7,8 @@ from django.contrib.auth.models import Group
 from django.utils.safestring import mark_safe
 from .api_funcs.corrections import find_difference
 
+from django.conf import settings
+
 
 class CustomUserAdmin(UserAdmin):
     list_display = ("username", "country", "year", "balance", "_currency", "is_staff")
@@ -15,8 +17,8 @@ class CustomUserAdmin(UserAdmin):
 
     fieldsets = (
         (None, {"fields": ("username", "password")}),
-        (_("Personal info"), {"fields": ("first_name", "email", "country", "year", "balance", 
-            "currency", "reports", "total_submissions", "percent_reported", "reports_blocked")}),
+        (_("Personal info"), {"fields": ("first_name", "email", "country", "year", "balance", "total_spent", "currency", "reports", 
+        "total_submissions", "percent_reported", "reports_blocked", "discount_code", "discount_code_used", "affiliate")}),
         (
             _("Permissions"),
             {
@@ -35,7 +37,7 @@ class CustomUserAdmin(UserAdmin):
     @admin.display(description="currency")
     def _currency(self, obj):
         return obj.currency
-    
+
 
 # Update the user when submissions are deleted from the database by admin
 class AdminMixin:
@@ -168,6 +170,7 @@ class ImprovedSubAdmin(AdminMixin, admin.ModelAdmin):
 
 
 
+
 class UserReportedResultsAdmin(admin.ModelAdmin):
     list_display = ('owner', 'time_created', 'decision', '_reason')
     list_per_page = 25
@@ -217,6 +220,28 @@ class PurchaseHistoryAdmin(admin.ModelAdmin):
     # readonly_fields = ['owner', 'time_created', 'amount', 'currency']
 
 
+class DiscountCodeAdmin(admin.ModelAdmin):
+    list_display = ('code_name', 'time_created', 'bonus_amount', 'bonus_percent', 'times_used', '_expiry_date')
+    list_per_page = 25
+
+# Fixes bug with the DATE_FORMAT in settings
+    def _expiry_date(self, obj):
+        return obj.expiry_date.strftime("%d %b %Y")
+
+
+class AffiliateAdmin(admin.ModelAdmin):
+    list_display = ('name', '_date_joined', 'total_new_users', '_total_sales')
+    list_per_page = 25
+
+    # Fixes bug with the DATE_FORMAT in settings
+    def _date_joined(self, obj):
+        return obj.date_joined.strftime("%d %b %Y")
+
+    def _total_sales(self, obj):
+        s = '$' if  obj.currency == 'USD' else '¥'
+        return s + str(obj.total_sales)
+
+
 
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(IeltsWritingTask2,  IeltsWritingTask2Admin)
@@ -224,6 +249,8 @@ admin.site.register(CorrectedSubmission,  CorrectedSubAdmin)
 admin.site.register(ImprovedSubmission,  ImprovedSubAdmin)
 admin.site.register(PurchaseHistory, PurchaseHistoryAdmin)
 admin.site.register(UserReportedResults, UserReportedResultsAdmin)
+admin.site.register(DiscountCodes, DiscountCodeAdmin)
+admin.site.register(Affiliate, AffiliateAdmin)
 
 admin.site.unregister(Group)
 admin.site.site_header = 'LinguoAI Admin'

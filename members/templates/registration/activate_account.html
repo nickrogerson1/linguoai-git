@@ -4,7 +4,11 @@ Hi {{ name }},
 <br><br>
 Thanks for choosing to sign up with Linguo.ai!
 <br><br>
+{% if bonus %}
+To activate your account and claim your free {{ symbol }}{{ bonus }}, please click on the link below:
+{% else %}
 Please click on the link below to complete your registration and activate your account:
+{% endif %}
 <br><br>
 http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
 

@@ -142,6 +142,7 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
     with transaction.atomic():
         user = User.objects.select_for_update().get(pk=user_id)
         user.balance -= D(charged)
+        user.total_spent += D(charged)
         user.total_submissions += 1
         user.save()
 

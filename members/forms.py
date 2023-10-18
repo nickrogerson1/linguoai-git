@@ -6,6 +6,9 @@ from .models import *
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth import password_validation
+from .discount_code import check_discount_code_on_sign_up
+from datetime import date
+
 
 
 class LoginForm(AuthenticationForm):
@@ -33,23 +36,60 @@ class LoginForm(AuthenticationForm):
     }
 
 
+
+
 class SignUpForm(UserCreationForm):
+
+    discount_code = forms.CharField(required=False, empty_value=None)
 
     def __init__(self, *args, **kwargs):
         super(SignUpForm, self).__init__(*args, **kwargs)
 
-        self.fields['username'].widget.attrs['class'] = 'form-control'
-        self.fields['first_name'].widget.attrs['class'] = 'form-control'
-        self.fields['email'].widget.attrs['class'] = 'form-control'
-        self.fields['year'].widget.attrs['class'] = 'form-control'
-        self.fields['country'].widget.attrs['class'] = 'form-control'
-        self.fields['currency'].widget.attrs['class'] = 'form-control'
-        self.fields['password1'].widget.attrs['class'] = 'form-control'
-        self.fields['password2'].widget.attrs['class'] = 'form-control'
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
+
+
+    def clean(self):
+        cleaned_data = super().clean()
+        currency = cleaned_data.get('currency')
+        discount_code = cleaned_data.get('discount_code')
+        # affiliate = cleaned_data.get('affiliate')
+
+        if discount_code:
+
+    # LAUNCH23/DAVE
+    # Not validating the affiliate and will just let it through if it doesn't exist
+    # If it doesn't exist then it will never get applied - it's the affiliate's fault
+            if '/' in discount_code:
+                discount_code, affiliate = discount_code.split('/')
+
+        # Validate the code if it exists
+        # These errors run in a logical order and only display the one most relevant
+            try:
+                discount_code = DiscountCodes.objects.get(discount_code=discount_code)
+            except DiscountCodes.DoesNotExist:
+                return self.add_error('discount_code', 'This code does not exist!')
+
+            if discount_code.expiry_date < date.today():
+                print('This code has expired!')
+                return self.add_error('discount_code', 'This code has expired!')
+            
+            if discount_code.currency != currency:
+                print(f'This discount code cannot be used with for {currency}.')
+                return self.add_error('discount_code', f'This discount code cannot be used for {currency}.')
+
+            cleaned_data['discount_code'] = discount_code
+            cleaned_data['affiliate'] = affiliate if 'affiliate' in locals() else ''
+
+            return cleaned_data
+
+
             
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = UserCreationForm.Meta.fields + ("first_name", "country", "year", "email", "currency")
+        fields = UserCreationForm.Meta.fields + ("first_name", "country", "year", "email", "currency", "discount_code")
+
+
 
 # Average word length is 5.1 characters
 # 510 characters per 100 words

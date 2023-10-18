@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import F
 
 from django.views import View
-from ..models import PurchaseHistory, User
+from ..models import PurchaseHistory, User, DiscountCodes
 
 from decimal import Decimal
+from datetime import date
 import json
 import stripe
 import environ
@@ -15,6 +17,7 @@ env = environ.Env()
 env.read_env(env.str('ENV_PATH','.env'))
 stripe.api_key = env('STRIPE_API_KEY')
 STRIPE_WEBHOOK_SECRET = env('STRIPE_API_KEY')
+
 
 
 class CreateStripeCheckoutSessionView(View):
@@ -40,6 +43,22 @@ class CreateStripeCheckoutSessionView(View):
                     },
                 }
 
+        # Check if he's using a discount code
+        discount_code_used = request.user.discount_code_used
+        discount_code = request.user.discount_code
+
+        bonus = percentage = ''
+
+        if discount_code and not discount_code_used:
+            expired = discount_code.expiry_date < date.today()
+            if discount_code.for_purchases and not expired:
+                if discount_code.bonus_amount:
+                    bonus = discount_code.bonus_amount
+                else:
+                    bonus = discount_code.bonus_percent
+                    percentage = True
+
+
         checkout_session = stripe.checkout.Session.create(
             payment_method_types = payment_method_types,
             payment_method_options =  payment_method_options,
@@ -50,13 +69,18 @@ class CreateStripeCheckoutSessionView(View):
                     'quantity': 1,
                 },
             ],
-            metadata = {'owner' : self.request.user},
+            metadata = {'owner' : self.request.user,
+                        'bonus' : bonus,
+                        'percentage' : percentage
+                    },
             mode="payment",
-            success_url='https://linguo.ai/payment-successful?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='https://linguo.ai/payment-canceled/',
+            success_url='http://localhost:8000/payment-successful?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='http://localhost:8000/payment-canceled/',
         )
         return redirect(checkout_session.url)
     
+
+
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -97,27 +121,82 @@ class StripeWebhookView(View):
                 owner = user,
                 currency = currency
             )
+        
 
-            # Add amount purchased to user's acct
-            user.balance += amount
+            discount_code_used = user.discount_code_used
+            discount_code = user.discount_code
+
+            if user.affiliate:
+                user.affiliate.total_sales += amount
+                user.affiliate.save()
+
+
+            if discount_code and not discount_code_used:
+                
+                expired = discount_code.expiry_date < date.today()
+
+                if discount_code.for_purchases and not expired:
+                # Only apply it if it's not for sign ups and it's current
+                    bonus_amount = discount_code.bonus_amount
+                    
+                    if bonus_amount:
+                        user.balance = F('balance') + amount + bonus_amount
+                    else:
+                    # Need to work out the bonus percent
+                        bonus_amount = amount * (discount_code.bonus_percent / 100)
+                        user.balance = F('balance') + amount + bonus_amount
+                    
+                    discount_code.total_cost = F('total_cost') + bonus_amount
+                    discount_code.times_used = F('times_used') + 1
+
+                # If it's only for first purchases then chalk it off
+                    if discount_code.first_purchase:
+                        user.discount_code_used = True
+
+                    discount_code.save()
+
+                else:
+                    user.balance = F('balance') + amount
+            else:
+                user.balance = F('balance') + amount
+                
             user.save()
 
         return HttpResponse(status=200)
-    
+   
+   
 
 class SuccessfulPaymentView(View):
 
     def get(self, request):
+        TWO_PLACES = Decimal("0.01")
+        NO_PLACES = Decimal("1")
+
         session = stripe.checkout.Session.retrieve(request.GET.get('session_id'))
-        # amount = stripe.checkout.Session.retrieve(request.GET.get('amount_ total'))
-        first_name = self.request.user.first_name
-        # quantity = session['metadata']['quantity']
-        amount = f"{(session['amount_total'] / 100):.2f}"
+        user = self.request.user
+        first_name = user.first_name
+        amount = Decimal(session['amount_total'] / 100).quantize(TWO_PLACES)
         currency = session['currency'].upper()
         symbol = '$' if currency == 'USD' else '¥'
+
+        bonus = Decimal(session['metadata']['bonus']).quantize(TWO_PLACES) if session['metadata']['bonus'] else 0
+        percentage = session['metadata']['percentage']
+        bonus_percent = ''
+
+        if percentage:
+            bonus_percent = bonus.quantize(NO_PLACES)
+            bonus = (amount * (bonus / 100)).quantize(TWO_PLACES)
+
+        total_amount = bonus + amount
+
 
         return render(request, 'members/stripe/success.html', 
                       {'customer' : first_name, 
                        'amount': amount, 
                        'currency': currency,
-                       'symbol': symbol})
+                       'symbol': symbol,
+                       'bonus' : bonus,
+                       'percentage' : percentage,
+                       'bonus_percent' : bonus_percent,
+                       'total_amount' : total_amount
+                    })

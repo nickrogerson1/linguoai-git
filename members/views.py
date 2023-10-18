@@ -32,6 +32,7 @@ from django.utils import six
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
+from django.db.models import F
 
 from django.core.mail import send_mail
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
@@ -72,6 +73,7 @@ class TokenGenerator(PasswordResetTokenGenerator):
         )
 
 
+
 class Registration(CreateView):
 
     form_class = SignUpForm
@@ -94,22 +96,51 @@ class Registration(CreateView):
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
+
+        # Apply the code and increment it
+            discount_code = user.discount_code
+            bonus = ''
+
+        # Discount code not used for purchases.
+        # Sign up bonuses can only be a fixed amount - no percents
+            if discount_code and not discount_code.for_purchases:
+
+                discount_code.times_used += 1
+                user.balance += discount_code.bonus_amount
+                user.discount_code_used = True
+                bonus = discount_code.bonus_amount
+                discount_code.total_cost = F('total_cost') + bonus
+                discount_code.save()
+
+                affiliate = form.cleaned_data['affiliate']
+                if affiliate:
+                    try:
+                        affiliate = Affiliate.objects.get(name=affiliate)
+                        user.affiliate = affiliate
+                        affiliate.total_new_users += 1
+                        affiliate.save()
+                    except Affiliate.DoesNotExist:
+                    # Do nothing - ignore if affiliate doesn't exist
+                        print('AFFILIATE DOES NOT EXIST!')
+
             user.save()
 
-            self.send_activation_email(request, user)
+            self.send_activation_email(request, user, bonus)
             return render(request, 'registration/confirm_email.html', {'email' : user.email})
         else:
             self.object = ''
             return super().form_invalid(form)
 
     
-    def send_activation_email(self, request, user):
+    def send_activation_email(self, request, user, bonus):
             
-            print(user.pk)
             account_activation_token = TokenGenerator()
+            symbol = '$' if user.currency == 'USD' else '¥'
 
             message = render_to_string('registration/activate_account.html', {
                 'name': user.first_name,
+                'bonus': bonus,
+                'symbol': symbol,
                 'domain': 'localhost:8000',
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': account_activation_token.make_token(user),
@@ -125,6 +156,7 @@ class Registration(CreateView):
                 [user.email],
                 html_message = message
             ) 
+
 
 
 def activate_account(request, uidb64, token):
@@ -660,6 +692,7 @@ class ImprovedResultsDetailView(LoginRequiredMixin, DetailViewMixin, DetailView)
 class ResultsLogView(LoginRequiredMixin, ListView):
     paginate_by = 25
     template_name = 'members/home/log.html'
+
 
     def get_queryset(self):
         

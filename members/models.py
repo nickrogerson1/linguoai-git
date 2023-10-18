@@ -6,6 +6,7 @@ import datetime
 from django.core.validators import MaxValueValidator, MinValueValidator, EmailValidator
 from django.core.exceptions import ValidationError
 
+
 min_comment = "Whooaa, looks like the year you entered was a little early. Have a go at entering a year after 1920."
 max_comment = "Hang on, you can't be that young! Try entering your REAL year of birth."
 
@@ -15,6 +16,60 @@ def twenty_years_ago():
 def max_year(v):
     five_years_ago = datetime.date.today().year - 5
     return MaxValueValidator(five_years_ago, max_comment)(v)
+
+CURR_CHOICES = [
+        ('USD', '$ United States Dollar'),
+        ('CNY', '¥ Chinese RMB'),
+    ]
+
+
+class Affiliate(models.Model):
+
+    SM_CHOICES = {
+        ('Facebook', 'Facebook'),
+        ('X', 'X'),
+        ('Tik Tok', 'Tik Tok'),
+        ('Instagram', 'Instagram'),
+        ('Douyin', 'Douyin')
+    }
+
+    name = models.CharField(max_length=50, unique=True)
+    email = models.EmailField(unique=True)
+    date_joined = models.DateField()
+    website = models.CharField(max_length=150, blank=True)
+    social_media_app = models.CharField(max_length=150, choices=SM_CHOICES, blank=True)
+    social_media_handle = models.CharField(max_length=50, unique=True, blank=True)
+    currency = models.CharField(max_length=3, choices=CURR_CHOICES, default='USD')
+    total_sales = models.PositiveIntegerField(default=0)
+    total_new_users = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return str(f'{self.pk} {self.name}')
+
+
+class DiscountCodes(models.Model):
+
+    code_name = models.CharField(max_length=50, unique=True)
+    code_title = models.CharField(max_length=150, blank=True)
+    discount_code = models.CharField(max_length=30)
+    currency = models.CharField(max_length=3, choices=CURR_CHOICES, default='USD')
+    bonus_amount = models.PositiveSmallIntegerField(default=0)
+    bonus_percent = models.DecimalField(default=0, max_digits=10, decimal_places=3)
+    for_purchases = models.BooleanField(default=False) #Whether it should only be applied just for purchases
+    first_purchase = models.BooleanField(default=True) #Whether it's just for 1st purchases (one-off)
+    time_created = models.DateTimeField(auto_now_add=True)
+    expiry_date = models.DateField()
+    times_used = models.PositiveIntegerField(default=0)
+    total_cost = models.DecimalField(default=0, max_digits=10, decimal_places=3)
+    # affiliate = models.ForeignKey(Affiliate, on_delete=models.CASCADE, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "Discount Codes"
+
+    def __str__(self):
+        return str(f'{self.pk} {self.code_name}')
+
+
 
 class User(AbstractUser):
     email = models.EmailField(_("email address"), unique=True, validators=[EmailValidator()], error_messages={
@@ -29,17 +84,11 @@ class User(AbstractUser):
     total_submissions = models.PositiveIntegerField(default=0)
     percent_reported = models.DecimalField(max_digits=6, decimal_places=3, default=0)
     reports_blocked = models.BooleanField(default=False)
-
-    CHOICES = [
-        ('USD', '$ United States Dollar'),
-        ('CNY', '¥ Chinese RMB'),
-    ]
-
-    currency = models.CharField(max_length=3, choices=CHOICES, default='USD')
-
-User._meta.get_field('email').blank = False
-User._meta.get_field('first_name').blank = False
-User._meta.get_field('first_name').verbose_name = 'Name'
+    currency = models.CharField(max_length=3, choices=CURR_CHOICES, default='USD')
+    total_spent = models.DecimalField(max_digits=10, decimal_places=3, default=0)
+    discount_code = models.ForeignKey(DiscountCodes, on_delete=models.CASCADE, blank=True, null=True)
+    discount_code_used = models.BooleanField(default=False)
+    affiliate = models.ForeignKey(Affiliate, on_delete=models.CASCADE, blank=True, null=True)
 
 
 
@@ -150,6 +199,9 @@ class CorrectedSubmission(BaseModel):
     def __str__(self):
         return self.owner.username
 
+    class Meta:
+        verbose_name_plural = "Corrected Submissions"
+
 
 class ImprovedSubmission(BaseModel):
     submission = models.TextField(validators=[max_word_count_general_validator])
@@ -157,6 +209,9 @@ class ImprovedSubmission(BaseModel):
 
     def __str__(self):
         return self.owner.username
+
+    class Meta:
+        verbose_name_plural = "Improved Submissions"
 
 
 
@@ -195,4 +250,3 @@ class UserReportedResults(models.Model):
 
     class Meta:
         verbose_name_plural = "User Reported Results"
-
