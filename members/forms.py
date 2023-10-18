@@ -6,7 +6,6 @@ from .models import *
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth import password_validation
-from .discount_code import check_discount_code_on_sign_up
 from datetime import date
 
 
