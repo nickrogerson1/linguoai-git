@@ -141,7 +141,7 @@ class Registration(CreateView):
                 'name': user.first_name,
                 'bonus': bonus,
                 'symbol': symbol,
-                'domain': 'localhost:8000',
+                'domain': 'linguo.ai',
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': account_activation_token.make_token(user),
                 # 'protocol': 'https' if request.is_secure() else 'http'
