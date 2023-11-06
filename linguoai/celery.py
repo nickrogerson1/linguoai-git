@@ -33,40 +33,19 @@ def debug_task(self):
 
 
 
+
+
+@app.task
+def check_exchange_rate():
+    url = 'http://api.exchangerate.host/convert?access_key=68a479f003c5c91e2a034f7ee5a12b2a&from=CNY&to=USD&amount=1'
+    res = requests.get(url).json()['info']['quote']
+    print(res)
+    r = redis.Redis()
+    r.set('cny_usd_rate', res)
+
+
+
 # Celery Beat config
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    pass
-    # sender.add_periodic_task(crontab(minute='0', hour='*'), check_exchange_rate.s(), name='Get Exchange Rate')
-    # sender.add_periodic_task(5.0, send_to_ws.s(), name='Send to WS')
-
-
-
-
-
-# @app.task
-# def check_exchange_rate():
-#     url = 'https://api.exchangerate.host/convert?from=CNY&to=USD'
-#     res = requests.get(url).json()['info']['rate']
-#     print(res)
-#     r = redis.Redis()
-#     r.set('cny_usd_rate', res)
-
-
-
-# from channels.layers import get_channel_layer
-# from asgiref.sync import async_to_sync
-
-# @app.task
-# def send_to_ws():
-#     r = redis.Redis()
-#     channel_name = r.get('admin').decode()
-#     if channel_name:
-#         channel_layer = get_channel_layer()
-#         print(channel_layer.group_channels('Nicks cool group'))
-        
-#         return async_to_sync(channel_layer.send)(channel_name, {
-#             'type': 'status.update',
-#             'text': 'success'
-#         })
-#     return 'Nothing to send.'
+    sender.add_periodic_task(crontab(minute='0', hour=[0,12]), check_exchange_rate.s(), name='Get Exchange Rate')

@@ -37,5 +37,4 @@ class LandingPageView(View):
             }
      
         print(kwargs)
-        print('This fired!')
         return kwargs
