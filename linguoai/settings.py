@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'tz_detect',
     "home",
     "members",
-    'landing_pages'
+    'landing_pages',
 
     'blog',
     'wagtail.contrib.forms',
