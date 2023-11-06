@@ -1,0 +1,53 @@
+{% load static %}
+
+		<!-- Content
+		============================================= -->
+		<section>
+			<div class="content-wrap pb-lg-0">
+
+				<div class="container">
+
+					<!-- Section light
+					============================================= -->
+					<div class="block-hero-26">
+
+						<div class="row align-items-center min-vh-lg-100 gutter-50">
+
+							<div class="col-md-5 col-lg-6">
+								<h1 class="h1 fw-semibold lh-base mb-4">Why trust our IELTS Writing AI tester?</h1>
+								<!-- <p class="text-muted">Use AI to prepare for your IELTS tests and improve your overall level of English.</p> -->
+
+								<dl class="row gx-3 mb-0">
+									<svg>
+										<use xlink:href="{% static 'svgs/blue-tick.svg' %}"></use>
+									</svg>
+									<div class="col mb-3 fw-bold"><i class="fa-solid fa-check-circle me-2 color"></i> &#61528; It's accurate. <span style="font-weight: 200;">From our tests which we compared alongside current and former IELTS examiners, we found the results to be inline with other examiners and always within the 0.5 band allowed for examiners.</span></div>
+									<div class="clear"></div>
+
+									<div class="col mb-3 fw-bold"><i class="fa-solid fa-check-circle me-2 color"></i>We use the ACTUAL IELTS writing band descriptors.<span style="font-weight: 200;"> We don't use the publicly available band descriptors to rate your answer. We use the actual band descriptors the examiners use which makes it a lot more accurate.</span></div>
+									<div class="clear"></div>
+
+									<div class="col mb-3 fw-bold"><i class="fa-solid fa-check-circle me-2 color"></i>Approved by and checked by REAL IELTS examiners. <span style="font-weight: 200;">This site was created by a former IELTS writing examiner who has scored thousands of IELTS writing test scripts. Also, current examiners review the AI scores for accuracy, so you can rest assured that the results are reliable.</span></div>
+									<div class="clear"></div>
+
+									<div class="col mb-3 fw-bold"><i class="fa-solid fa-check-circle me-2 color"></i>A great way to prepare and practise IELTS Writing tests. <span style="font-weight: 200;">IELTS writing tests are not easy to prepare for and usually mean relying on someone with little knowledge of what is necessary. Our IELTS AI scorer simplifies this process and gives you clear results and a roadmap to success.</span></div>
+									<div class="clear"></div>
+
+									<div class="col mb-3 fw-bold"><i class="fa-solid fa-check-circle me-2 color"></i>Download your results as PDFs and DOCX. <span style="font-weight: 200;">You don't just have to view your results online, you can download them as a PDF or DOCX and use them as you please.</span></div>
+									<div class="clear"></div>
+
+									<div class="col mb-0 fw-bold"><i class="fa-solid fa-check-circle me-2 color"></i>It's waaaayy cheaper than IELTS. <span style="font-weight: 200;">You only pay for what you use. We currently charge ${{ ielts_usd }}  per word, so you can easily get a score for less than 30 cents... a lot cheaper than if you were to do the real test.</span></div>
+									<div class="clear"></div>
+								</dl>
+
+								<div class="text-center my-3"><a href="{% url 'register' %}" class="btn px-5 py-2 btn-primary cta-btn">Sign Up</a></div>
+							</div>
+
+							<div class="col-md-7 col-lg-5">
+								<img src="{% static 'images/hat-throwing-graduates.jpg' %}" class="rounded-start" alt="successful IELTS graduates">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>

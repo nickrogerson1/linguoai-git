@@ -22,22 +22,23 @@ CURR_CHOICES = [
         ('CNY', '¥ Chinese RMB'),
     ]
 
+SM_CHOICES = [
+        # ('', ''),
+        ('FB', 'Facebook'),
+        ('X', 'X'),
+        ('TT', 'Tik Tok'),
+        ('IN', 'Instagram'),
+        ('DY', 'Douyin')
+]
+
 
 class Affiliate(models.Model):
-
-    SM_CHOICES = {
-        ('Facebook', 'Facebook'),
-        ('X', 'X'),
-        ('Tik Tok', 'Tik Tok'),
-        ('Instagram', 'Instagram'),
-        ('Douyin', 'Douyin')
-    }
 
     name = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
     date_joined = models.DateField()
     website = models.CharField(max_length=150, blank=True)
-    social_media_app = models.CharField(max_length=150, choices=SM_CHOICES, blank=True)
+    social_media_app = models.CharField(max_length=2, choices=SM_CHOICES, blank=True)
     social_media_handle = models.CharField(max_length=50, unique=True, blank=True)
     currency = models.CharField(max_length=3, choices=CURR_CHOICES, default='USD')
     total_sales = models.PositiveIntegerField(default=0)

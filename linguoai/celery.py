@@ -18,7 +18,10 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 
 app.conf.update(
-    result_extended = True
+    result_extended = True,
+    worker_max_memory_per_child = 12000,
+    worker_max_tasks_per_child = 2,
+    worker_concurrency = 2
 )
 
 app.autodiscover_tasks()

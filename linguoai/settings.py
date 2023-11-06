@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'tz_detect',
     "home",
     "members",
-    # 'webpack_loader',
+    'landing_pages'
 
     'blog',
     'wagtail.contrib.forms',
@@ -157,7 +157,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 INTERNAL_IPS = [
-    "127.0.0.1"
+    "0.0.0.0"
 ]
 
 LOGIN_REDIRECT_URL = '/dash/'

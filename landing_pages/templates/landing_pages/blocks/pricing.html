@@ -1,0 +1,73 @@
+{% load static %}
+
+<style>
+    .card-images {
+        display: flex;
+        justify-content: space-evenly;
+    }
+
+    #credit-prices li:not(:first-child) {
+        font-size: 1.1rem;
+    }
+
+    #credit-prices ul > p {
+        font-family: Inter, sans-serif; font-size: 18px;
+        font-weight: 600;
+        padding-left: 12px;
+        margin-bottom: 5px;
+    }
+
+</style>
+
+<section id="pricing">
+    <div class="content-wrap d-flex min-vh-100 align-items-center">
+        <div class="container">
+            <div class="row col-mb-50 justify-content-center">
+
+                <div class="col-xl-6 col-lg-8 text-center">
+                    <h3 class="h1 fw-bold mb-3" >Pricing</h3>
+                </div>
+
+                <div class="clear"></div>
+
+                <div class="col-md-6">
+                    <!-- <div class="card border-0 dark shadow-sm h-shadow shadow-ts p-3" style="background: url('{% static 'one.jpg' %}') no-repeat top center / contain;"> -->
+                        <div class="card-body">
+                            <h3 class="card-title h2 fw-bold mb-4 text-black text-center">Pay For What You Use</h3>
+                            <p class="card-text mb-0 text-black">Everything is Pay-As-You-Go. You just top up and the credits are added to your account. Credits do not expire and live for the lifetime of your account.</p>
+                            <br>
+                            <p class="card-text text-black mb-1">Currently, payment is accepted in only two currencies: USD and CNY. USD customers can pay with any credit or debit card including the following:</p>
+                            <div class="card-images mt-0">
+                                <img src="{% static 'visa_logo.svg' %}" alt="visa logo">
+                                <img src="{% static 'mc_logo.svg' %}" alt="mastercard logo">
+                                <img src="{% static 'amex_logo.svg' %}" alt="amex logo">
+                            </div>
+                        <p class="card-text mt-4 mb-1 text-black">CNY customers can ONLY pay with Alipay (支付宝) or WeChat Pay (微信支付).</p>
+                            <div class="card-images">
+                                <img src="{% static 'wechat_pay_logo.svg' %}" alt="wechat pay logo">
+                                <img src="{% static 'alipay_logo.svg' %}" alt="alipay logo">
+                        </div>
+                            <p class="card-text mt-3 text-black">For more information on pricing, please review <a href="blog/pricing/">this blog page</a>.</p>
+                        </div>
+                    <!-- </div> -->
+                    <div class="text-center my-3"><a href="{% url 'register' %}" class="btn px-5 py-2 btn-primary cta-btn">Sign Up</a></div>
+                </div>
+
+                <div class="col-md-6" >
+                    <div id="credit-prices" class="card border-0 shadow-sm h-shadow shadow-ts p-3" style="background: url('{% static 'dollars.jpg' %}') no-repeat top center / cover;">
+                        <!-- <div class="card-body" > -->
+                            <h3 class="card-title h2 fw-bold mb-4">Cost Per Service</h3>
+                            <ul>
+                                <li>IELTS Writing Task 2: ${{ ielts_usd }} USD and ¥{{ ielts_cny }} CNY per word.</li>
+                                <p>Other Services:</p>
+                                <li>Improved Submissions: ${{ improved_usd }} USD and ¥{{ improved_cny }} CNY per word.</li>
+                                <li>Corrected Submissions: ${{ corrected_usd }} USD and ¥{{ corrected_cny }} CNY per word.</li>
+                              </ul>
+                        <p style="font-family: Inter, sans-serif; font-size: 16px;">The IELTS Writing Test Scorer is slightly more expensive than our other services due to its complicated nature. The minimum word count is 250 words and the maximum count is 700 words, inline with the requirements of the actual IELTS writing test.</p>
+                        <!-- </div> -->
+                    </div>
+
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,509 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html dir="ltr" lang="en-US">
+<head>
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-MBH5S83P2X"></script>
+	<script>
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'G-MBH5S83P2X');
+	</script>
+
+
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta http-equiv="x-ua-compatible" content="IE=edge">
+	<meta name="author" content="LinguoAI">
+	<meta name="description" content="A revolutionary new way to use AI to improve your English writing skills and get instant feedback without the need to consultant a teacher.">
+
+	<link rel="icon" type="image/x-icon" href="{% static 'brain-fav.png' %}">
+
+	<!-- Font Imports -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=PT+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+	<!-- Font used for pricing -->
+	<!-- <link href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap" rel="stylesheet"> -->
+
+	<!-- Core Style -->
+    
+    {% load compress %}
+    {% compress css %}
+	<link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% endcompress %}
+   
+     <!-- Font Icons -->
+	<link rel="stylesheet" href="{% static 'css/font-icons.css' %}">
+
+    {% comment %}
+    <link rel="stylesheet" href="{% static 'CACHE/css/output.af76647f9268.css' %}">
+    {% endcomment %}
+
+	
+
+    <!-- Plugins/Components CSS -->
+	<!-- <link rel="stylesheet" href="{% static 'css/swiper.css' %}"> -->
+
+	<!-- Custom CSS -->
+	<link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+	<link rel="stylesheet" href="{% static 'css/header.css' %}">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Font used for pricing -->
+	<link href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+
+	<!-- Document Title
+	============================================= -->
+	<title>LinguoAI - the future of language learning</title>
+
+	<!-- CSS for header and home -->
+	{% block header %}{% endblock header %}
+	{% block stylesheets %}{% endblock stylesheets %}
+
+<style>
+    /* block-misc-sticky-cards */
+    :root {
+        --cnvs-secondary-font: quiche-sans, sans-serif;
+    }
+
+    .block-sticky-cards .content-wrap,
+    .block-sticky-cards .section { overflow: visible; }
+
+    .block-sticky-cards .sticky-section + .sticky-section {
+            margin-top: 5vh;
+        }
+
+    @media (min-width: 992px) {
+        .block-sticky-cards .sticky-section {
+            --sticky-top-gap: 30px;
+            position: -webkit-sticky;
+            position: sticky;
+            z-index: 2;
+            top: calc(80px + var(--sticky-top-gap));
+        }
+
+        .block-sticky-cards .sticky-section + .sticky-section {
+            margin-top: 20vh;
+        }
+    }
+
+    /* cool glitchy text */
+    @import url(https://fonts.googleapis.com/css?family=Source+Code+Pro:400);
+
+    /* #word-container {
+        position: relative;
+    } */
+
+    .word {
+        /* height: 100%; */
+        background: radial-gradient(#222922, #000500);
+        font-family: 'Source Code Pro', monospace;
+        font-weight: 400;
+        /* overflow: hidden; */
+        /* padding: 30px 0 0 30px; */
+        text-align: center;
+        /* bottom: 0; */
+        color: #fff;
+        font-size: 2.5em;
+        height: 2.5em;
+        left: 0;
+        line-height: 2.5em;
+        margin: auto;
+        right: 0;
+        /* position: absolute; */
+        text-shadow: 0 0 10px rgba(50, 255, 50, 0.5), 0 0 5px rgba(100, 255, 100, 0.5);
+        top: 0;
+        /* background-image: linear-gradient(transparent 0%, rgba(10, 16, 10, 0.5) 50%);
+        background-size: 1000px 2px; */
+        
+    }
+
+    .word span {
+        display: inline-block;
+        transform: translateX(100%) scale(0.9);
+        transition: transform 500ms;
+    }
+
+    .word .done {
+        color: #6f6;
+        transform: translateX(0) scale(1);
+    }
+
+    .overlay {
+        background-image: linear-gradient(transparent 0%, rgba(10, 16, 10, 0.5) 50%);
+        background-size: 100px 2px;
+
+        bottom: 0;
+        content: '';
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+    
+
+
+
+
+
+/* Cool font from Google Fonts! */
+@import url('https://fonts.googleapis.com/css?family=Raleway:900&display=swap');
+
+/* body {
+	
+} */
+
+
+
+#container1 {
+	/* Center the text in the viewport. */
+	position: absolute;
+	margin: auto;
+	width: 100vw;
+	height: 80pt;
+	top: 0;
+	bottom: 0;
+    padding-top: 100px;
+	
+	/* This filter is a lot of the magic, try commenting it out to see how the morphing works! */
+	filter: url(#threshold) blur(0.6px);
+}
+
+@media (max-width: 991px) {
+    #container1 {
+        /* position: relative; */
+        padding-top: 0;
+        /* display: none; */
+        top: auto;
+        bottom: auto;
+    }
+}
+
+/* Your average text styling */
+#text1, #text2 {
+	position: absolute;
+	/* width: 50%; */
+	display: inline-block;
+	
+	font-family: 'Raleway', sans-serif;
+	font-size: 80pt;
+    font-weight: 600;
+    color: #dd052b;
+	
+	text-align: center;
+	
+	user-select: none;
+}
+
+/* Make the sign up buttons stand out a bit more */
+.cta-btn {
+    padding: 25px 70px;
+    font-size: 20px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body class="stretched block-sticky-cards" data-bs-spy="scroll" data-bs-target="#scroll-spy" data-bs-offset="0" tabindex="0">
+
+{% comment %}
+{% include './includes/header.html' %}
+{% endcomment %}
+
+
+
+{% block content %}{% endblock content %}
+
+{% comment %}
+{% include './includes/footer.html' %}
+{% endcomment %}
+
+	<!-- Go To Top
+	============================================= -->
+	<div id="gotoTop" class="uil uil-angle-up"></div>
+
+
+    <!-- JavaScript Mostly For the Header -->
+	<script src="{% static 'js/plugins1.js' %}"></script>
+    <!-- <script src="{% static 'js/jquery.js' %}"></script> -->
+	<script src="{% static 'js/functions.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lettering.js/0.6.1/jquery.lettering.min.js"></script>
+	
+
+	
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script> -->
+
+
+{% block javascript %}{% endblock javascript %}
+
+<script>
+// block-misc-sticky-cards
+    jQuery('.block-sticky-cards-wrap .sticky-section').each( function(i) {
+        var gap = getComputedStyle(this).getPropertyValue('--sticky-top-gap');
+        jQuery(this).css({
+            '--sticky-top-gap': 'calc( '+ gap +' * '+ i +' )',
+        });
+    });
+
+
+(function ($) {
+    var methods = { on: $.fn.on, bind: $.fn.bind };
+    $.each(methods, function(k){
+        $.fn[k] = function () {
+            var args = [].slice.call(arguments),
+                delay = args.pop(),
+                fn = args.pop(),
+                timer;
+
+            args.push(function () {
+                var self = this,
+                    arg = arguments;
+                clearTimeout(timer);
+                timer = setTimeout(function(){
+                    fn.apply(self, [].slice.call(arg));
+                }, delay);
+            });
+
+            return methods[k].apply(this, isNaN(delay) ? arguments : args);
+        };
+    });
+}(jQuery));
+
+
+
+// Cool glitchy text
+// https://codepen.io/jackrugile/pen/GROaam
+(function($) {
+
+    function Ticker( elem ) {
+
+        // console.log(elem)
+        elem.lettering();
+        this.done = false;
+        this.cycleCount = 5;
+        this.cycleCurrent = 0;
+        this.chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()-_=+{}|[]\\;\':"<>?,./`~'.split('');
+        this.charsCount = this.chars.length;
+        this.letters = elem.find( 'span' );
+        this.letterCount = this.letters.length;
+        this.letterCurrent = 0;
+        this.width = window.innerWidth
+
+
+        this.letters.each( function() {
+            var $this = $( this );
+            $this.attr( 'data-orig', $this.text() );
+            $this.text( '-' );
+        });
+    }
+
+
+    Ticker.prototype.getChar = function() {
+        return this.chars[ Math.floor( Math.random() * this.charsCount ) ];
+    };
+
+    Ticker.prototype.reset = function() {
+
+
+        this.done = false;
+        this.cycleCurrent = 0;
+        this.letterCurrent = 0;
+    
+        this.letters.each( function() {
+            var $this = $( this );
+            $this.text( $this.attr( 'data-orig' ) );
+            $this.removeClass( 'done' );
+        });
+        this.loop();
+    };
+
+    Ticker.prototype.loop = function() {
+        var self = this;
+
+        // console.log(this.letters)
+
+        this.letters.each( function( index, elem ) {
+            var $elem = $( elem );
+            
+            if( index >= self.letterCurrent ) {
+                // console.log(self.letterCurrent)
+                if( $elem.text() !== ' ' ) {
+                    $elem.text( self.getChar() );
+                    $elem.css( 'opacity', Math.random() );
+                }
+            }
+        });
+
+        if( this.cycleCurrent < this.cycleCount ) {
+            this.cycleCurrent++;
+        } else if( this.letterCurrent < this.letterCount ) {
+            var currLetter = this.letters.eq( this.letterCurrent );
+            this.cycleCurrent = 0;
+            currLetter.text( currLetter.attr( 'data-orig' ) ).css( 'opacity', 1 ).addClass( 'done' );
+            this.letterCurrent++;
+        } else {
+            this.done = true;
+        }
+
+        if( !this.done ) {
+            requestAnimationFrame( function() {
+                self.loop();
+            });
+        } 
+        else {
+            if (window.innerWidth !== this.width){
+                return
+            }
+            setTimeout( function() {
+                self.reset();
+                // console.log(self)
+    // Set the wait time between spins
+            }, 1000 );
+        }
+    };
+
+
+    
+    let words = $( '.word' );
+
+    const initTicker = () => {
+
+        if (window.innerWidth > 600) {
+            $(words[0]); $(words[0]).show(); $(words[1]).hide() 
+        } else {
+            $(words[1]); $(words[1]).show(); $(words[0]).hide() 
+        }
+
+        const ticker = new Ticker( words ).reset();
+        console.log(window.innerWidth)
+
+    }
+
+    $( document ).ready(initTicker)
+
+    $( window ).on('resize', initTicker, 3000)
+
+
+})(jQuery);
+
+
+
+
+
+
+
+
+
+/*
+	This pen cleverly utilizes SVG filters to create a "Morphing Text" effect. Essentially, it layers 2 text elements on top of each other, and blurs them depending on which text element should be more visible. Once the blurring is applied, both texts are fed through a threshold filter together, which produces the "gooey" effect. Check the CSS - Comment the #container rule's filter out to see how the blurring works!
+*/
+
+const elts = {
+	text1: document.getElementById("text1"),
+	text2: document.getElementById("text2")
+};
+
+// The strings to morph between. You can change these to anything you want!
+const texts = [
+	"What",
+	"Are",
+	"You",
+	"Waiting",
+	"For?",
+	"Get",
+	"Better",
+    "IELTS",
+	"Scores",
+    "Now!",
+];
+
+// Controls the speed of morphing.
+const morphTime = 1;
+const cooldownTime = 0.25;
+
+let textIndex = texts.length - 1;
+let time = new Date();
+let morph = 0;
+let cooldown = cooldownTime;
+
+elts.text1.textContent = texts[textIndex % texts.length];
+elts.text2.textContent = texts[(textIndex + 1) % texts.length];
+
+function doMorph() {
+	morph -= cooldown;
+	cooldown = 0;
+	
+	let fraction = morph / morphTime;
+	
+	if (fraction > 1) {
+		cooldown = cooldownTime;
+		fraction = 1;
+	}
+	
+	setMorph(fraction);
+}
+
+// A lot of the magic happens here, this is what applies the blur filter to the text.
+function setMorph(fraction) {
+	// fraction = Math.cos(fraction * Math.PI) / -2 + .5;
+	
+	elts.text2.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
+	elts.text2.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
+	
+	fraction = 1 - fraction;
+	elts.text1.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
+	elts.text1.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
+	
+	elts.text1.textContent = texts[textIndex % texts.length];
+	elts.text2.textContent = texts[(textIndex + 1) % texts.length];
+}
+
+function doCooldown() {
+	morph = 0;
+	
+	elts.text2.style.filter = "";
+	elts.text2.style.opacity = "100%";
+	
+	elts.text1.style.filter = "";
+	elts.text1.style.opacity = "0%";
+}
+
+// Animation loop, which is called every frame.
+function animate() {
+	requestAnimationFrame(animate);
+	
+	let newTime = new Date();
+	let shouldIncrementIndex = cooldown > 0;
+	let dt = (newTime - time) / 1000;
+	time = newTime;
+	
+	cooldown -= dt;
+	
+	if (cooldown <= 0) {
+		if (shouldIncrementIndex) {
+			textIndex++;
+		}
+		
+		doMorph();
+	} else {
+		doCooldown();
+	}
+}
+
+// Start the animation.
+animate();
+
+
+</script>
+
+</body>
+</html>

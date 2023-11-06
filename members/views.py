@@ -88,6 +88,16 @@ class Registration(CreateView):
             currency = 'USD'
 
         form = SignUpForm(initial={'country': country_code, 'currency': currency})
+
+        # Look for discount codes
+        dc = request.GET.get('d', '')
+        print(f'DISCOUNT CODE {dc}')
+
+        if dc:
+            # Remove trailing slash
+            dc = dc[:-1]
+            form.initial['discount_code'] = dc
+
         return render(request, self.template_name, {"form": form})
     
 

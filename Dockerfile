@@ -22,4 +22,5 @@ RUN apt-get purge -y --auto-remove gcc
 
 COPY . ./
 
-CMD celery -A linguoai worker --loglevel=info & python manage.py migrate && python manage.py collectstatic && daphne --bind 0.0.0.0 --port $PORT linguoai.asgi:application
+# CMD celery -A linguoai flower worker -l=info --address='linguo.ai' --url_prefix=flower & python manage.py migrate && python manage.py collectstatic && daphne --bind 0.0.0.0 --port $PORT linguoai.asgi:application
+CMD celery -A linguoai worker -l info & python manage.py migrate && python manage.py collectstatic && daphne --bind 0.0.0.0 --port $PORT linguoai.asgi:application
