@@ -3,6 +3,7 @@ from celery import Celery
 import redis
 import requests
 from celery.schedules import crontab
+import time
 
 import environ
 
@@ -38,11 +39,24 @@ def debug_task(self):
 
 
 @app.task
-def check_exchange_rate():
-    url = 'http://api.exchangerate.host/convert?access_key=68a479f003c5c91e2a034f7ee5a12b2a&from=CNY&to=USD&amount=1'
-    res = requests.get(url).json()['info']['quote']
-    print(res)
-    r.set('cny_usd_rate', res)
+def check_exchange_rate(retry_no=0, delay=60):
+    try:
+        url = 'http://api.exchangerate.host/convert?access_key=68a479f003c5c91e2a034f7ee5a12b2a&from=CNY&to=USD&amount=1'
+        res = requests.get(url).json()['info']['quote']
+        print(res)
+        r.set('cny_usd_rate', res)
+
+    except Exception as e:
+        print(e)
+    # Wait a minute if less than 10 retries
+        if retry_no < 10:
+            retry_no += 1
+            time.sleep(delay)
+            return check_exchange_rate(retry_no)
+        else:
+        # Set the value at an arbitrary number
+            r.set('cny_usd_rate', 13)
+    
 
 
 

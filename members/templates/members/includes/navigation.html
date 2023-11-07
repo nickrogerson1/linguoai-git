@@ -1,13 +1,5 @@
 {% load static %}
 
-
-<style>
-.btn-outline {
-    background-color: transparent;
-    color: inherit;
-    transition: all .5s;
-}
-</style>
         
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-absolute navbar-transparent">
@@ -32,25 +24,18 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navigation">
                     <ul class="navbar-nav ml-auto">
-                        <li >
-                            <a href="#">
-                            <button type="button" class="btn btn-outline-primary">User Guide</button>
-                            </a>
-                        </li>
-                       <li class="nav-item">
-                        <span class="one-line">
-                        <i class="tim-icons icon-bank"></i>
                         
-                        Balance 
-                        {% if user.currency == 'USD' %}
-                        ${% else %}¥{% endif %}<span id="balance">{% firstof result.balance user.balance '0' %}</span>
-                        </span>
-                        <!-- </button> -->
+                        <li class="nav-item">
+                            <span class="one-line">
+                            <i class="tim-icons icon-bank"></i>
+                                <span id="balance-text">
+                                Balance 
+                                {% if user.currency == 'USD' %}
+                                ${% else %}¥{% endif %}<span id="balance">{% firstof result.balance user.balance '0' %}</span>
+                                </span>
+                            </span>
                        </li>
-                       {% comment %}
-                       {% url 'top-up' as top_up %} 
-                       {% if request.path != top_up %}
-                       {% endcomment %}
+                      
                         <li>
                         <form action="{% url 'top-up' %}" method="POST">
                             {% csrf_token %}

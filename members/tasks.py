@@ -9,7 +9,7 @@ from .models import *
 import time
 from celery import shared_task
 from celery.exceptions import MaxRetriesExceededError
-from linguoai.celery import app
+from linguoai.celery import app, check_exchange_rate
 from celery.utils.time import get_exponential_backoff_interval
 
 import requests
@@ -36,37 +36,10 @@ from django.db import transaction
 MAX_RETRIES = 6
 
 
-# Update exchange rate every hour
-# celery beat worker updates Redis cache every hour
-# exchange rate is called when currency is CNY
-# if no exchange rate present (ie due to data loss) then call API itself and cache its value
-
-# from linguoai.celery import check_exchange_rate
-
-# OPTIONS
-# imf
-# rba - Reserve Bank of Australia
-# boc - Bank of Canada
-# snb - Swiss National Bank
-# cbr - Central Bank of Russia
-# nbu - National Bank of Ukraine
-# bnro - National Bank of Romania
-# boi - Bank of Israel
-# nob - Norges Bank (Norway monetary policy)
-# cbn - Central Bank of Nigeria
-# ecb
-
-def check_exchange_rate():
-    url = 'https://api.exchangerate.host/latest?base=cny&source=rba'
-    # data = {'source':'imf', 'base':'cny', 'symbols':'usd, gbp'}
-    res = requests.get(url).json()['rates']['USD']
-    # ['info']['rate']
-    print(res)
-    # r.set('cny_usd_rate', res)
 
 
 
-
+# TEST THIS FUNCTION!!
 # Get exchange from API
 def get_exchange_rate():
     cny_usd_rate = r.get('cny_usd_rate')
@@ -76,8 +49,12 @@ def get_exchange_rate():
         return float(cny_usd_rate)
     else:
 # if there's no value (unlikely), call it and do it again
-        check_exchange_rate()
-        get_exchange_rate()
+# Retry it less and speed up the requests as a client will be waiting
+        val = check_exchange_rate(retry_no=5,delay=5)
+        if val:
+            return val
+    # Return an arbitrary figure (as of 2023)
+        return 13
 
 
 
