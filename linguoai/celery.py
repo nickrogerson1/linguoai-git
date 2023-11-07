@@ -4,11 +4,13 @@ import redis
 import requests
 from celery.schedules import crontab
 
-
 import environ
 
 env = environ.Env()
 environ.Env.read_env()
+
+r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'),decode_responses=True)
+
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "linguoai.settings")
 app = Celery('linguoai',
@@ -40,7 +42,6 @@ def check_exchange_rate():
     url = 'http://api.exchangerate.host/convert?access_key=68a479f003c5c91e2a034f7ee5a12b2a&from=CNY&to=USD&amount=1'
     res = requests.get(url).json()['info']['quote']
     print(res)
-    r = redis.Redis()
     r.set('cny_usd_rate', res)
 
 
