@@ -23,7 +23,7 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
-r = redis.Redis(decode_responses=True)
+r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'),decode_responses=True)
 
 
 from .pricing import *

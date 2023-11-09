@@ -3,9 +3,9 @@ LLM_COSTS = {
     # up to 4k
 'gpt-3' : {'input' :0.0015,
             'output': 0.002},
-    # up to 8k
-'gpt-4' : {'input': 0.03,
-            'output': 0.06}
+    # up to 128k
+'gpt-4' : {'input': 0.01,
+            'output': 0.03}
 }
 
 
