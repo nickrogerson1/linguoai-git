@@ -25,7 +25,7 @@ document.querySelector('#clear').addEventListener('click', clearInput)
 
 
 
-const ws = new WebSocket(`wss://${window.location.host}/ws/bulk-submission/`);
+const ws = new WebSocket(`ws://${window.location.host}/ws/bulk-submission/`);
 
 ws.onclose = e => {
     console.error('Web Socket closed unexpectedly');
@@ -36,28 +36,40 @@ const counter = taskId => {
     let secs = 0
     const cell = document.querySelector(`#${taskId} td:nth-child(2)`)
     const incrementer = () => {
-    secs++
-    const s = secs === 1 ? '' : 's'
-    cell.innerHTML = `${secs} sec${s}`
-    const status = document.querySelector(`#${taskId} td:last-child`).innerHTML
-    if(status === 'Completed' || status === 'Failed') {
-        clearInterval(interval)
+        secs++
+        const s = secs === 1 ? '' : 's'
+        cell.innerHTML = `${secs} sec${s}`
+        const status = document.querySelector(`#${taskId} td:last-child`).innerHTML
+        if(status === 'Completed' || status === 'Failed') {
+            clearInterval(interval)
+            }
         }
-    }
 const interval = setInterval(incrementer, 1000)
 }
 
 
-const countdown = (taskId, retryCount, secs) => {
+const countdown = (taskId, retryCount, secs, maxAttempts) => {
+    const getOrd = n => ['st','nd','rd'][((n+90)%100-10)%10-1]||'th'
     const status = document.querySelector(`#${taskId} td:last-child`)
+
       const decrementer = () => {
         secs-- 
         console.log(`Seconds: ${secs}`)
         const s = secs === 1 ? '' : 's'
-        const getOrd = n => ['st','nd','rd'][((n+90)%100-10)%10-1]||'th'
-        status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying in ${secs} sec${s}`
+
+        if(retryCount === maxAttempts){
+            status.innerHTML = `FINAL attempt: retrying in ${secs} sec${s}`
+          } else {
+            status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying in ${secs} sec${s}`
+        }
+        
         if(!secs || Math.sign(secs) === -1){
-            status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying...`
+            if(retryCount === maxAttempts){
+                status.innerHTML = `FINAL attempt: retrying...`
+            } else {
+                status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying...`
+            }
+            
             clearInterval(interval)
         }
       }
@@ -116,7 +128,7 @@ ws.onmessage = e => {
 
     } else if(data.status === 'success') {
 
-        const { taskId, newBalance, pk } = data
+        const { taskId, new_balance, pk } = data
 
     // Check the taskId exists before continuing
         if(!document.querySelector(`#${taskId}`)) return
@@ -128,21 +140,21 @@ ws.onmessage = e => {
         el.innerHTML = newLink
     //Update other info
         document.querySelector(`#${taskId} td:last-child`).innerHTML = 'Completed'
-        document.querySelector('#balance').innerHTML = newBalance.toFixed(2)
+        document.querySelector('#balance').innerHTML = new_balance.toFixed(2)
 
         } else if(data.status === 'failed') {
  
-        let { taskId, retryCount, delay } = data
+        let { taskId, retryCount, delay, maxRetries } = data
 
         // Check the taskId exists before continuing
         if(!document.querySelector(`#${taskId}`)) return
 
-        retryCount++
+        retryCount += 2
+        const maxAttempts = maxRetries + 1
 
-        const maxRetries = 6
 
-        if(retryCount <= maxRetries){
-        countdown(taskId, retryCount, delay) 
+        if(retryCount <= maxAttempts){
+            countdown(taskId, retryCount, delay, maxAttempts) 
 
         } else {
 
@@ -173,18 +185,19 @@ console.log(file)
 
 
 const img = file.previewElement.querySelector("img")
+    const root = '/static/img/file-icons/'
     if (file.name.endsWith('docx')){
-    img.src = "/static/img/file-icons/docx.svg";
+    img.src = root + "docx.svg";
     } else if (file.name.endsWith('pdf')){
-    img.src = "/static/img/file-icons/pdf.svg";
+    img.src = root + "pdf.svg";
     } else if (file.name.endsWith('rtf')){
-    img.src = "/static/img/file-icons/rtf.svg";
+    img.src = root + "rtf.svg";
     } else if (file.name.endsWith('txt')){
-    img.src = "/static/img/file-icons/txt.svg";
+    img.src = root + "txt.svg";
     } else if (file.name.endsWith('zip')){
-    img.src = "/static/img/file-icons/zip.svg";
+    img.src = root + "zip.svg";
     }  else {
-    img.src = "/static/img/file-icons/error.svg";
+    img.src = root + "error.svg";
     }
 });
 

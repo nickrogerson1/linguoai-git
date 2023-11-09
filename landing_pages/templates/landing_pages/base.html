@@ -26,12 +26,24 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=PT+Serif:ital@0;1&display=swap" rel="stylesheet">
 
-	<!-- Font used for pricing -->
-	<!-- <link href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap" rel="stylesheet"> -->
+
+	<link rel="stylesheet" href="{% static 'CACHE/css/output.a7830c9defb9.css' %}">
+
+   
+     
+ <!--Handles issue with image heights for srcsets  -->
+<style>
+    img {
+        height: auto;
+        }
+
+    .fa-icon {
+        padding-bottom: 5px;
+    }
+</style>
+
 
 	
-	<link rel="stylesheet" href="{% static 'CACHE/css/output.0673b420e78e.css' %}">
-    
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Font used for pricing -->
@@ -75,9 +87,6 @@
     /* cool glitchy text */
     @import url(https://fonts.googleapis.com/css?family=Source+Code+Pro:400);
 
-    /* #word-container {
-        position: relative;
-    } */
 
     .word {
         /* height: 100%; */
@@ -129,14 +138,8 @@
 
 
 
-
-
 /* Cool font from Google Fonts! */
 @import url('https://fonts.googleapis.com/css?family=Raleway:900&display=swap');
-
-/* body {
-	
-} */
 
 
 
@@ -189,8 +192,6 @@
 
 </style>
 
-
-
 </head>
 
 <body class="stretched block-sticky-cards" data-bs-spy="scroll" data-bs-target="#scroll-spy" data-bs-offset="0" tabindex="0">
@@ -199,19 +200,15 @@
 
 {% block content %}{% endblock content %}
 
-{% comment %}
-{% include './includes/footer.html' %}
-{% endcomment %}
+
+<script src="{% static 'CACHE/js/output.b8b8e3703abe.js' %}"></script>
 
 	<!-- Go To Top
 	============================================= -->
 	<div id="gotoTop" class="uil uil-angle-up"></div>
 
-	<script src="{% static 'CACHE/js/output.b8b8e3703abe.js' %}"></script>
- 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lettering.js/0.6.1/jquery.lettering.min.js"></script>
 	
-
 
 
 {% block javascript %}{% endblock javascript %}
@@ -251,8 +248,7 @@
 
 
 
-// Cool glitchy text
-// https://codepen.io/jackrugile/pen/GROaam
+
 (function($) {
 
     function Ticker( elem ) {
@@ -371,13 +367,6 @@
 
 
 
-
-
-
-/*
-	This pen cleverly utilizes SVG filters to create a "Morphing Text" effect. Essentially, it layers 2 text elements on top of each other, and blurs them depending on which text element should be more visible. Once the blurring is applied, both texts are fed through a threshold filter together, which produces the "gooey" effect. Check the CSS - Comment the #container rule's filter out to see how the blurring works!
-*/
-
 const elts = {
 	text1: document.getElementById("text1"),
 	text2: document.getElementById("text2")
@@ -425,7 +414,6 @@ function doMorph() {
 
 // A lot of the magic happens here, this is what applies the blur filter to the text.
 function setMorph(fraction) {
-	// fraction = Math.cos(fraction * Math.PI) / -2 + .5;
 	
 	elts.text2.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
 	elts.text2.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;

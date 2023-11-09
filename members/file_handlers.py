@@ -7,7 +7,7 @@ import time
 
 from .views import BalanceCheckMixin, FormView
 from .forms import FileFieldForm
-from .tasks import get_corrected_results, get_improved_results, r
+from .tasks import get_results
 from django.http import HttpResponse
 
 
@@ -107,7 +107,9 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
         
         return super().form_valid(form)
 
-  
+
+
+        
     
     def process_text(self,t0,sub,file_name=None):
         args = self.check_user_has_sufficient_funds('corrected_results', sub=sub, multi=True)
@@ -128,9 +130,9 @@ class FileFieldFormView(BalanceCheckMixin,FormView):
         print(f'ARGS:   ${args}')
         
         if 'corrected' in self.request.path_info:
-            get_corrected_results.delay(t0, username, user_id, sub, 'multi', *args)
+            get_results.delay('corrected', t0, username, user_id, sub, 'multi', *args)
         else:
-            get_improved_results.delay(t0, username, user_id, sub, 'multi', *args)
+            get_results.delay('improved', t0, username, user_id, sub, 'multi', *args)
         
   
     def get_docx_text(self, file):

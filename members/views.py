@@ -73,7 +73,6 @@ class TokenGenerator(PasswordResetTokenGenerator):
         )
 
 
-
 class Registration(CreateView):
 
     form_class = SignUpForm
@@ -151,7 +150,7 @@ class Registration(CreateView):
                 'name': user.first_name,
                 'bonus': bonus,
                 'symbol': symbol,
-                'domain': 'linguo.ai',
+                'domain': 'localhost:8000',
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': account_activation_token.make_token(user),
                 # 'protocol': 'https' if request.is_secure() else 'http'
@@ -166,7 +165,6 @@ class Registration(CreateView):
                 [user.email],
                 html_message = message
             ) 
-
 
 
 def activate_account(request, uidb64, token):
@@ -422,38 +420,6 @@ class StandardSubMixin:
         symbol = '$' if self.request.user.currency == 'USD' else '¥'
         kwargs = {'per_word' : symbol + str(price), 'min_charge' : symbol + f'{min_charge:.2f}', 'min_words' : min_words }
         return super().get_context_data(**kwargs)
-    
-    # def post(self, request):
-    #     form = CorrectedForm(request.POST)
-    #     if form.is_valid():
-    #         self.object = form.save(commit=False)
-
-    #         t0 = time.time()
-    #         sub = escape(self.object.submission)
-
-    #         args = self.check_user_has_sufficient_funds(self.charge_type, sub=sub)
-    #          # [ price_per_100_words, total_words, charged ]
-
-    #     # If they have insufficient funds, then end it
-    #         if not args:
-    #             return redirect('insufficient-funds')
-            
-    #         user_id = self.request.user.id
-    #         username = self.request.user.username
-    #         symbol = '$' if self.request.user.currency == 'USD' else '¥'
-    #     # Only one submission so must be 1
-    #         html_id = 1
-            
-    #         # Then pass to Celery to process
-    #         get_results.delay(t0, username, user_id, sub, html_id, model, *args)
-              
-    #         # return redirect(self.success_url)
-    #         ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
-    #         return render(request, "members/home/sent-success.html", context=ctx)
-            
-    #     else:
-    #         self.object = ''
-    #         return super(CorrectedFormView, self).form_invalid(form)
 
 
 
@@ -548,7 +514,7 @@ class ImprovedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin, 
             args += ['', symbol]
             
             # Then pass to Celery to process
-            get_improved_results.delay(t0, username, user_id, sub, 'single', *args)
+            get_results.delay('improved', t0, username, user_id, sub, 'single', *args)
             # time.sleep(7)
             # return redirect(self.success_url)
             ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
@@ -591,7 +557,7 @@ class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin,
             args += ['', symbol]
             
             # Then pass to Celery to process
-            get_corrected_results.delay(t0, username, user_id, sub, 'single', *args)
+            get_results.delay('corrected', t0, username, user_id, sub, 'single', *args)
             
             # return redirect(self.success_url)
             ctx = {'word_count' : args[1], 'cost' : args[2], 'sub_type' : self.sub_type, 'symbol' : symbol}
@@ -877,10 +843,8 @@ def report_bad_result(request, url):
             '"Linguo AI" <admin@linguo.ai>',
             ['linguoaisite@gmail.com'],
             html_message = body
-            )   
+        )   
         
 
         # Tell the modal it can close
         return JsonResponse({'report_success' : True}, status = 200)
-        
-        print('didn\t work')

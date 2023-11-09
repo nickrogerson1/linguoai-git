@@ -45,6 +45,9 @@ INSTALLED_APPS = [
     "members",
     'landing_pages',
 
+    "imagekit",
+    "lazy_srcset",
+
     'blog',
     'wagtail.contrib.forms',
     'wagtail.contrib.redirects',
@@ -230,6 +233,41 @@ SHORT_DATE_FORMAT = 'jS M y, P'
 
 # Stop localization
 USE_L10N = False
+
+
+
+LAZY_SRCSET_ENABLED = True
+
+# The default threshold to use when not specified in the config.
+LAZY_SRCSET_THRESHOLD = 69
+
+# The default generator to use when not specified in the config.
+LAZY_SRCSET_GENERATOR_ID = "lazy_srcset:srcset_image"
+
+LAZY_SRCSET = {
+    "default": {
+        # breakpoints is the only setting you must define
+        # "breakpoints": [1920, 1580, 1280, 1024, 640],
+        "breakpoints": [1920, 1100, 767],
+
+        # If max_width is not provided the source image width is used.
+        # It's a good idea to set this.
+        "max_width": 2560,
+        # If quality is not provided PIL will choose a default
+        "quality": 91,
+        # If format is not provided the source image format is used
+        "format": "WEBP",
+        # The difference in width (px) required to generate a new image
+        # This prevents images being created which are too similar in size
+        "threshold": LAZY_SRCSET_THRESHOLD,
+        # If generator_id is not provided LAZY_SRCSET_GENERATOR_ID is used
+        "generator_id": LAZY_SRCSET_GENERATOR_ID,
+    }
+}
+
+
+
+
 
 # CACHES = {
 #     "default": {

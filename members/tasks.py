@@ -12,8 +12,6 @@ from celery.exceptions import MaxRetriesExceededError
 from linguoai.celery import app, check_exchange_rate
 from celery.utils.time import get_exponential_backoff_interval
 
-import requests
-
 import re
 import redis
 import tiktoken
@@ -25,18 +23,18 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
-r = redis.Redis(host=env('REDISHOST'), port=env('REDISPORT'),username="default", password=env('REDISPASSWORD'),decode_responses=True)
+r = redis.Redis(decode_responses=True)
 
 
 from .pricing import *
 
 from django.db import transaction
 
-# This is the max retries for all the functions set in one place
-MAX_RETRIES = 6
 
 
-
+# This is the max retries for all the functions set in one place. 
+# This also sets it for the JS.
+MAX_RETRIES = 10
 
 
 # TEST THIS FUNCTION!!
@@ -55,6 +53,8 @@ def get_exchange_rate():
             return val
     # Return an arbitrary figure (as of 2023)
         return 13
+
+
 
 
 
@@ -179,85 +179,29 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
             'newBalance' : float(user.balance),
             'pk' : pk,
             'timeCreated' : time_created,
-            'subType' : sub_type
+            # 'subType' : sub_type
         })
     
     return [pk, user.balance, time_created]
     
-   
 
 
-
-
-# 40k tokens and 200 requests per min
-@shared_task
-def update_tokens_left(num_tokens):
-    with r.lock('update_openai'):
-        tokens_left, requests_left = r.hmget('openai_remain_usage',['tokens','requests'])
-        # Re-add tokens and a req after 1 minute
-        tokens_left_now = int(tokens_left) + num_tokens
-        # Always one request
-        requests_left = int(requests_left) + 1
-        # Save new values to Redis
-        r.hset('openai_remain_usage', mapping={'tokens' : tokens_left_now, 'requests' : requests_left})
-
-
-
-def check_and_reduce_usage_left(num_tokens, task_id):
-     
-    lock = r.lock('update_openai')
-    lock.acquire()
-    tokens_left, requests_left = (r.hmget('openai_remain_usage',['tokens','requests'])
-                if r.exists('openai_remain_usage') else [40000,200])
-
-# If there are enough tokens and requests left, then process it
-    if tokens_left > 0 and requests_left > 0:
-        tokens_left_now = int(tokens_left) - num_tokens
-        requests_left = int(requests_left) - 1
-        # Save new value to Redis
-        r.hset('openai_remain_usage', mapping={'tokens' : tokens_left_now, 'requests' : requests_left})
-        lock.release()
-        update_tokens_left_worker = update_tokens_left.apply_async((num_tokens,), countdown=60)
-        return r.hset('update_tokens_left_worker', mapping={task_id: update_tokens_left_worker.id})
-    else:
-# Otherwise wait for more availability
-        lock.release()
-        time.sleep(2)
-        return check_and_reduce_usage_left(num_tokens)
-
-
-
-
-def update_before_retry(retries, max_retries, this_delay, task_id, username, num_tokens, t0):
+def update_before_retry(retries, this_delay, task_id, username):
     
-# Check here whether browser has requested to stop reporting this task
-    if retries < max_retries:
-    # Inform websocket
-        channel_name = r.hget(username, 'channel')
-    # Check that there's a name
-        if channel_name:
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.send)(channel_name, {
-                'type': 'update',
-                'status': 'failed',
-                'subType' : 'corrections',
-        # Adding 1 as it has failed and is attempting its retry next
-                'retryCount' : retries,
-                'delay' : this_delay,
-                'taskId' : f'r-{task_id}'
-            })
-    
-    # Update openai request as worker failed and didnt reduce usage amount
-    runtime = time.time() - t0
-    print(f'CURRENT RUNTIME: {runtime}')
-    if runtime < 60:
-        worker_to_kill_id = r.hget('update_tokens_left_worker', task_id)
-        # print(f'WORKER TO KILL ID: {worker_to_kill_id}')
-        app.control.revoke(worker_to_kill_id, terminate=True)
-
-        r.hdel('update_tokens_left_worker', task_id)
-        # print(f"TASK ID NOW: {r.hget('update_tokens_left_worker', task_id)}")
-        update_tokens_left(num_tokens)
+# Inform websocket
+    channel_name = r.hget(username, 'channel')
+# Check that there's a name
+    if channel_name:
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.send)(channel_name, {
+            'type': 'update',
+            'status': 'failed',
+            'maxRetries' : MAX_RETRIES,
+    # Adding 1 as it has failed and is attempting its retry next
+            'retryCount' : retries,
+            'delay' : this_delay,
+            'taskId' : f'r-{task_id}'
+        })
 
 
 # Remove the worker after 40 secs in case HTTP request super slow
@@ -273,7 +217,7 @@ def remove_expired_task_ids(username, store_val):
 
 
 @shared_task(bind=True)
-def get_corrected_results(self, t0, username, user_id, sub, from_where, price_per_100_words, total_words, charged, file_name, curr):
+def get_results(self, req_type, t0, username, user_id, sub, from_where, price_per_100_words, total_words, charged, file_name, curr):
 
     task_id = self.request.id
     print(f'TASK ID {task_id}')
@@ -293,8 +237,8 @@ def get_corrected_results(self, t0, username, user_id, sub, from_where, price_pe
                 'taskId' : f'r-{task_id}',
                 'status': 'Awaiting Response',
             })
-
-    store_val = 'Corrected Submission,' + task_id
+    
+    store_val = f'{req_type.capitalize()} Submission,' + task_id
     task_pending = r.lpos(f'{username}_pending', store_val)
     print(f'LPOS: {task_pending}')
 
@@ -317,31 +261,28 @@ def get_corrected_results(self, t0, username, user_id, sub, from_where, price_pe
 
 # Check to see whether API limit has been hit and can make a request
     t0 = time.time()
-    check_and_reduce_usage_left(num_tokens, task_id)
+    # check_and_reduce_usage_left(num_tokens, task_id)
 
     try:
         # Long API call
-        data = get_corrected_submission(sub)
-        # print(f'Sleeping for 1 second')
-        # time.sleep(10)
-        # data = [result, model, prompt_tokens, completion_tokens, total_tokens] 
-        # data = ['Some Corrected result', 'gpt-4', 100, 100, 200]
-        # time.sleep(7)
+        if req_type == 'corrected':
+            data = get_corrected_submission(sub)
+        else:
+            data = get_improved_submission(sub)
+    
     except Exception as e:
         retries = self.request.retries
-
-        # Using utility function for exponential backoff as need to process Exceptions
-        # This is not possible with decorators or custom classes
-        # factor, retries, max, full jitter 
-        this_delay = get_exponential_backoff_interval(1,retries,300,True)
         print(f'RETRY NO: {retries}')
-        update_before_retry(retries, MAX_RETRIES, this_delay, task_id, username, num_tokens, t0)
-   
+
         try:
             if retries == MAX_RETRIES:
                 raise MaxRetriesExceededError
-            # Simulate delay before retrying
-            # time.sleep(3)
+            
+            # Using utility function for exponential backoff as need to process Exceptions
+            # This is not possible with decorators or custom classes
+            # factor, retries, max, full jitter 
+            this_delay = get_exponential_backoff_interval(10,retries,300,True)
+            update_before_retry(retries, this_delay, task_id, username)
             # Otherwise retry again
             raise self.retry(exc=e, countdown=this_delay, max_retries=MAX_RETRIES)
 
@@ -362,7 +303,7 @@ def get_corrected_results(self, t0, username, user_id, sub, from_where, price_pe
             return print('MAX RETRIES EXCEEDED!')
         
     # Create an instance to pass to next func
-    model = CorrectedSubmission()
+    model = CorrectedSubmission() if req_type == 'corrected' else ImprovedSubmission()
 
     if data:
         extra = update_db(model, data, t0, user_id, task_id, price_per_100_words, total_words, charged, sub=sub)
@@ -373,126 +314,10 @@ def get_corrected_results(self, t0, username, user_id, sub, from_where, price_pe
             'pk' : extra[0],
             'new_balance' : extra[1],
             'time_created' : extra[2],
-            'sub_type' : 'corrected'
+            'sub_type' : {req_type}
         }
     # Remove completed item from list
     remove_expired_task_ids.apply_async((username, store_val), countdown=40)
-
-       
-
-
-
-
-
-
-@shared_task(bind=True)
-def get_improved_results(self, t0, username, user_id, sub, from_where, price_per_100_words, total_words, charged, file_name, curr):
-
-    task_id = self.request.id
-    print(f'TASK ID {task_id}')
-
-    # Only send on the first run for multi
-    if from_where == 'multi' and not self.request.retries:
-        # Inform websocket
-        channel_name = r.hget(username, 'channel')
-        # Check that there's a name
-        if channel_name:
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.send)(channel_name, {
-                'type': 'update',
-                'wordCount': total_words,
-                'cost': f'{curr}{charged}',
-                'fileName': file_name,
-                'taskId' : f'r-{task_id}',
-                'status': 'Awaiting Response',
-            })
-
-    store_val = 'Improved Submission,' + task_id
-    task_pending = r.lpos(f'{username}_pending', store_val)
-    print(f'LPOS: {task_pending}')
-
-# None is returned when doesn't exist. 0 is for pos zero
-    if task_pending == None:
-        # Add to all the pending tasks for this user
-        r.lpush(f'{username}_pending', store_val)
-        print('LRANGE 1: ' + str(r.lrange(f'{username}_pending',0,-1)))
-
-    # Replace old single value with new one (if there is one)
-    # and delete it after 2 minutes
-    if from_where == 'single':
-        r.set(f'{username}_single', task_id, ex=120)
-
-    enc = tiktoken.encoding_for_model('gpt-4')
-    num_tokens = len(enc.encode(sub))
-
-    print(f'Tokens Used: {num_tokens}')
-    print(f'Word Count: {total_words}')
-
-# Check to see whether API limit has been hit and can make a request
-    t0 = time.time()
-    check_and_reduce_usage_left(num_tokens, task_id)
-
-    try:
-        # Long API call
-        data = get_improved_submission(sub)
-        # print(f'Sleeping for 1 second')
-        # time.sleep(10)
-        # data = [result, model, prompt_tokens, completion_tokens, total_tokens] 
-        # data = ['Some Corrected result', 'gpt-4', 100, 100, 200]
-        # time.sleep(7)
-    except Exception as e:
-        retries = self.request.retries
-        # Using utility function for exponential backoff as need to process Exceptions
-        # This is not possible with decorators or custom classes
-        # factor, retries, max, full jitter 
-        this_delay = get_exponential_backoff_interval(1,retries,300,True)
-
-        update_before_retry(retries, MAX_RETRIES, this_delay, task_id, username, num_tokens, t0)
-   
-        try:
-            if retries == MAX_RETRIES:
-                raise MaxRetriesExceededError
-            # Simulate delay before retrying
-            # time.sleep(3)
-            # Otherwise retry again
-            raise self.retry(exc=e, countdown=this_delay, max_retries=MAX_RETRIES)
-
-        except MaxRetriesExceededError:
-        # Inform websocket
-            channel_name = r.hget(username, 'channel')
-        # Check that there's a name
-            if channel_name:
-                channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.send)(channel_name, {
-                    'type': 'update',
-                    'status': 'failed',
-                    'retryCount' : retries,
-                    'taskId' : f'r-{task_id}'
-                })
-
-            remove_expired_task_ids.apply_async((username, store_val), countdown=40)
-            return print('MAX RETRIES EXCEEDED!')
-        
-    # Create an instance to pass to next func
-    model = ImprovedSubmission()
-
-    if data:
-        extra = update_db(model, data, t0, user_id, task_id, price_per_100_words, total_words, charged, sub=sub)
-
-    # Save PK and balance in case it beats HTTP
-    # Unnecessary for multi
-        self.request.kwargs = {
-            'pk' : extra[0],
-            'new_balance' : extra[1],
-            'time_created' : extra[2],
-            'sub_type' : 'improved'
-        }
-    # Remove completed item from list
-    remove_expired_task_ids.apply_async((username, store_val), countdown=40)
-
-
-
-
 
 
 
@@ -530,32 +355,21 @@ def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lan
     print(f'Tokens Used: {num_tokens}')
     print(f'Word Count: {total_words}')
 
-# Check to see whether API limit has been hit and can make a request
-    t0 = time.time()
-    check_and_reduce_usage_left(num_tokens, task_id)
 
     try:
         # Long API call
         data = get_ielts_writing_task_2_score(q,a,lang)
-        # print(f'Sleeping for 1 second')
-        # time.sleep(3)
-        # [html, model, prompt_tokens, completion_tokens, total_tokens]
-        # data = ['Some Ielts Writing result', 'gpt-4', 100, 100, 200]
+       
     except Exception as e:
         retries = self.request.retries
-        # Using utility function for exponential backoff as need to process Exceptions
-        # This is not possible with decorators or custom classes
-        # factor, retries, max, full jitter 
-        this_delay = get_exponential_backoff_interval(1,retries,300,True)
-
-        update_before_retry(retries, MAX_RETRIES, this_delay, task_id, username, num_tokens, t0)
-   
+        
         try:
             if retries == MAX_RETRIES:
                 raise MaxRetriesExceededError
-            # Simulate delay before retrying
-            # time.sleep(3)
+           
+            this_delay = get_exponential_backoff_interval(10,retries,300,True)
             # Otherwise retry again
+            update_before_retry(retries, this_delay, task_id, username)
             raise self.retry(exc=e, countdown=this_delay, max_retries=MAX_RETRIES)
 
         except MaxRetriesExceededError:
@@ -582,9 +396,7 @@ def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lan
         reg = r'%%%%%([a-zA-Z0-9_\. ]+)%%%%%'
         m = re.search(reg, data[0], flags=re.I)
 
-    # CHANGE BACK FOR PRODUCTION!!!!
-        # band = m.group(1).replace('Band ', '')
-        band = 6
+        band = m.group(1).replace('Band ', '')
 
         # Remove \n and change to <br>
         question = q.replace('\n', '<br>')

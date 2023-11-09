@@ -171,23 +171,39 @@ th {
 
 
 <script>
-    const countdown = (taskId, retryCount, secs) => {
-        const status = document.querySelector(`#${taskId} td:last-child`)
-        const decrementer = () => {
-            secs-- 
-            console.log(`Seconds: ${secs}`)
-            const s = secs === 1 ? '' : 's'
-            const getOrd = n => ['st','nd','rd'][((n+90)%100-10)%10-1]||'th'
-            status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying in ${secs} sec${s}`
-            if(!secs || Math.sign(secs) === -1){
-                status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying...`
-                clearInterval(interval)
-            }
-        }
-        const interval = setInterval(decrementer, 1000)
-    }
 
-    const ws = new WebSocket(`wss://${window.location.host}/ws/log-submission/`);
+const countdown = (taskId, retryCount, secs, maxAttempts) => {
+    const getOrd = n => ['st','nd','rd'][((n+90)%100-10)%10-1]||'th'
+    const status = document.querySelector(`#${taskId} td:last-child`)
+
+    const decrementer = () => {
+        secs-- 
+        console.log(`Seconds: ${secs}`)
+        const s = secs === 1 ? '' : 's'
+
+        if(retryCount === maxAttempts){
+            status.innerHTML = `FINAL attempt: retrying in ${secs} sec${s}`
+        } else {
+            status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying in ${secs} sec${s}`
+        }
+        
+        if(!secs || Math.sign(secs) === -1){
+            if(retryCount === maxAttempts){
+                status.innerHTML = `FINAL attempt: retrying...`
+            } else {
+                status.innerHTML = `${retryCount}${getOrd(retryCount)} attempt: retrying...`
+            }
+            
+            clearInterval(interval)
+        }
+    }
+    const interval = setInterval(decrementer, 1000)
+  }
+
+
+
+
+    const ws = new WebSocket(`ws://${window.location.host}/ws/log-submission/`);
 
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     console.log(tz);
@@ -235,18 +251,16 @@ th {
     
     } else if(data.status === 'failed') {
 
-        let { taskId, retryCount, delay } = data
+        let { taskId, retryCount, delay, maxRetries } = data
 
         // Check the taskId exists before continuing
         if(!document.querySelector(`#${taskId}`)) return
 
-        retryCount++
-        console.log('Trying again...')
+        retryCount += 2
+        const maxAttempts = maxRetries + 1
 
-        const maxRetries = 6
-
-        if (retryCount <= maxRetries){
-            countdown(taskId, retryCount, delay) 
+        if (retryCount <= maxAttempts ){
+            countdown(taskId, retryCount, delay, maxAttempts) 
 
         } else {
 

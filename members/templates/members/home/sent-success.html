@@ -95,23 +95,28 @@ const counter = () => {
 
 
 
-  const countdown = (retryCount, secs, taskId, maxRetries) => {
+  const countdown = (retryCount, secs, taskId, maxAttempts) => {
     let interval
+    const getOrd = n => ['st','nd','rd'][((n+90)%100-10)%10-1]||'th'
     // const status = document.querySelector('#countdown-secs')
       const decrementer = () => {
         if (stop) return
         secs-- 
-        console.log(`Seconds: ${secs}`)
+        // console.log(`Seconds: ${secs}`)
         const s = secs === 1 ? '' : 's'
-        const getOrd = n => ['st','nd','rd'][((n+90)%100-10)%10-1]||'th'
-        updateText.innerHTML = `Something went wrong. We will retry in ${secs} second${s}.`
+
+
+        if(retryCount === maxAttempts){
+          updateText.innerHTML = `Something went wrong. We will retry for the <u>final time</u> in ${secs} second${s}.`
+        } else {
+          updateText.innerHTML = `Something went wrong. We will retry in ${secs} second${s}.`
+        }
+        
         updateText.style.color = 'red'
         if(!secs || Math.sign(secs) === -1){
-          if(retryCount <= maxRetries){
+          if(retryCount <= maxAttempts){
             updateText.innerHTML = `The ${retryCount}${getOrd(retryCount)} attempt is now underway. Hang on in there...`
-          } else {
-            // updateText.innerHTML = `Submission failed to process. You have NOT been charged.`
-          }
+          } 
           clearInterval(interval)
         }
       }
@@ -135,7 +140,7 @@ function showAlert () {
     });
 };
 
-const ws = new WebSocket(`wss://${window.location.host}/ws/single-submission/`);
+const ws = new WebSocket(`ws://${window.location.host}/ws/single-submission/`);
 
 ws.onclose = e => {
   console.error('Web Socket closed unexpectedly');
@@ -159,19 +164,17 @@ ws.onmessage = e => {
   if(!document.querySelector(`#${taskId}`)) return
    
 
-  
 
   if(data.status === 'failed'){
-    let { retryCount, delay } = data
+    let { retryCount, delay, maxRetries } = data
 
-// Increment this as it's not including the 1st attempt
-    retryCount++
-// 7
-    const maxRetries = 6
+// Retries need converting to "attempts"
+    retryCount += 2
+    const maxAttempts = maxRetries + 1
 
-    if (retryCount <= maxRetries){
+    if (retryCount <= maxAttempts){
       showAlert()
-      countdown(retryCount, delay, taskId, maxRetries) 
+      countdown(retryCount, delay, taskId, maxAttempts) 
 
     } else {
     // Turn off the countdown
