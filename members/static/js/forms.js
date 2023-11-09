@@ -25,7 +25,7 @@ document.querySelector('#clear').addEventListener('click', clearInput)
 
 
 
-const ws = new WebSocket(`ws://${window.location.host}/ws/bulk-submission/`);
+const ws = new WebSocket(`wss://${window.location.host}/ws/bulk-submission/`);
 
 ws.onclose = e => {
     console.error('Web Socket closed unexpectedly');
