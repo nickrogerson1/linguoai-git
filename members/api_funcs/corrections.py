@@ -53,13 +53,13 @@ def get_corrected_submission(original_text):
     messages = [
         {"role": "system", "content": "You are a writing editor."},
         {"role": "user", 
-        "content": f"Correct all the errors in each sentence and do not merge sentences. Make the text sound more like an English native speaker when required. Refrain from using woke terminology.\n\nHere is the text:\n\n{original_text}. If the sentence is gramatically correct, then don't change it."}
+        "content": f"Correct all the errors in each sentence and do not merge sentences. Make the text sound more like an English native speaker when required. If the sentence is gramatically correct, then don't change it. \n\nHere is the text:\n\n{original_text}."}
     ]
 
     messages=messages
     model='gpt-4-1106-preview'
     # model='gpt-3.5-turbo'
-    max_tokens=600
+    max_tokens=5000
     temperature=1.0
 
     try:
