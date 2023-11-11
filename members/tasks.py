@@ -262,6 +262,7 @@ def get_results(self, req_type, t0, username, user_id, sub, from_where, price_pe
 # Check to see whether API limit has been hit and can make a request
     t0 = time.time()
     # check_and_reduce_usage_left(num_tokens, task_id)
+    print(f'SUB: {sub}')
 
     try:
         # Long API call
@@ -273,6 +274,7 @@ def get_results(self, req_type, t0, username, user_id, sub, from_where, price_pe
     except Exception as e:
         retries = self.request.retries
         print(f'RETRY NO: {retries}')
+        print(e)
 
         try:
             if retries == MAX_RETRIES:
@@ -314,8 +316,9 @@ def get_results(self, req_type, t0, username, user_id, sub, from_where, price_pe
             'pk' : extra[0],
             'new_balance' : extra[1],
             'time_created' : extra[2],
-            'sub_type' : {req_type}
+            'sub_type' : req_type
         }
+
     # Remove completed item from list
     remove_expired_task_ids.apply_async((username, store_val), countdown=40)
 

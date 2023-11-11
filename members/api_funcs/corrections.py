@@ -56,14 +56,13 @@ def get_corrected_submission(original_text):
         "content": f"Correct all the errors in each sentence and do not merge sentences. Make the text sound more like an English native speaker when required. If the sentence is gramatically correct, then don't change it. \n\nHere is the text:\n\n{original_text}."}
     ]
 
-    messages=messages
     model='gpt-4-1106-preview'
     # model='gpt-3.5-turbo'
-    max_tokens=5000
+    # max_tokens=5000
     temperature=1.0
 
     try:
-        res = fetch_from_openai(messages,model,max_tokens,temperature)
+        res = fetch_from_openai(messages,model,temperature)
     except Exception as e: raise
 
     if res:

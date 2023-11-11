@@ -8,15 +8,14 @@ def get_ielts_writing_task_2_score(q,a,language):
             {"role": "system", "content": "You are an IELTS writing examiner."},
             {"role": "user", "content": instructions(language)},
             {"role": "assistant", "content": "Okay, got it."},
-            {"role": "user", "content": f"Score the following answer to this IELTS writing question and give examples to justify the band in Tagalog:\n\nQuestion: {q}\n\nResponse: {a}"}
+            {"role": "user", "content": f"Score the following answer to this IELTS writing question based on the criteria given earlier:\n\nQuestion: {q}\n\nResponse: {a}"}
         ]
     
-    messages=messages
-    # model='gpt-4'
-    model='gpt-3.5-turbo'
-    max_tokens=600
+    model='gpt-4-1106-preview'
+    # model='gpt-3.5-turbo'
+    # max_tokens=1000
     temperature=1.0
 
     try:
-        return fetch_from_openai(messages,model,max_tokens,temperature)
+        return fetch_from_openai(messages,model,temperature)
     except Exception as e: raise

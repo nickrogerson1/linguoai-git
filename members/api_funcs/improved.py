@@ -10,12 +10,11 @@ def get_improved_submission(original_text):
     ]
 
 
-    messages=messages
-    # model='gpt-4'
-    model='gpt-3.5-turbo'
-    max_tokens=600
+    model='gpt-4-1106-preview'
+    # model='gpt-3.5-turbo'
+    # max_tokens=5000
     temperature=1.0
 
     try:
-        return fetch_from_openai(messages,model,max_tokens,temperature)
+        return fetch_from_openai(messages,model,temperature)
     except Exception as e: raise

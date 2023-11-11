@@ -25,7 +25,7 @@ document.querySelector('#clear').addEventListener('click', clearInput)
 
 $(document).ready(function() {
     forms.forEach( form => {
-            const word_count = form.innerHTML.trim().split(/\s+/).filter(x => x).length
+            const word_count = form.textContent.trim().split(/\s+/).filter(x => x).length
             form.nextElementSibling.innerHTML = `Word Count: ${word_count}`
     })
 })

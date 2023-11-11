@@ -8,7 +8,7 @@ api_key = env('OPENAI_API_KEY')
 # Send all Openai requests through this function
 # Can focus all the error handling here
 
-def fetch_from_openai(prompt,model,max_tokens,temp):
+def fetch_from_openai(prompt,model,temp):
 
     try:
        
@@ -16,7 +16,7 @@ def fetch_from_openai(prompt,model,max_tokens,temp):
         
         res = client.chat.completions.create(
             model=model,
-            max_tokens=max_tokens,
+            # max_tokens=max_tokens,
             messages=prompt,
             seed=42
         )
