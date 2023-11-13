@@ -8,6 +8,8 @@ def get_ielts_writing_task_2_score(q,a,language):
             {"role": "system", "content": "You are an IELTS writing examiner."},
             {"role": "user", "content": instructions(language)},
             {"role": "assistant", "content": "Okay, got it."},
+            {"role": "user", "content": f"In your response, state the band descriptor and the band in <h3> tags and then give detailed reasons with clear examples justifying your score at length in <p> tags."},
+            {"role": "assistant", "content": "Okay, got it."},
             {"role": "user", "content": f"Score the following answer to this IELTS writing question based on the criteria given earlier:\n\nQuestion: {q}\n\nResponse: {a}"}
         ]
     

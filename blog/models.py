@@ -82,6 +82,9 @@ class BlogPage(Page):
         context = super().get_context(request)
         context['year'] = datetime.date.today().year
         return context
+    
+    # def get_absolute_url(self, request):
+    #     return self.get_full_url(request)
 
 
 class PaginatorMixin:

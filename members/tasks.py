@@ -406,7 +406,8 @@ def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lan
         answer = a.replace('\n', '<br>')
         # Get rid of first two breaks as well for admin interface
         score = re.sub(reg, '', data[0])
-        score_res = score.replace('\n', '<br>').replace('<br>','',2)
+        # score_res = score.replace('\n', '<br>').replace('<br>','',2)
+        score_res = score.replace('\n', '')
 
         extra = update_db(model, data, t0, user_id, task_id, price_per_100_words, total_words, charged, 
                 question=question, answer=answer, score_res=score_res, band=band, lang=lang_code)

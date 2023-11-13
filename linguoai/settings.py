@@ -32,9 +32,11 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.railway.app', '.linguo.ai']
+# '.railway.app', 
+ALLOWED_HOSTS = ['.linguo.ai']
 
-CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://*.linguo.ai']
+# 'https://*.railway.app', 
+CSRF_TRUSTED_ORIGINS = ['https://*.linguo.ai']
 
 
 INSTALLED_APPS = [
@@ -282,18 +284,20 @@ LAZY_SRCSET = {
 #     }
 # }
 
+CSRF_COOKIE_SECURE = True
+
+SESSION_COOKIE_SECURE = True
+
+SECURE_HSTS_SECONDS = 3600
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+SECURE_HSTS_PRELOAD = True
+
+BASE_URL = 'https://linguo.ai'
+
 # Django deployment warnings edit
 # SECURE_SSL_REDIRECT = True
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
 
-# CSRF_COOKIE_SECURE = True
 
-# SESSION_COOKIE_SECURE = True
-
-# SECURE_HSTS_SECONDS = 3600
-
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-
-# SECURE_HSTS_PRELOAD = True
-
-# CELERY_BROKER_URL = "rediss://localhost:6379"
-# CELERY_RESULT_BACKEND = "rediss://localhost:6379"

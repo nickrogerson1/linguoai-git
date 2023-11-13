@@ -217,17 +217,28 @@ def get_docx(request, pk, type=None, multi=False, sub=None):
         look_up = IeltsWritingTask2.objects.get(pk=pk)
         question = strip_tags(look_up.question)
         answer = strip_tags(look_up.answer)
-        score_res = BeautifulSoup(look_up.score_res).get_text('\n')
+        
         band = look_up.band
         date = custom_strftime(look_up.time_created)
+
+        # score_res = BeautifulSoup(look_up.score_res)
+        # .get_text('\n')
+        soup = BeautifulSoup(look_up.score_res, 'html.parser')
+        h3s = soup.find_all('h3')
+        ps = soup.find_all('p')
     
     # Build document
         doc = Document()
-        doc.add_heading(f'Ielts Writing Task 2 - Band {band}')
+        doc.add_heading(f'Ielts Writing Task 2 - Overall Band {band}', level=0)
+
+        for i in range(4):
+            print(h3s[i])
+            doc.add_heading(h3s[i].string)
+            print(ps[i])
+            doc.add_paragraph(ps[i].string)
+         
         doc.add_heading('Submitted Question')
         doc.add_paragraph(question)
-        doc.add_heading('Score Resolution')
-        doc.add_paragraph(score_res)
         doc.add_heading('Your Original Answer')
         doc.add_paragraph(answer)
         doc.add_heading(f'This submission was made on {date} (UTC)', 3)

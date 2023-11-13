@@ -10,6 +10,8 @@ from weasyprint import HTML
 
 from zipfile import ZipFile, ZIP_DEFLATED
 
+from bs4 import BeautifulSoup
+
 
 
 class PDF(FPDF):
@@ -52,9 +54,6 @@ class PDF(FPDF):
             self.cell(0, 6, 'Your Question:')
         elif type == 'a':
             self.cell(0, 6, 'Your Answer:')
-        else:
-            self.cell(0, 6, 'Detailed Explanation:')
-            # self.ln()
 
         self.ln()
         self.add_font(fname='members/copies/ttf/Poppins/Poppins-ExtraLight.ttf')
@@ -62,6 +61,30 @@ class PDF(FPDF):
         self.set_text_color(0,0,0)
         self.multi_cell(0, 6, txt)
         self.ln()
+
+    def add_ielts_res_text(self, txt):
+        soup = BeautifulSoup(txt, 'html.parser')
+        h3s = soup.find_all('h3')
+        ps = soup.find_all('p')
+
+        for i in range(4):
+            print(h3s[i])
+            self.set_text_color(0, 71, 171)
+            self.add_font(fname='members/copies/ttf/Poppins/Poppins-Medium.ttf')
+            self.set_font('Poppins-Medium', size=14)
+            self.cell(0, 6, h3s[i].string)
+            self.ln()
+
+            print(ps[i])
+            self.add_font(fname='members/copies/ttf/Poppins/Poppins-ExtraLight.ttf')
+            self.set_font("Poppins-ExtraLight", size=11)
+            self.set_text_color(0,0,0)
+            # print(f'TYPE: {type(ps[i]).string}')
+            self.multi_cell(0, 6, ps[i].string)
+            self.ln()
+
+
+
 
     def add_date(self, date):
         self.ln(15)
@@ -78,8 +101,8 @@ class PDF(FPDF):
 
     def make_ielts(self,question,answer,score_res,band):
         self.add_page()
-        self.add_heading(f'Band {band}')
-        self.add_ielts_body(score_res, 'r')
+        self.add_heading(f'Overall Band {band}')
+        self.add_ielts_res_text(score_res)
         self.add_ielts_body(question, 'q')
         self.add_ielts_body(answer, 'a')
 
@@ -136,9 +159,12 @@ def get_pdf(sub_type, user, pk, base_uri, type=True, multi=False):
     
     else:
         look_up = IeltsWritingTask2.objects.get(pk=pk)
+        
         question = look_up.question
         answer = look_up.answer.replace('<br>', '\n')
+        # print(f'LOOK UP: {look_up.score_res}')
         score_res = look_up.score_res.replace('<br>', '\n')
+
         band = look_up.band
         filename = f'{user}-ielts-writing-task-2-{pk}.pdf'
         pdf.make_ielts(question,answer,score_res,band)
@@ -187,7 +213,7 @@ def get_bulk_pdf(request, pks, type=False):
         filename = f'{user}-pdf-improved.zip'
     else:
         filename = f'{user}-pdf-ielts-writing-task-2.zip'
-
+        
     base_uri = request.build_absolute_uri()
         
     # Ignore last one as it's empty
@@ -200,6 +226,8 @@ def get_bulk_pdf(request, pks, type=False):
 
     # Otherwise zip them
     buffer = BytesIO()
+
+    base_uri = request.build_absolute_uri()
 
     with ZipFile(buffer, 'w', ZIP_DEFLATED) as f:
         for pk in pks:

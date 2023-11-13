@@ -2,13 +2,9 @@ def instructions(language):
     return f'''
 You must select a suitable band for each band descriptor: Task Response, Coherence and Cohesion, Lexical Recourse and Grammatical Range, and Accuracy.
 
-Make each band descriptor an H3 heading and return the answer as HTML.
-
 You can select a band if the answer matches all the bulletpoints in that band. Always give the benefit of the doubt. Band 9 is the highest and 0 the lowest.
 
-The overall score is calculated by adding all the band scores together and then rounding off to the nearest .5. 
-
-If the score ends in .25, then round down to the nearest integer. For example, 6.25 should be 6.
+The overall score is calculated by rounding DOWN the mean score to the nearest half band.
 
 State reasons for and against why you chose that band in {language}.
 
