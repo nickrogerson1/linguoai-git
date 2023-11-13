@@ -119,7 +119,7 @@ typing_extensions==4.8.0
 tzdata==2023.3
 urllib3==1.26.16
 vine==5.0.0
-wagtail==5.1.2
+wagtail==5.2
 wcwidth==0.2.6
 weasyprint==60.0
 webencodings==0.5.1
