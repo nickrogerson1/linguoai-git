@@ -103,6 +103,12 @@ html = {
 # Add form class to include widgets (classes) in form
 class IeltsWritingTask2Form(forms.ModelForm):
 
+    lang_model = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={ "class": "form-control"})
+    )
+
     class Meta:
         model = IeltsWritingTask2
         fields = ['explanation_language', 'question', 'answer']
@@ -118,15 +124,13 @@ class IeltsWritingTask2Form(forms.ModelForm):
                 "maxlength" : "1000"
             }),
             'answer' :  forms.Textarea(attrs={ 
-            "class": "form-control",
-            "onInput" : "this.parentNode.dataset.replicatedValue = this.value",
-            # Maxlength is enforced at browser level
-            "maxlength" : "4000"
-        })
+                "class": "form-control",
+                "onInput" : "this.parentNode.dataset.replicatedValue = this.value",
+                # Maxlength is enforced at browser level
+                "maxlength" : "4000"
+            }),
+
         }
-        # labels = {'question' : 'Type or Paste In Your Question',
-        #           'answer' : 'Type or Paste In Your Answer'
-        #         }
 
 class CorrectedForm(forms.ModelForm):
 

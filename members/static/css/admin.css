@@ -29,3 +29,10 @@ td {
     max-width: 500px;
     white-space: break-spaces;
 }
+
+h5 {
+    font-size: 0.8rem;
+    text-transform: none;
+    letter-spacing: normal;
+    color: black;
+}

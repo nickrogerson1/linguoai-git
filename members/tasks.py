@@ -92,17 +92,20 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
             model.improved_sub = result
             sub_type = 'Improved Submission'
 
+
+    if data[1].startswith('gpt-3'):
+        model_used = 'gpt-3'
+    elif data[1].endswith('-preview'):
+        model_used = 'gpt-4-turbo'
+    else:
+        model_used = 'gpt-4'
    
 
-    model.model_used = data[1]
+    model.model_used = model_used
     model.prompt_tokens = data[2]
     model.completion_tokens = data[3]
     model.total_tokens = data[4]
     
-    if data[1].startswith('gpt-3'):
-        model_used = 'gpt-3'
-    elif data[1].startswith('gpt-4'):
-        model_used = 'gpt-4'
 
     # Work out cost for me
     cost = round(D(data[2] / 1000) * D(LLM_COSTS[model_used]['input']) + D(data[3] / 1000) * D(LLM_COSTS[model_used]['output']), 4)
@@ -179,7 +182,7 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
             'newBalance' : float(user.balance),
             'pk' : pk,
             'timeCreated' : time_created,
-            # 'subType' : sub_type
+            'subType' : sub_type
         })
     
     return [pk, user.balance, time_created]
@@ -329,7 +332,7 @@ def get_results(self, req_type, t0, username, user_id, sub, from_where, price_pe
 
 
 @shared_task(bind=True)
-def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lang_code, price_per_100_words, total_words, charged):
+def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lang_code, price_per_100_words, total_words, charged, lang_model):
 
     task_id = self.request.id
     print(f'TASK ID {task_id}')
@@ -361,7 +364,7 @@ def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lan
 
     try:
         # Long API call
-        data = get_ielts_writing_task_2_score(q,a,lang)
+        data = get_ielts_writing_task_2_score(q,a,lang, lang_model)
        
     except Exception as e:
         retries = self.request.retries

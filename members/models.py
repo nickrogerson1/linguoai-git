@@ -103,7 +103,7 @@ class BaseModel(models.Model):
     total_words = models.PositiveIntegerField()
     currency = models.CharField(max_length=3)
     cost = models.DecimalField(max_digits=10, decimal_places=6)
-    price_per_100_words = models.DecimalField(max_digits=6, decimal_places=3)
+    price_per_100_words = models.DecimalField(max_digits=7, decimal_places=5)
     charged = models.DecimalField(max_digits=7, decimal_places=2)
     usd_charge = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     usd_exchange_rate = models.DecimalField(max_digits=8, decimal_places=6)

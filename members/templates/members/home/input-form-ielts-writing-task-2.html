@@ -49,13 +49,21 @@
                 <div class="form-group" id="answer">
                     {{ form.answer }}
                 </div>
+
                 <p id="answer-count">Word Count: 0</p>
                 <span class="text-danger">{{ form.answer.errors }}</span>
+                <br>
+
+                {% if request.user.is_superuser %}
+                <div class="col-12 col-sm-8 col-md-6 col-lg-4 col-xl-5 px-0 mt-0">
+                    <label for="id_lang_model">Language Model</label>
+                        {{ form.lang_model }}
+                </div>
+                <br>
+                {% endif %}
                 
                 <div class="text-center">
-
                     <input id="button" type="submit" value="SUBMIT" class="btn btn-fill btn-primary">
-
                     <input id="clear" type="button" value="CLEAR FORM" class="btn btn-fill btn-primary">
                 </div>
                 
