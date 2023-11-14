@@ -17,18 +17,6 @@ import datetime
 
 
 
-# Use this to add as a reference when adding pagination
-# https://learnwagtail.com/tutorials/how-to-paginate-your-wagtail-pages/
-
-class HomePage(Page):
-    body = RichTextField(blank=True)
-
-    content_panels = Page.content_panels + [
-        FieldPanel('body'),
-    ]
-
-
-
 class CustomImage(AbstractImage):
 
     alt_text = models.CharField(max_length=255, blank=True)
@@ -83,8 +71,8 @@ class BlogPage(Page):
         context['year'] = datetime.date.today().year
         return context
     
-    # def get_absolute_url(self, request):
-    #     return self.get_full_url(request)
+    def get_absolute_url(self):
+        return self.get_url()
 
 
 class PaginatorMixin:

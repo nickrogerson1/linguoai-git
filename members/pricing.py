@@ -1,7 +1,7 @@
 # Costs per 1000 tokens
 LLM_COSTS = {
     # up to 4k
-'gpt-3' : {'input' :0.0015,
+'gpt-3' : {'input' :0.001,
             'output': 0.002},
     # up to 128k
 'gpt-4' : {'input': 0.01,

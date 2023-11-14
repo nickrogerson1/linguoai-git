@@ -452,8 +452,8 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
         if form.is_valid():
             self.object = form.save(commit=False)
 
-            q = escape(self.object.question)
-            a = escape(self.object.answer)
+            q = escape(self.object.question).strip()
+            a = escape(self.object.answer).strip()
 
             args = self.check_user_has_sufficient_funds('ielts_writing_task_2', q=q, a=a)
             # [ price_per_100_words, total_words, charged ]
@@ -498,7 +498,7 @@ class ImprovedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin, 
             self.object = form.save(commit=False)
 
             t0 = time.time()
-            sub = escape(self.object.submission)
+            sub = escape(self.object.submission).strip()
 
             args = self.check_user_has_sufficient_funds(self.charge_type, sub=sub)
              # [ price_per_100_words, total_words, charged ]
@@ -541,7 +541,7 @@ class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin,
             self.object = form.save(commit=False)
 
             t0 = time.time()
-            sub = escape(self.object.submission)
+            sub = escape(self.object.submission).strip()
 
             args = self.check_user_has_sufficient_funds(self.charge_type, sub=sub)
              # [ price_per_100_words, total_words, charged ]

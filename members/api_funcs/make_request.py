@@ -8,7 +8,7 @@ api_key = env('OPENAI_API_KEY')
 # Send all Openai requests through this function
 # Can focus all the error handling here
 
-def fetch_from_openai(prompt,model,temp):
+def fetch_from_openai(prompt,model):
 
     try:
        
@@ -18,7 +18,8 @@ def fetch_from_openai(prompt,model,temp):
             model=model,
             # max_tokens=max_tokens,
             messages=prompt,
-            seed=42
+            seed=42,
+            top_p=0.2
         )
 
         # DB data

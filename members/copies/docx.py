@@ -221,21 +221,20 @@ def get_docx(request, pk, type=None, multi=False, sub=None):
         band = look_up.band
         date = custom_strftime(look_up.time_created)
 
-        # score_res = BeautifulSoup(look_up.score_res)
-        # .get_text('\n')
         soup = BeautifulSoup(look_up.score_res, 'html.parser')
         h3s = soup.find_all('h3')
         ps = soup.find_all('p')
+        h5 = soup.find('h5')
     
     # Build document
         doc = Document()
         doc.add_heading(f'Ielts Writing Task 2 - Overall Band {band}', level=0)
 
         for i in range(4):
-            print(h3s[i])
             doc.add_heading(h3s[i].string)
-            print(ps[i])
             doc.add_paragraph(ps[i].string)
+        
+        doc.add_heading(h5, level=3)
          
         doc.add_heading('Submitted Question')
         doc.add_paragraph(question)

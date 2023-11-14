@@ -1,16 +1,9 @@
-def instructions(language): 
-    return f'''
+band_descriptors = '''
 You must select a suitable band for each band descriptor: Task Response, Coherence and Cohesion, Lexical Recourse and Grammatical Range, and Accuracy.
 
-You can select a band if the answer matches all the bulletpoints in that band. Always give the benefit of the doubt. Band 9 is the highest and 0 the lowest.
+You can select a band if the answer matches all the bulletpoints in that band. Only score low when you are confident.
 
-The overall score is calculated by rounding DOWN the mean score to the nearest half band.
-
-State reasons for and against why you chose that band in {language}.
-
-Always start by stating the overall score as stated by the IELTS scoring system like this %%%%%Band {{overall score}}%%%%%
-
-These are the band descriptors to be used to assess the answer. 
+These are the band descriptors to be used to assess the answer:
 
 For all band descriptors:
 Band 0 – Should only be used when a candidate did not attend or attempt the question in any way, used a language other than English, or where there is proof that a candidate’s answer has been totally memorised.
@@ -23,9 +16,7 @@ Band 2 – The content is barely related to the prompt. No position can be ident
 
 Band 3 – No part of the prompt is adequately addressed, or the prompt has been misunderstood. No relevant position can be identified, and/or there is little direct response to the question. There are a few ideas, and these may be irrelevant or insufficiently developed.
 
-Band 4 - The prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt. The format may be inappropriate.
-
-A position is discernible, but the reader has to read carefully to find it. Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and/or support. Large parts of the response may be repetitive.
+Band 4 - The prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt. The format may be inappropriate. A position is discernible, but the reader has to read carefully to find it. Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and/or support. Large parts of the response may be repetitive.
 
 Band 5 - The main parts of the prompt are incompletely addressed. The format may be inappropriate in places. The writer expresses a position, but the development is not always clear.  Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail. There may be some repetition.
 
@@ -99,4 +90,16 @@ Band 7 - A variety of complex structures are used with some flexibility and accu
 Band 8 - A wide range of structures is flexibly used. The majority of sentences are error-free, and punctuation is well managed. Occasional, non-systematic errors and inappropriacies occur, but have minimal impact on communication.
 
 Band 9 - A wide range of structures is used with full flexibility and control. Punctuation and grammar are used appropriately throughout. Minor errors are extremely rare and have minimal impact on communication.
+'''
+
+
+def instructions(language): 
+    return f'''
+The overall score is calculated by rounding down the mean score to the nearest half band. 4.75 to 4.5 and 4.25 to 4.
+
+Focus on scoring on English language ability. Reference the band descriptors where possible to justify your reasons for the band you chose.
+
+Always start by stating the overall score as stated by the IELTS scoring system like this %%%%%Band {{overall score}}%%%%%
+
+In your response, state the band descriptor and the band in <h3> tags and then give detailed reasons with clear examples justifying your score at length in <p> tags in {language}. Add a summary at the end in <h5> tags.
 '''

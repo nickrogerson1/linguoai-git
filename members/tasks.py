@@ -395,6 +395,8 @@ def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lan
     model = IeltsWritingTask2()
 
     if data:
+        print(data[0])
+
     # Pull out the band and replace it with nothing
         reg = r'%%%%%([a-zA-Z0-9_\. ]+)%%%%%'
         m = re.search(reg, data[0], flags=re.I)

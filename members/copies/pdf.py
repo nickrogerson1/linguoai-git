@@ -66,6 +66,7 @@ class PDF(FPDF):
         soup = BeautifulSoup(txt, 'html.parser')
         h3s = soup.find_all('h3')
         ps = soup.find_all('p')
+        h5 = soup.find('h5')
 
         for i in range(4):
             print(h3s[i])
@@ -82,6 +83,13 @@ class PDF(FPDF):
             # print(f'TYPE: {type(ps[i]).string}')
             self.multi_cell(0, 6, ps[i].string)
             self.ln()
+        
+        self.set_text_color(0, 0, 0)
+        self.add_font(fname='members/copies/ttf/Poppins/Poppins-Light.ttf')
+        self.set_font('Poppins-Medium', size=11)
+        self.multi_cell(0, 6, h5.string)
+        self.ln()
+
 
 
 
