@@ -16,7 +16,7 @@ import environ
 env = environ.Env()
 env.read_env(env.str('ENV_PATH','.env'))
 stripe.api_key = env('STRIPE_API_KEY')
-STRIPE_WEBHOOK_SECRET = env('STRIPE_API_KEY')
+STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET')
 
 
 
@@ -74,8 +74,8 @@ class CreateStripeCheckoutSessionView(View):
                         'percentage' : percentage
                     },
             mode="payment",
-            success_url='http://localhost:8000/payment-successful?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='http://localhost:8000/payment-canceled/',
+            success_url='https://linguo.ai/payment-successful?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='https://linguo.ai/payment-canceled/',
         )
         return redirect(checkout_session.url)
     
@@ -98,9 +98,11 @@ class StripeWebhookView(View):
         try:
             event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
         except ValueError as e:
+            print(e)
             # Invalid payload
             return HttpResponse(status=400)
         except stripe.error.SignatureVerificationError as e:
+            print(e)
             # Invalid signature
             return HttpResponse(status=400)
 

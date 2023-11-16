@@ -63,6 +63,9 @@
                 {% endif %}
                 
                 <div class="text-center">
+                    {% if request.user.is_superuser %}
+                    <input id="button" type="submit" name="submit-to-all" value="SUBMIT TO ALL" class="btn btn-fill btn-primary">
+                    {% endif %}
                     <input id="button" type="submit" value="SUBMIT" class="btn btn-fill btn-primary">
                     <input id="clear" type="button" value="CLEAR FORM" class="btn btn-fill btn-primary">
                 </div>

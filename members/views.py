@@ -455,6 +455,10 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
             q = escape(self.object.question).strip()
             a = escape(self.object.answer).strip()
 
+            if 'submit-to-all' in request.POST:
+                return self.submit_to_all(q, a, t0)
+            
+
             args = self.check_user_has_sufficient_funds('ielts_writing_task_2', q=q, a=a)
             # [ price_per_100_words, total_words, charged ]
 
@@ -482,6 +486,27 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
         else:
             self.object = ''
             return super(IeltsWritingTask2View, self).form_invalid(form)
+        
+
+
+    def submit_to_all(self, q, a, t0):
+
+        language = self.object.get_explanation_language_display().split(' ')[0]
+        lang_code = self.object.explanation_language
+        username = self.request.user.username
+        user_id = self.request.user.id
+        
+        for lang_model in MODEL_CHOICES:
+            args = self.check_user_has_sufficient_funds('ielts_writing_task_2', q=q, a=a)
+        
+            if not args:
+                return redirect('insufficient-funds')
+            
+            args += [lang_model[0]]
+            print(f'LANG MODEL: {lang_model[0]}')
+            get_ielts_writing_task_2_scores.delay(t0, username, user_id, q, a, language, lang_code, *args)
+
+        return redirect(reverse('log'))
             
 
 

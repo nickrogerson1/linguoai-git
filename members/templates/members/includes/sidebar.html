@@ -11,6 +11,14 @@
                         <p>Dashboard</p>
                     </a>
                 </li>
+                {% if request.user.is_superuser %}
+                <li class="{% if 'icons' in segment %} active {% endif %}">
+                    <a href="{% url 'admin:index' %}">
+                        <i class="tim-icons icon-settings-gear-63"></i>
+                        <p>Go To Admin</p>
+                    </a>
+                </li>
+                {% endif %}
                 <li class="{% if 'icons' in segment %} active {% endif %}">
                     <a href="{% url 'ielts-writing-task-2' %}">
                         <i class="tim-icons icon-pencil"></i>

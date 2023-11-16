@@ -14,15 +14,11 @@ def get_ielts_writing_task_2_score(q,a,language, lang_model):
         ]
     
     
-    # model='gpt-3.5-turbo'
-    # max_tokens=1000
-    # temperature=1.0
-
     if lang_model:
         model = lang_model
     else:
     # Default is gpt-4 turbo
-        model='gpt-4-1106-preview'
+        model = 'gpt-4'
 
     try:
         return fetch_from_openai(messages,model)
