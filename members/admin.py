@@ -9,6 +9,7 @@ from .api_funcs.corrections import find_difference
 
 from django.conf import settings
 
+admin.site.site_url = 'dash'
 
 class CustomUserAdmin(UserAdmin):
     list_display = ("username", "country", "year", "balance", "_currency", "is_staff")

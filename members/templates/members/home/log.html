@@ -225,7 +225,7 @@ const countdown = (taskId, retryCount, secs, maxAttempts) => {
 
             const { pk, newBalance, timeCreated, subType, taskId } = data
 
-            const options = { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short', hour: 'numeric', minute: 'numeric', hour12: true }; //dayPeriod: 'long', hourCycle: 'h12'
+            const options = { year: '2-digit', month: 'short', day: 'numeric', weekday: 'short', hour: 'numeric', minute: 'numeric', hourCycle: 'h12' }; //dayPeriod: 'long', hourCycle: 'h12'
             const formattedTimeCreated = new Date(timeCreated).toLocaleDateString('en-gb', options)
 
             let link;

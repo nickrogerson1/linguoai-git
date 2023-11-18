@@ -176,7 +176,9 @@ class IeltsWritingTask2(BaseModel):
         ('FA', 'Farsi فارسی'),
         ('VI', 'Vietnamese Tiếng Việt'),
         ('BN', 'Bengali বাংলা'),
-        ('HI', 'Hindi हिंदी')
+        ('HI', 'Hindi हिंदी'),
+        ('UR', 'Urdu اردو'),
+        ('TA', 'Tagalog')
     ]
 
     explanation_language = models.CharField(max_length=2, choices=CHOICES, default='EN')

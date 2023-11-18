@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="{% static 'css/font-icons.css' %}">
 
 <style>
-
+    
 #fade-out {
     animation: fadeOut ease-in 5s;
     animation-fill-mode: forwards;
@@ -100,7 +100,9 @@
                                     <label>Year of Birth</label><br>
                                     {{ form.year }}
                                 </div>
-                                <span class="text-danger">{{ form.year.errors }}</span>
+                            </div>
+                            <div class="text-danger col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">
+                                {{ form.year.errors }}
                             </div>
 
                             <div class="col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">
@@ -161,6 +163,7 @@
                                 <span class="text-danger">{{ form.discount_code.errors }}</span>
                             </div>
 
+
                         <div class="card-footer text-center mx-auto">
                             <button type="submit" name="register" class="btn btn-fill btn-primary lg-submit-btn">Register</button>
                             <br /><br />
@@ -195,12 +198,12 @@
         if(parseInt(year.value) === twentyYearsAgo) {
             const p = document.createElement('p')
             p.setAttribute('id', 'fade-out')
-            p.setAttribute('class', 'col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1')
+            p.setAttribute('class', 'text-danger col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1')
             p.innerHTML = `Were you really born in ${twentyYearsAgo}?`
             year.parentNode.parentNode.after(p)
 
             setTimeout(() => p.remove(), 3000)
-        }
+            }
         }
 
     document.querySelector('#id_email')

@@ -62,34 +62,73 @@ class PDF(FPDF):
         self.multi_cell(0, 6, txt)
         self.ln()
 
-    def add_ielts_res_text(self, txt):
+    def add_ielts_res_text(self, txt, lang):
         soup = BeautifulSoup(txt, 'html.parser')
         h3s = soup.find_all('h3')
         ps = soup.find_all('p')
         h5 = soup.find('h5')
 
+        font_path = 'members/copies/ttf/'
+
+        if lang == 'CN':
+            font_name = 'Long Cang'
+            font_path += 'LongCang-Regular.ttf'
+
+        elif lang == 'JP':
+            font_name = 'Noto Sans JP'
+            font_path += 'Noto_Sans/NotoSansJP-Light.ttf'
+
+        elif lang == 'KO':
+            font_name = 'Noto Sans KO'
+            font_path += 'Noto_Sans/NotoSansKR-Light.ttf'
+
+        elif lang == 'TH':
+            font_name = 'Noto Sans TH'
+            font_path += 'Noto_Sans/NotoSansThai_Condensed-Light.ttf'
+
+        elif lang == 'AR' or lang == 'FA' or lang == 'UR':
+            font_name = 'Noto Sans AR'
+            font_path += 'Noto_Sans/NotoSansArabic_Condensed-Regular.ttf'
+
+        elif lang == 'RU' or lang == 'VI':
+            font_name = 'Noto Sans'
+            font_path += 'Noto_Sans/NotoSans-Light.ttf'
+
+        elif lang == 'BN':
+            font_name = 'Noto Sans BN'
+            font_path += 'Noto_Sans/NotoSansBengali_Condensed-Light.ttf'
+
+        elif lang == 'HI':
+            font_name = 'Noto Sans DV'
+            font_path += 'Noto_Sans/NotoSansDevanagari_Condensed-Light.ttf'
+
+    # Otherwise it's in Latin
+        else:
+            font_name = 'Poppins Light'
+            font_path += 'Poppins/Poppins-Light.ttf'
+
+        self.add_font(font_name, fname=font_path)
+        self.add_font('Poppins', fname='members/copies/ttf/Poppins/Poppins-Medium.ttf')
+
         for i in range(4):
             print(h3s[i])
             self.set_text_color(0, 71, 171)
-            self.add_font(fname='members/copies/ttf/Poppins/Poppins-Medium.ttf')
-            self.set_font('Poppins-Medium', size=14)
+            self.set_font('Poppins', size=14)
             self.cell(0, 6, h3s[i].string)
             self.ln()
 
+    # Add band descriptor text with its respective font for its language
             print(ps[i])
-            self.add_font(fname='members/copies/ttf/Poppins/Poppins-ExtraLight.ttf')
-            self.set_font("Poppins-ExtraLight", size=11)
+            self.set_font(font_name, size=11)
             self.set_text_color(0,0,0)
-            # print(f'TYPE: {type(ps[i]).string}')
             self.multi_cell(0, 6, ps[i].string)
             self.ln()
-        
+    
+    # Add summary
         self.set_text_color(0, 0, 0)
-        self.add_font(fname='members/copies/ttf/Poppins/Poppins-Light.ttf')
-        self.set_font('Poppins-Medium', size=11)
+        self.set_font(font_name, size=12)
         self.multi_cell(0, 6, h5.string)
         self.ln()
-
 
 
 
@@ -107,10 +146,10 @@ class PDF(FPDF):
         self.add_heading(heading)
         self.add_body(content)
 
-    def make_ielts(self,question,answer,score_res,band):
+    def make_ielts(self,question,answer,score_res,band,lang):
         self.add_page()
         self.add_heading(f'Overall Band {band}')
-        self.add_ielts_res_text(score_res)
+        self.add_ielts_res_text(score_res, lang)
         self.add_ielts_body(question, 'q')
         self.add_ielts_body(answer, 'a')
 
@@ -170,12 +209,12 @@ def get_pdf(sub_type, user, pk, base_uri, type=True, multi=False):
         
         question = look_up.question
         answer = look_up.answer.replace('<br>', '\n')
-        # print(f'LOOK UP: {look_up.score_res}')
         score_res = look_up.score_res.replace('<br>', '\n')
-
+        ex_lang = look_up.explanation_language
+            
         band = look_up.band
         filename = f'{user}-ielts-writing-task-2-{pk}.pdf'
-        pdf.make_ielts(question,answer,score_res,band)
+        pdf.make_ielts(question,answer,score_res,band, ex_lang)
 
 
     date = custom_strftime(look_up.time_created)

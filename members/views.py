@@ -153,7 +153,7 @@ class Registration(CreateView):
                 'domain': 'linguo.ai',
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': account_activation_token.make_token(user),
-                # 'protocol': 'https' if request.is_secure() else 'http'
+                'protocol': 'https' if request.is_secure() else 'http'
             })
 
             print(message)
@@ -473,9 +473,10 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
             user_id = self.request.user.id
             symbol = '$' if self.request.user.currency == 'USD' else '¥'
 
-            lang_model = request.POST['lang_model']
-            args += [lang_model]
-            print(f'LANG MODEL: {lang_model}')
+            if 'lang_model' in request.POST:
+                lang_model = request.POST['lang_model']
+                args += [lang_model]
+                print(f'LANG MODEL: {lang_model}')
             
             # Then pass to Celery to process
             get_ielts_writing_task_2_scores.delay(t0, username, user_id, q, a, language, lang_code, *args)

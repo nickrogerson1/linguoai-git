@@ -136,7 +136,7 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
 
     if user.currency == 'CNY':
         usd_exchange_rate = get_exchange_rate()
-        charged = charged * usd_exchange_rate
+        charged = charged * D(usd_exchange_rate)
     # Add this to the db to make it more coherent
         model.usd_charge = charged
 
@@ -332,7 +332,7 @@ def get_results(self, req_type, t0, username, user_id, sub, from_where, price_pe
 
 
 @shared_task(bind=True)
-def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lang_code, price_per_100_words, total_words, charged, lang_model):
+def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lang_code, price_per_100_words, total_words, charged, lang_model=None):
 
     task_id = self.request.id
     print(f'TASK ID {task_id}')
