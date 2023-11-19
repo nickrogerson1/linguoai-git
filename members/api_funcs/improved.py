@@ -10,8 +10,8 @@ def get_improved_submission(original_text):
     ]
 
 
-    model='gpt-4-1106-preview'
-    # model='gpt-3.5-turbo'
+    # model='gpt-4-1106-preview'
+    model='gpt-4'
     # max_tokens=5000
 
     try:

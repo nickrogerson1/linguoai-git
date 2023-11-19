@@ -24,7 +24,7 @@ app.conf.update(
     result_extended = True,
     worker_max_memory_per_child = 12000,
     worker_max_tasks_per_child = 2,
-    worker_concurrency = 2
+    worker_concurrency = 8
 )
 
 app.autodiscover_tasks()

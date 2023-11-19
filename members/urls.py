@@ -21,8 +21,8 @@ urlpatterns = [
     # path('top-up/', TemplateView.as_view(template_name="members/home/buy-credits.html"), name="top-up"),
     path('payment-successful', SuccessfulPaymentView.as_view()),
     path('payment-canceled/', TemplateView.as_view(template_name="members/stripe/cancel.html")),
-    # path("stripe/", StripeWebhookView.as_view(), name="stripe"),
-    path("stripe-test/", StripeWebhookView.as_view(), name="stripe"),
+    path("stripe/", StripeWebhookView.as_view(), name="stripe"),
+    # path("stripe-test/", StripeWebhookView.as_view(), name="stripe"),
 
     # The home page
     path('dash/', index, name='home'),

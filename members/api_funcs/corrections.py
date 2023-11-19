@@ -56,8 +56,8 @@ def get_corrected_submission(original_text):
         "content": f"Correct all the errors in each sentence and do not merge sentences. Make the text sound more like an English native speaker when required. If the sentence is gramatically correct, then don't change it. \n\nHere is the text:\n\n{original_text}."}
     ]
 
-    model='gpt-4-1106-preview'
-    # model='gpt-3.5-turbo'
+    # model='gpt-4-1106-preview'
+    model='gpt-4'
     # max_tokens=5000
 
     try:

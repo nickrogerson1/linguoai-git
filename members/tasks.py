@@ -149,7 +149,7 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
     model.currency = user.currency
     model.cost = cost
     model.total_words = total_words
-    model.price_per_100_words = price
+    model.price_per_word = price
     model.usd_exchange_rate = usd_exchange_rate
     model.profit = profit
     model.margin = margin
@@ -220,7 +220,7 @@ def remove_expired_task_ids(username, store_val):
 
 
 @shared_task(bind=True)
-def get_results(self, req_type, t0, username, user_id, sub, from_where, price_per_100_words, total_words, charged, file_name, curr):
+def get_results(self, req_type, t0, username, user_id, sub, from_where, price_per_word, total_words, charged, file_name, curr):
 
     task_id = self.request.id
     print(f'TASK ID {task_id}')
@@ -311,7 +311,7 @@ def get_results(self, req_type, t0, username, user_id, sub, from_where, price_pe
     model = CorrectedSubmission() if req_type == 'corrected' else ImprovedSubmission()
 
     if data:
-        extra = update_db(model, data, t0, user_id, task_id, price_per_100_words, total_words, charged, sub=sub)
+        extra = update_db(model, data, t0, user_id, task_id, price_per_word, total_words, charged, sub=sub)
 
     # Save PK and balance in case it beats HTTP
     # Unnecessary for multi
@@ -332,7 +332,7 @@ def get_results(self, req_type, t0, username, user_id, sub, from_where, price_pe
 
 
 @shared_task(bind=True)
-def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lang_code, price_per_100_words, total_words, charged, lang_model=None):
+def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lang_code, price_per_word, total_words, charged, lang_model=None):
 
     task_id = self.request.id
     print(f'TASK ID {task_id}')
@@ -414,7 +414,7 @@ def get_ielts_writing_task_2_scores(self, t0, username, user_id, q, a, lang, lan
         # score_res = score.replace('\n', '<br>').replace('<br>','',2)
         score_res = score.replace('\n', '')
 
-        extra = update_db(model, data, t0, user_id, task_id, price_per_100_words, total_words, charged, 
+        extra = update_db(model, data, t0, user_id, task_id, price_per_word, total_words, charged, 
                 question=question, answer=answer, score_res=score_res, band=band, lang=lang_code)
 
     # Save PK and balance in case it beats HTTP

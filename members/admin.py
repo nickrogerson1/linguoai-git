@@ -9,7 +9,7 @@ from .api_funcs.corrections import find_difference
 
 from django.conf import settings
 
-admin.site.site_url = 'dash'
+admin.site.site_url = '/dash/'
 
 class CustomUserAdmin(UserAdmin):
     list_display = ("username", "country", "year", "balance", "_currency", "is_staff")
@@ -77,17 +77,28 @@ class AdminMixin:
             print(f'User total subs after: {user.total_submissions}')
 
         queryset.delete()
+
+
+    @admin.display(description="margin")
+    def _margin(self, obj):
+        return str(obj.margin) + '%'
+
+    class Media:
+        css = {
+            'all': ('css/admin.css',)
+        }
            
     
     
 base_fields = ['owner', 'time_created', 'model_used', 'prompt_tokens', 'completion_tokens', 'total_tokens', 
-               'cost', 'total_words','currency', 'usd_exchange_rate', 'price_per_100_words', 'charged', 'usd_charge', 
+               'cost', 'total_words','currency', 'usd_exchange_rate', 'price_per_word', 'charged', 'usd_charge', 
                'profit', '_margin', 'new_balance', 'processing_time', 'user_reported', ]
 
 class IeltsWritingTask2Admin(AdminMixin, admin.ModelAdmin):
     list_display = ('owner', 'time_created', 'processing_time', 'model_used', 'band', '_question')
     list_per_page = 25
     fields = base_fields + ['band', 'explanation_language', '_score_res', '_question', '_answer', 'comments', 'user_deleted']
+    # score_res is read only as the display is poor without honouring the HTML
     readonly_fields = base_fields + [ 'band', 'explanation_language', '_score_res', '_question', '_answer', 'time_created']
     
 
@@ -103,15 +114,6 @@ class IeltsWritingTask2Admin(AdminMixin, admin.ModelAdmin):
     @admin.display(description="answer")
     def _answer(self, obj):
         return mark_safe(obj.answer)
-    
-    @admin.display(description="margin")
-    def _margin(self, obj):
-        return str(obj.margin) + '%'
-
-    class Media:
-        css = {
-            'all': ('css/admin.css',)
-        }
 
 
 
@@ -129,16 +131,6 @@ class CorrectedSubAdmin(AdminMixin, admin.ModelAdmin):
     @admin.display(description="result")
     def _result(self, obj):
         return mark_safe(obj.result)
-    
-    @admin.display(description="margin")
-    def _margin(self, obj):
-        return str(obj.margin) + '%'
-
-    class Media:
-        css = {
-            'all': ('css/admin.css',)
-        }
-
     
     def corrected_result(self, obj):
         return mark_safe(find_difference(obj.submission, obj.result))
@@ -158,15 +150,6 @@ class ImprovedSubAdmin(AdminMixin, admin.ModelAdmin):
     @admin.display(description="improved version")
     def _improved_sub(self, obj):
         return mark_safe(obj.improved_sub)
-    
-    @admin.display(description="margin")
-    def _margin(self, obj):
-        return str(obj.margin) + '%'
-
-    class Media:
-        css = {
-            'all': ('css/admin.css',)
-        }
 
 
 
@@ -218,7 +201,8 @@ class UserReportedResultsAdmin(admin.ModelAdmin):
 class PurchaseHistoryAdmin(admin.ModelAdmin):
     list_display = ('owner', 'time_created', 'currency', 'amount')
     list_per_page = 25
-    # readonly_fields = ['owner', 'time_created', 'amount', 'currency']
+    fields = [ 'amount', 'time_created', 'payment_method', 'currency','owner']
+    readonly_fields = [ 'amount', 'time_created', 'payment_method', 'currency','owner']
 
 
 class DiscountCodeAdmin(admin.ModelAdmin):

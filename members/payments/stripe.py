@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import F
 
 from django.views import View
-from ..models import PurchaseHistory, User, DiscountCodes
+from ..models import PurchaseHistory, User
 
 from decimal import Decimal
 from datetime import date
@@ -15,7 +15,7 @@ import environ
 
 env = environ.Env()
 env.read_env(env.str('ENV_PATH','.env'))
-stripe.api_key = env('STRIPE_API_KEY')
+stripe.api_key = env('STRIPE_API_KEY') #STRIPE SECRET KEY
 STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET')
 
 
@@ -30,12 +30,12 @@ class CreateStripeCheckoutSessionView(View):
         currency = request.user.currency
 
         if currency == 'USD':
-            price = 'price_1NbM6eJmKGYbAOrbl3DJ7psO'
+            price = 'price_1ODraoJmKGYbAOrbPUBb4Z5p'
             payment_method_types = ['card']
             payment_method_options= {}
         else:
         # It's RMB
-            price = 'price_1NbMIZJmKGYbAOrbExd6jv5z'
+            price = 'price_1ODrafJmKGYbAOrb6L3RzESP'
             payment_method_types=['alipay', 'wechat_pay']
             payment_method_options={
                     'wechat_pay': {

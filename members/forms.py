@@ -52,7 +52,6 @@ class SignUpForm(UserCreationForm):
         cleaned_data = super().clean()
         currency = cleaned_data.get('currency')
         discount_code = cleaned_data.get('discount_code')
-        # affiliate = cleaned_data.get('affiliate')
 
         if discount_code:
 

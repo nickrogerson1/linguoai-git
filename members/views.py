@@ -81,12 +81,12 @@ class Registration(CreateView):
     def get(self, request):
         country_code = get_country_code(request)
     # Set the preferred currency to RMB when in China
-        if country_code == 'CN':
-            currency = 'CNY'
-        else:
-            currency = 'USD'
+        # if country_code == 'CN':
+        #     currency = 'CNY'
+        # else:
+        #     currency = 'USD'
 
-        form = SignUpForm(initial={'country': country_code, 'currency': currency})
+        form = SignUpForm(initial={'country': country_code, 'currency': 'USD'})
 
         # Look for discount codes
         dc = request.GET.get('d', '')
@@ -829,6 +829,7 @@ def report_bad_result(request, url):
         name = user.first_name
         email = user.email
         msg = request.POST['message'].replace('\n', '<br>')
+        recipients = ['linguoaisite@gmail.com', 'nickrogerson11@gmail.com']
 
         path = url.split('/')
         model = path[1]
@@ -843,6 +844,7 @@ def report_bad_result(request, url):
         else:
             sub = IeltsWritingTask2.objects.get(pk=pk)
             r = UserReportedResults(reason=msg, ielts_writing_task_2=sub, owner=user)
+            recipients += ['rissajpalma@gmail.com']
 
         sub.user_reported = True
         sub.save()
@@ -871,10 +873,11 @@ def report_bad_result(request, url):
             'Bad Result Reported',
             body,
             '"Linguo AI" <admin@linguo.ai>',
-            ['linguoaisite@gmail.com'],
+            recipients,
             html_message = body
         )   
         
+        print(f'RECIPIENTS: {recipients}')
 
         # Tell the modal it can close
         return JsonResponse({'report_success' : True}, status = 200)
