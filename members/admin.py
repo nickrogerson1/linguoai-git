@@ -10,6 +10,9 @@ from .api_funcs.corrections import find_difference
 from django.conf import settings
 
 admin.site.site_url = '/dash/'
+admin.site.site_title = 'LinguoAI Admin'
+admin.site.site_header = 'LinguoAI Admin'
+
 
 class CustomUserAdmin(UserAdmin):
     list_display = ("username", "country", "year", "balance", "_currency", "is_staff")
@@ -196,6 +199,49 @@ class UserReportedResultsAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+    def delete_model(self, request: HttpRequest, obj: any) -> None:
+# Find the object it was asssigned to and change user_reported to False
+        if obj.corrected:
+            obj.corrected_set.user_reported = False
+            obj.corrected_set.save()
+        elif obj.improved:
+            obj.corrected_set.user_reported = False
+            obj.corrected_set.save()
+        elif obj.ielts_writing_task_2:
+            obj.ielts_writing_task_2.user_reported = False
+            obj.ielts_writing_task_2.save()
+
+# Deduct one report from user.reports & recalculate user.percent_reported
+        user = obj.owner
+        user.reports -= 1
+        user.percent_reported = (user.reports / user.total_submissions) * 100
+        user.save()
+# Then delete it
+        super().delete_model(request, obj)
+    
+
+    def delete_queryset(self, request, queryset):
+       
+        for obj in queryset:
+
+            if obj.corrected:
+                obj.corrected_set.user_reported = False
+                obj.corrected_set.save()
+            elif obj.improved:
+                obj.corrected_set.user_reported = False
+                obj.corrected_set.save()
+            elif obj.ielts_writing_task_2:
+                obj.ielts_writing_task_2.user_reported = False
+                obj.ielts_writing_task_2.save()
+
+        # Get the user's up-to-date info
+            user = User.objects.get(pk=obj.owner.pk)
+            user.reports -= 1
+            user.percent_reported = (user.reports / user.total_submissions) * 100
+            user.save()
+        
+        queryset.delete()
+
 
 
 class PurchaseHistoryAdmin(admin.ModelAdmin):
@@ -238,4 +284,3 @@ admin.site.register(DiscountCodes, DiscountCodeAdmin)
 admin.site.register(Affiliate, AffiliateAdmin)
 
 admin.site.unregister(Group)
-admin.site.site_header = 'LinguoAI Admin'
