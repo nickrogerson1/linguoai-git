@@ -36,12 +36,13 @@ class CreateStripeCheckoutSessionView(View):
         else:
         # It's RMB
             price = 'price_1ODrafJmKGYbAOrb6L3RzESP'
-            payment_method_types=['alipay', 'wechat_pay']
-            payment_method_options={
-                    'wechat_pay': {
-                    'client': 'web'
-                    },
-                }
+            payment_method_types=['alipay']
+            payment_method_options= {}
+            # payment_method_options={
+            #         'wechat_pay': {
+            #         'client': 'web'
+            #         },
+            #     }
 
         # Check if he's using a discount code
         discount_code_used = request.user.discount_code_used

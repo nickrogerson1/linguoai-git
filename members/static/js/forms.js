@@ -8,6 +8,13 @@ form.addEventListener('input', () => {
 })
 
 
+// Make sure it recounts it on reload on error
+$(document).ready(function() {
+    const word_count = form.textContent.trim().split(/\s+/).filter(x => x).length
+    form.nextElementSibling.innerHTML = `Word Count: ${word_count}`
+})
+
+
 const clearInput = () => {
     document.querySelector('#manual-input-form').reset()
     // Fixes bug if the form has been returned with errors

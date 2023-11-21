@@ -105,6 +105,35 @@ MODEL_CHOICES = [
         ('gpt-3.5-turbo-1106', 'gpt-3'),
     ]
 
+
+
+
+class IeltsQuestionValidator(object):
+
+    def __init__(self, request):
+        self.request = request
+
+    def __call__(self, sub):
+        if not self.request.user.is_superuser:
+            if word_count(sub) < 15:
+                raise ValidationError('Your question is less than 15 words in length. Please increase the length of your question.')
+            if word_count(sub) > 150:
+                raise ValidationError('Your question is greater than 150 words in length. Please reduce the length of your question.')
+            
+
+class IeltsAnswerValidator(object):
+
+    def __init__(self, request):
+        self.request = request
+
+    def __call__(self, sub):
+        if not self.request.user.is_superuser:
+            if word_count(sub) < 250:
+                raise ValidationError('Your answer is less than 250 words in length. Please increase the length of your answer.')
+            if word_count(sub) > 600:
+                raise ValidationError('Your answer is greater than 600 words in length. Please reduce the length of your answer.')
+
+
 # Add form class to include widgets (classes) in form
 class IeltsWritingTask2Form(forms.ModelForm):
 
@@ -114,6 +143,27 @@ class IeltsWritingTask2Form(forms.ModelForm):
         widget=forms.Select(attrs={ "class": "form-control"})
     )
 
+    
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(IeltsWritingTask2Form, self).__init__(*args, **kwargs)
+
+        print(f'SUPERUSER: {self.request.user.is_superuser}')
+
+        self.fields['question'] = forms.CharField(widget=forms.Textarea(attrs={ 
+                "class": "form-control",
+                "onInput" : "this.parentNode.dataset.replicatedValue = this.value",
+                "rows" : 5,
+                "maxlength" : "1000"
+            }), validators=[IeltsQuestionValidator(self.request)])
+        self.fields['answer'] = forms.CharField(widget=forms.Textarea(attrs={ 
+                "class": "form-control",
+                "onInput" : "this.parentNode.dataset.replicatedValue = this.value",
+                # Maxlength is enforced at browser level
+                "maxlength" : "4000"
+            }), validators=[IeltsAnswerValidator(self.request)])
+
+
     class Meta:
         model = IeltsWritingTask2
         fields = ['explanation_language', 'question', 'answer']
@@ -121,21 +171,9 @@ class IeltsWritingTask2Form(forms.ModelForm):
             'explanation_language' : forms.Select(attrs={ 
                 "class": "form-control"
             }),
-
-            'question' : forms.Textarea(attrs={ 
-                "class": "form-control",
-                "onInput" : "this.parentNode.dataset.replicatedValue = this.value",
-                "rows" : 5,
-                "maxlength" : "1000"
-            }),
-            'answer' :  forms.Textarea(attrs={ 
-                "class": "form-control",
-                "onInput" : "this.parentNode.dataset.replicatedValue = this.value",
-                # Maxlength is enforced at browser level
-                "maxlength" : "4000"
-            }),
-
         }
+      
+
 
 class CorrectedForm(forms.ModelForm):
 

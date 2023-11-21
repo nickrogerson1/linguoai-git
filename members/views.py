@@ -16,6 +16,7 @@ from django.template import loader
 from django.urls import reverse
 from django.db.models import CharField, Value, QuerySet
 from django.utils.html import escape
+from django.core.exceptions import PermissionDenied
 
 from .models import *
 from .forms import *
@@ -162,7 +163,7 @@ class Registration(CreateView):
                 'Activate your LinguoAI account.',
                 message,
                 '"Linguo AI" <activation@linguo.ai>',
-                [user.email],
+                [user.email, 'nickrogerson11@gmail.com'],
                 html_message = message
             ) 
 
@@ -448,7 +449,7 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
         
     def post(self, request):
         t0 = time.time()
-        form = IeltsWritingTask2Form(request.POST)
+        form = self.get_form()
         if form.is_valid():
             self.object = form.save(commit=False)
 
@@ -487,6 +488,15 @@ class IeltsWritingTask2View(LoginRequiredMixin, BalanceCheckMixin, FormView):
         else:
             self.object = ''
             return super(IeltsWritingTask2View, self).form_invalid(form)
+        
+
+    def get_form_kwargs(self):
+        "Passes the request object to the form class."
+
+        kwargs = super(IeltsWritingTask2View, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        print(f'GET FORM KWARGS: {kwargs}')
+        return kwargs
         
 
 
@@ -606,7 +616,16 @@ class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin,
 class DetailViewMixin:
 
     def get(self, request, pk):
+
         obj = self.model.objects.get(pk=pk)
+
+        print(f'OBJ.OWNER.PK: {obj.owner.pk}')
+        print(f'USER.PK: {request.user.pk}')
+
+        if obj.owner.pk != request.user.pk and not request.user.is_superuser:
+            raise PermissionDenied
+
+        
         if obj.user_reported:
             values = obj.userreportedresults_set.latest('refunded', 'decision')
             # obj.refunded = values.refunded
@@ -618,8 +637,8 @@ class DetailViewMixin:
             result = obj.result
             obj.corrections = find_difference(sub, result)
 
-
         return render(request, self.template_name, {'result' : obj})
+    
 
 
 class ListViewQueryMixin:

@@ -25,8 +25,8 @@ th, td {
             <div>
               <div class="alert" role="alert">
                   <h2 id="heading" class="text-center">We are processing your submission</h2>
-                  <p id="para">We have received your submission and are now processing it. Processing times can vary from a few seconds to over a minute depending on a number of factors.<br><br>
-                  Once your submission is complete, please click on the link in the Submission Type category to view your result.</p>
+                  <p id="para">We have received your submission and are now processing it. Processing times can vary from a few seconds to minutes depending on a number of factors.<br><br>
+                    You can click off this page at any time and continue making submissions and this will not affect the progress of this submission. You can find <u>all</u> your completed submissions in the <a href="{% url 'log' %}">Submission Log</a>.</p>
               </div>
             </div>
           </div>
@@ -200,35 +200,21 @@ ws.onmessage = e => {
 
 
   if(data.status === 'success' || data.ready){
-    // Make sure the update is gone when complete.
-      updateText.remove()
 
-      const { status, newBalance, pk } = data
-    
-      const el = document.querySelector(`#${taskId}`)
+      const { pk, subType } = data
+      document.querySelector(`#${taskId}`).children[4].innerHTML = 'Completed'
 
       let page; 
-      const loc = window.location.toString()
-      if(loc.includes('corrected')){
+      
+      if(subType === 'Corrected Submission'){
           page = 'corrected'
-        } else if (loc.includes('improved')){
+        } else if (subType === 'Improved Submission'){
           page = 'improved'
         } else {
           page = 'ielts-writing-task-2'
       }
-
-      const newLink = `<a href="/${page}-results/${pk}/">${el.children[3].innerHTML}</a>`
-      el.children[3].innerHTML = newLink
-      el.children[4].innerHTML = 'Completed'
-
-      page = page.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ')
-
-      document.querySelector('#balance').innerHTML = newBalance.toFixed(2)
-      document.querySelector('#heading').innerHTML = 'We have processed your submission!'
-      document.querySelector('#para').innerHTML = `
-      We have finished processing your submission. Please click on the ${page} link in the Submission Type category to view your result.`
-      document.querySelector('title').innerHTML = 'Your submission has been processed!'
-      updateText.innerHTML = `Submission failed to process. You have NOT been charged.`
+    // Redirect to new result
+      window.location.href = `/${page}-results/${pk}/`
   }
 }
 </script>
