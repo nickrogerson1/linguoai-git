@@ -269,6 +269,13 @@ LAZY_SRCSET = {
 }
 
 
+# Displays correct error message when account inactive
+# But doesn't log them out if they become inactive
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.AllowAllUsersModelBackend',
+]
+
+
 
 
 
