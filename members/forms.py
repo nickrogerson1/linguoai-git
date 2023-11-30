@@ -1,12 +1,12 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
-from django.core.validators import EmailValidator
 from .models import *
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth import password_validation
 from datetime import date
+from django.contrib.auth.hashers import check_password
 
 
 
@@ -223,36 +223,57 @@ class PasswordResetEmail(PasswordResetForm):
         })
     )
 
+
+
+
+
+class PasswordValidator(object):
+
+    def __init__(self, old_password):
+        self.old_password = old_password
+
+    def __call__(self, new_password):
+        # True if they match    
+        if check_password(new_password, self.old_password):
+            raise ValidationError(
+                _("You can't use the same password as your old one. Please choose a different one."),
+                code='password_recently_used',
+                # params={'min_length': self.min_length},
+            )
+
+    def get_help_text(self):
+        return _(
+            "You can't use the same password as your old one. Please choose a different one."
+        )
+
+
+
 class PasswordResetPass(SetPasswordForm):
+
+    def __init__(self, *args, **kwargs):
+      
+        super(PasswordResetPass, self).__init__(*args, **kwargs)
     
-    new_password1 = forms.CharField(
-        label=_("New password"),
-        widget=forms.PasswordInput(attrs={
-            "autocomplete": "new-password",
-            "placeholder": "Enter A New Password",
-            "class": "form-control"
-            }),
-        strip=False,
-        help_text=password_validation.password_validators_help_text_html(),
-    )
-    new_password2 = forms.CharField(
-        label=_("New password confirmation"),
-        strip=False,
-        widget=forms.PasswordInput(attrs={
-            "autocomplete": "new-password",
-            "placeholder": "Enter The Same Password Again",
-            "class": "form-control"
-            }),
-    )
-
-
-
-    # Dynamically create fields
-# class UserDeleteForm(forms.Form):
-#     def __init__(self, *args, **kwargs):
-#         super(UserDeleteForm, self).__init__(*args, **kwargs)
-#         # dynamic fields here ...
-#         self.fields['checkbox'] = forms.BooleanField()
+        self.fields['new_password1'] = forms.CharField(
+            label=_("New password"),
+            widget=forms.PasswordInput(attrs={
+                "autocomplete": "new-password",
+                "placeholder": "Enter A New Password",
+                "class": "form-control"
+                }),
+            strip=False,
+            help_text=password_validation.password_validators_help_text_html(),
+        )
+        self.fields['new_password2'] = forms.CharField(
+            label=_("New password confirmation"),
+            strip=False,
+            widget=forms.PasswordInput(attrs={
+                "autocomplete": "new-password",
+                "placeholder": "Enter The Same Password Again",
+                "class": "form-control"
+                }),
+            validators=[PasswordValidator(self.user.password)]
+        )
 
 
 

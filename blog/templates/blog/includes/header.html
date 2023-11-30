@@ -16,64 +16,64 @@
 	#menu-buttons a:first-child {
 		margin-right: 10px;
 }
+
+.fa-arrow-right {
+	display: none;
+}
 </style>
 
 {% endblock header %}
 
 <div class="block-nav-header">
-		<!-- Header
-		============================================= -->
-		<header id="header" class="header-size-md">
-			<div id="header-wrap" class="border-bottom-0">
-				<div class="container position-relative">
-                    
-                    <div class="header-row">
-
-						<!-- Logo
-						============================================= -->
-						<div id="logo">
-							<a href="/">
-								<!-- <img class="logo-default" srcset="{% static 'images/logo.png' %}, {% static 'images/logo@2x.png 2x' %}" src="{% static 'images/logo@2x.png' %}" alt="Canvas Logo">
-								<img class="logo-dark" srcset="{% static 'images/logo-dark.png' %}, {% static 'images/logo-dark@2x.png 2x' %}" src="{% static 'images/logo-dark@2x.png' %}" alt="Canvas Logo"> -->
-								<img class="logo-default" src="{% static 'linguoai-logo.svg' %}" alt="Linguo AI Logo">
-							</a>
-						</div><!-- #logo end -->
-
-
-						<!-- Primary Navigation icon in mobile
-						============================================= -->
-						<div class="primary-menu-trigger">
-							<button class="cnvs-hamburger" type="button" title="Open Mobile Menu">
-								<span class="cnvs-hamburger-box"><span class="cnvs-hamburger-inner"></span></span>
-							</button>
-						</div>
-
-						<!-- Primary Navigation
-						============================================= -->
-						<nav class="primary-menu">
-
-							<ul class="menu-container">
-								
-								<div id="menu-buttons" style="display:flex;">
-									<li class="menu-item">
-										<div>
-											<a href="{% url 'register' %}"><button type="button" class="btn btn-primary px-5" style="font-size: 20px;">Sign Up</button></a>
-										</div>
-									</li>
-									<li class="menu-item">
-										<div>
-											<a href="{% url 'login' %}"><button type="button" class="btn btn-outline-primary px-5" style="font-size: 20px;">Log In</button></a>
-										</div>
-									</li>
-								</div>
-							</ul>
-								<div class="morph-marker"></div>
-						</nav><!-- #primary-menu end -->
-
+	<!-- Header
+	============================================= -->
+	<header id="header" class="header-size-md">
+		<div id="header-wrap" class="border-bottom-0">
+			<div class="container position-relative">
+				<div class="header-row">
+					<!-- Logo
+					============================================= -->
+					<div id="logo">
+						<a href="/">
+							<!-- <img class="logo-default" srcset="{% static 'images/logo.png' %}, {% static 'images/logo@2x.png 2x' %}" src="{% static 'images/logo@2x.png' %}" alt="Canvas Logo">
+							<img class="logo-dark" srcset="{% static 'images/logo-dark.png' %}, {% static 'images/logo-dark@2x.png 2x' %}" src="{% static 'images/logo-dark@2x.png' %}" alt="Canvas Logo"> -->
+							<img class="logo-default" src="{% static 'linguoai-logo.svg' %}" alt="Linguo AI Logo">
+						</a>
+					</div><!-- #logo end -->
+					<!-- Primary Navigation icon in mobile
+					============================================= -->
+					<div class="primary-menu-trigger">
+						<button class="cnvs-hamburger" type="button" title="Open Mobile Menu">
+							<span class="cnvs-hamburger-box"><span class="cnvs-hamburger-inner"></span></span>
+						</button>
 					</div>
+					<!-- Primary Navigation
+					============================================= -->
+					<nav class="primary-menu">
+						<ul class="menu-container">
+							<div id="menu-buttons" style="display:flex;">
+								<li class="menu-item">
+								{% if not user.is_authenticated %}
+									<div>
+										<a href="{% url 'register' %}"><button type="button" class="btn btn-primary px-5" style="font-size: 20px;">Sign Up</button></a>
+									</div>
+								</li>
+								{% endif %}
+								<li class="menu-item" id="arrow-button">
+									<div>
+									<a href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'login' %}{% endif %}">
+										<button type="button" class="btn btn-outline-primary px-4" style="font-size: 20px;">
+										{% if user.is_authenticated %}Dashboard <i class="fa-solid fa-chevron-right"></i><i class="fa-solid fa-arrow-right"></i> {% else %}Log In{% endif %}
+										</button></a>
+									</div>
+								</li>
+							</div>
+						</ul>
+						<div class="morph-marker"></div>
+					</nav><!-- #primary-menu end -->
 				</div>
-
-				
-			</div>
-			<div class="header-wrap-clone"></div>
-		</header><!-- #header end -->
+			</div>	
+		</div>
+		<div class="header-wrap-clone"></div>
+	</header><!-- #header end -->
+</div>

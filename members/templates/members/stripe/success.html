@@ -1,25 +1,19 @@
 {% extends "../layouts/base.html" %}
 
-
-{% block stylesheets %}
+{% block gtagcode %}
 <!-- Event snippet for Credit Purchase conversion page -->
 <script>
-  gtag('config', 'G-MBH5S83P2X', {
-    'linker': {
-      ' domains': ['checkout.stripe.com']
-    }
-  })
   gtag('event', 'conversion', {
-      'send_to': 'AW-11365468431/PoSpCNiY6fYYEI-Svasq',
+      'send_to': 'AW-10781331452/l2FcCOGeoPkYEPyf-JQo',
       'value': {{ amount }},
       'currency': '{{ currency }}',
       'transaction_id': ''
   });
 </script>
-{% endblock stylesheets %}
 
+{% endblock gtagcode %}
 
-{% block title %} Payment Accepted! {% endblock title%} 
+{% block title %} - Payment Accepted! {% endblock title%} 
 
 {% block content %}
 

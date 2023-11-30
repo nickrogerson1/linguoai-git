@@ -202,11 +202,11 @@ class UserReportedResultsAdmin(admin.ModelAdmin):
     def delete_model(self, request: HttpRequest, obj: any) -> None:
 # Find the object it was asssigned to and change user_reported to False
         if obj.corrected:
-            obj.corrected_set.user_reported = False
-            obj.corrected_set.save()
+            obj.corrected.user_reported = False
+            obj.corrected.save()
         elif obj.improved:
-            obj.corrected_set.user_reported = False
-            obj.corrected_set.save()
+            obj.improved.user_reported = False
+            obj.improved.save()
         elif obj.ielts_writing_task_2:
             obj.ielts_writing_task_2.user_reported = False
             obj.ielts_writing_task_2.save()
@@ -218,18 +218,18 @@ class UserReportedResultsAdmin(admin.ModelAdmin):
         user.save()
 # Then delete it
         super().delete_model(request, obj)
-    
+
 
     def delete_queryset(self, request, queryset):
        
         for obj in queryset:
 
             if obj.corrected:
-                obj.corrected_set.user_reported = False
-                obj.corrected_set.save()
+                obj.corrected.user_reported = False
+                obj.corrected.save()
             elif obj.improved:
-                obj.corrected_set.user_reported = False
-                obj.corrected_set.save()
+                obj.improved.user_reported = False
+                obj.improved.save()
             elif obj.ielts_writing_task_2:
                 obj.ielts_writing_task_2.user_reported = False
                 obj.ielts_writing_task_2.save()

@@ -136,7 +136,7 @@ class Registration(CreateView):
             user.save()
 
             self.send_activation_email(request, user, bonus)
-            return render(request, 'registration/confirm_email.html', {'email' : user.email})
+            return render(request, 'registration/confirm_email.html', {'email' : user.email, 'gtag': 'AW-10781331452'})
         else:
             self.object = ''
             return super().form_invalid(form)

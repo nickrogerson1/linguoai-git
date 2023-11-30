@@ -1,15 +1,17 @@
 {% extends "members/layouts/base-fullscreen.html" %}
 
-{% block stylesheets %}
-<!-- Event snippet for Website Sign Up conversion page -->
+{% block gtagcode %}
+<!-- Event snippet for Sign Ups conversion page -->
 <script>
-    // Needs to be in <head> section
-    gtag('event', 'conversion', {'send_to': 'AW-11365468431/urgrCObQ5vYYEI-Svasq'});
+    gtag('event', 'conversion', {'send_to': 'AW-10781331452/P1ciCI-lmPkYEPyf-JQo'});
 </script>
-{% endblock stylesheets %}
+  
+{% endblock gtagcode %}
+
+
+{% block title %} - Confirm Your Email{% endblock %}
 
 {% block content %}
-
 <div class="row pt-lg-0 pt-5">
     <div class="col-12 col-sm-10 offset-sm-1 col-md-8 mt-5 offset-md-2 pt-5 mt-5">
         <div class="card">
@@ -26,5 +28,4 @@
         </div>
     </div>
 </div>
-
 {% endblock content %}

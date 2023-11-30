@@ -31,11 +31,13 @@ class CreateStripeCheckoutSessionView(View):
 
         if currency == 'USD':
             price = 'price_1ODraoJmKGYbAOrbPUBb4Z5p'
+            # price = 'price_1NbM6eJmKGYbAOrbl3DJ7psO' #test
             payment_method_types = ['card']
             payment_method_options= {}
         else:
         # It's RMB
             price = 'price_1ODrafJmKGYbAOrb6L3RzESP'
+            # price = 'price_1NbMIZJmKGYbAOrbExd6jv5z' #test
             payment_method_types=['alipay']
             payment_method_options= {}
             # payment_method_options={
@@ -201,5 +203,6 @@ class SuccessfulPaymentView(View):
                        'bonus' : bonus,
                        'percentage' : percentage,
                        'bonus_percent' : bonus_percent,
-                       'total_amount' : total_amount
+                       'total_amount' : total_amount,
+                       'gtag' : 'AW-10781331452'
                     })

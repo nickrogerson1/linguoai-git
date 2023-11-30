@@ -5,19 +5,20 @@
 
 <head>
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MBH5S83P2X"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-10781331452"></script>
     <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
 
-    gtag('config', 'G-MBH5S83P2X');
+    gtag('config', 'AW-10781331452');
     </script>
+    {% block gtagcode %}{% endblock gtagcode %}
+ 
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="apple-touch-icon" sizes="76x76" href="{% static 'img/apple-icon.png' %}">
-    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
-
+    <link rel="icon" type="image/png" href="{% static 'img/brain-fav.png' %}">
     <title>
         LinguoAI {% block title %}{% endblock %}
     </title>
@@ -33,7 +34,6 @@
 
     <!-- Specific Page CSS goes HERE  -->
     {% block stylesheets %}{% endblock stylesheets %}
-
 </head>
 <body class="white-content">
 
