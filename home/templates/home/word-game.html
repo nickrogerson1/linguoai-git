@@ -1,0 +1,786 @@
+{% load static %}
+
+<!DOCTYPE html>
+<head>
+
+<style>
+:root {
+  --title-color: #d5d5d5;
+  --color-success: #41c864;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("{% static 'fonts/Montserrat-Regular.ttf' %}");
+}
+
+body {
+  font-family:  "Montserrat";
+  font-size: 16px;
+  background-color: #f4f4f4;
+  touch-action: none;
+}
+
+.c-layout {
+  background-color: #fff;
+  border-radius: 2px;
+  /* box-shadow: 2px 2px 2px #333; */
+  width: 90%;
+  /* height: 80%; */
+}
+
+.c-layout__screen {
+  /* width: 920px; */
+  height: 640px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+      align-items: center;
+}
+
+.c-headline {
+  font-size: 3rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--title-color);
+  line-height: 60px;
+}
+
+.c-word-container {
+  color: #000;
+  font-size: 21px;
+  height: 50%;
+  /* width: calc(100% - 60px); */
+  width: 90%;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.c-word {
+  cursor: pointer;
+  user-select: none;
+  padding: .25rem;
+  position: absolute;
+  font-size: 3rem;
+}
+
+.c-word.is-dragging {
+  opacity: .4;
+  pointer-events: none; 
+}
+
+.c-word.is-immutable {
+  color: var(--color-success);
+  position: initial;
+  top: auto;
+  left: auto;
+  pointer-events: none; 
+}
+
+.c-timer {
+  font-size: .75rem;
+  color: #888;
+  height: 20%;
+}
+
+.c-score {
+  font-size: 2.5rem;
+  color: #000;
+  margin-bottom: 2rem;
+}
+
+.c-word-box {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+}
+
+.c-word-box-entries {
+  width: 100%;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.c-word-box-line {
+  background-color: #888;
+  height: 1px;
+  transition: background-color ease-out 300ms, transform ease-out 300ms;
+}
+
+.c-word-box.is-invalid .c-word-box-line {
+   background-color: #eb4141;
+  transform: scaleY(5);
+}
+
+.c-word-box.is-valid .c-word-box-line {
+   background-color: var(--color-success);
+  transform: scaleY(5);
+}
+
+.c-instruction {
+  color: #d5d5d5;
+  font-size: .75rem;
+}
+
+.c-btn {
+    cursor: pointer;
+  color: #fff;
+  font-size: 18px;
+  text-transform: capitalize;
+  background-color: #41c864;
+  border: none;
+  padding: 1rem 4rem;
+}
+
+.u-center {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+#score-span {
+    margin-right: 60px;
+}
+
+countdown-timer {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  overflow: hidden;
+  position: relative;
+}
+
+
+
+/* @font-face {
+  font-family: 'Roboto Condensed';
+  font-style: italic;
+  font-weight: 700;
+  src: url(https://fonts.gstatic.com/s/robotocondensed/v27/ieVW2ZhZI2eCN5jzbjEETS9weq8-19ehAyvMum7nfDB64f8N1X5pKQ.ttf) format('truetype');
+} */
+/* body {
+  background-color: black;
+} */
+#countdown {
+  font-family: "Roboto Condensed", sans-serif;
+  width: 200px;
+  height: 100px;
+  position: absolute;
+  left: 50%;
+  top: 15%;
+  margin-left: -100px;
+  margin-top: -50px;
+  color: black;
+  font-size: 5em;
+  text-align: center;
+  font-weight: bold;
+  font-style: italic;
+  -webkit-opacity: 1;
+  -moz-opacity: 1;
+  opacity: 1;
+  -webkit-transition: opacity 0.4s ease;
+  -moz-transition: opacity 0.4s ease;
+  -ms-transition: opacity 0.4s ease;
+  -o-transition: opacity 0.4s ease;
+  /* solve for flicker problem */
+  -webkit-perspective: 1000;
+  -webkit-backface-visibility: hidden;
+}
+#countdown.puffer {
+  -webkit-opacity: 0;
+  -moz-opacity: 0;
+  opacity: 0;
+  -webkit-transform: scale(1.6, 1.6);
+  -moz-transform: scale(1.6, 1.6);
+  -ms-transform: scale(1.6, 1.6);
+  -o-transform: scale(1.6, 1.6);
+  -webkit-transition: all 0.4s ease-out;
+  -moz-transition: all 0.4s ease-out;
+  -ms-transition: all 0.4s ease-out;
+  -o-transition: all 0.4s ease-out;
+}
+
+#countdown.warning {
+    color: #FFBF00;
+}
+
+#countdown.danger {
+    color: red;
+}
+
+
+
+h1 {
+    text-transform: uppercase;
+    font-size: 3.5rem;
+    color: red;
+    text-align: center;
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 4rem;
+    text-align: center;
+}
+
+h2 span {
+    font-size: 2.5rem;
+    
+}
+
+</style>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Unjumble the words</title>
+  <!-- <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans" type="text/css"> -->
+</head>
+
+
+
+
+<body>
+  <c-app class="c-layout u-center"></c-app>
+
+  <template id="tScreenStart">
+      <h1 class="c-headline">Unjumble The Words<br> 整理单词</h1>
+      <button type="button" class="c-btn js-command-game" title="Start your game =)">start</button>
+  </template>
+  <template id="tScreenGame">
+    <div id="countdown-container" style="width: 100%;margin: 0 auto;max-width: 1160px;">
+        <countdown-timer>
+          <svg style="display:none" width="132px" height="132px" viewBox="0 0 132 132" version="1.1" class="style-scope countdown-timer"><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" class="style-scope countdown-timer"><g id="Artboard-1" stroke-width="4" stroke-linejoin="round" class="style-scope countdown-timer"><path d="M62.9830112,123.091342 L69.5380112,130.000342 C69.5380112,130.000342 98.2840112,88.6243418 101.805011,81.9203418 C105.327011,75.2173418 114.139011,59.1523418 108.211011,44.1023418 C102.825011,30.4313418 88.0470112,19.5173418 71.3630112,20.6153418 C70.1200112,20.7453418 68.8590112,20.9423418 67.5840112,21.2103418 C48.5450112,25.2153418 39.0310112,44.0353418 38.5240112,54.1943418 C37.9910112,64.8703418 42.2120112,79.3353418 56.8640112,85.9883418 C69.3430112,91.6553418 83.1350112,87.6803418 83.1350112,87.6803418 L65.6550112,69.2563418 C65.6550112,69.2563418 61.5780112,70.0393418 61.1460112,70.1443418 L61.5940112,70.0803418 C57.1640112,70.7143418 49.0780112,71.9663418 39.3840112,67.5643418 C24.7320112,60.9113418 20.5100112,46.4463418 21.0440112,35.7703418 C21.5500112,25.6113418 31.0660112,6.79134177 50.1040112,2.78634177 C53.8170112,2.00534177 57.4030112,1.82734177 60.8120112,2.15834177 C74.4200112,3.88134177 86.0680112,13.8443418 90.7300112,25.6793418 C96.6590112,40.7283418 87.8460112,56.7933418 84.3260112,63.4973418 C80.8040112,70.2003418 52.0570112,111.576342 52.0570112,111.576342 L62.9830112,123.091342 L62.9830112,123.091342 Z" id="path-9" class="style-scope countdown-timer"></path><path d="M25.701,82.8 C26.544,80.777 28.242,77.209 29.542,75.385 C33.234,70.201 38.061,66.12 44.022,63.139 L44.022,62.424 C39.374,59.446 35.558,55.662 32.58,51.072 C29.6,46.486 28.111,41.687 28.111,36.681 C28.111,29.842 30.73,22.395 34.093,17.122 C35.4,15.288 36.923,13.555 38.659,11.922 C45.689,5.307 54.628,2 65.474,2 C76.318,2 85.257,5.307 92.291,11.922 C99.321,18.536 102.838,26.79 102.838,36.681 C102.838,38.937 102.535,41.15 101.93,43.321 C101.197,45.394 99.663,49.079 98.369,51.072 C95.388,55.662 91.575,59.446 86.928,62.424 L86.928,63.139 C92.885,66.12 97.712,70.201 101.407,75.385 C105.1,80.569 106.949,86.558 106.949,93.352 C106.949,101.189 103.43,109.593 98.869,115.524 C97.697,116.886 96.398,118.196 94.972,119.452 C86.986,126.485 77.153,130 65.474,130 C53.793,130 43.961,126.485 35.977,119.452 C27.991,112.421 24,103.72 24,93.352 C24,89.588 24.566,86.07 25.701,82.8 L25.701,82.8 Z" id="path-8" class="style-scope countdown-timer"></path><path d="M56.855,130 L108.642,35.473 L108.642,20.81 L39.853,20.81 L22,2 L58,2 L90.789,2 L90.789,16.662 L39.001,111.19 L56.855,130 L56.855,130 Z" id="path-7" class="style-scope countdown-timer"></path><path d="M65.5539859,62.744 C65.5539859,62.744 69.6309859,61.961 70.0629859,61.856 L69.6149859,61.92 C74.0449859,61.286 82.1309859,60.034 91.8249859,64.436 C106.476986,71.089 110.698986,85.554 110.164986,96.23 C109.657986,106.389 100.142986,125.209 81.1049859,129.214 C77.3909859,129.995 73.8059859,130.173 70.3969859,129.842 C56.7889859,128.119 45.1409859,118.156 40.4789859,106.321 C34.5499859,91.272 43.3629859,75.207 46.8829859,68.504 C50.4049859,61.8 79.1519859,20.424 79.1519859,20.424 L68.2259859,8.909 L61.6709859,2 C61.6709859,2 32.9249859,43.376 29.4039859,50.08 C25.8819859,56.783 17.0699859,72.848 22.9979859,87.898 C28.3839859,101.569 43.1609859,112.483 59.8459859,111.385 C61.0889859,111.255 62.3499859,111.058 63.6249859,110.79 C82.6629859,106.785 92.1779859,87.965 92.6849859,77.806 C93.2179859,67.13 88.9959859,52.665 74.3449859,46.012 C61.8659859,40.345 48.0739859,44.32 48.0739859,44.32 L65.5539859,62.744 L65.5539859,62.744 Z" id="path-6" class="style-scope countdown-timer"></path><path d="M20,82.333 L37.854,101.143 C37.854,101.143 41.693,111.223 42.561,112.722 C43.428,114.22 53.155,130 73.887,130 C94.617,130 110.699,113.738 110.699,94.124 C110.699,74.51 93.911,58.874 75.297,58.874 C74.484,58.874 71.726,59.104 70.926,59.163 C54.333,61.326 41.285,74.937 41.285,74.937 L48.148,20.811 L104.147,20.811 L86.294,2 L30.295,2 L23.433,56.127 C23.433,56.127 37.634,42.727 53.865,40.258 C55.042,40.132 56.236,40.064 57.443,40.064 C76.058,40.064 92.846,55.7 92.846,75.314 C92.846,94.927 76.764,111.19 56.033,111.19 C35.303,111.19 25.574,95.41 24.707,93.911 C23.84,92.413 20,82.333 20,82.333 L20,82.333 Z" id="path-5" class="style-scope countdown-timer"></path><path d="M115.548,107.092 L35.208,107.092 L35.208,95.956 L85.64,21.185 L101.548,21.185 L101.548,130 L83.34,110.816 L83.34,2 L67.431,2 L17,76.772 L17,87.908 L59.192,87.908 L97.339,87.908 L115.548,107.092 L115.548,107.092 Z" id="path-4" class="style-scope countdown-timer"></path><path d="M39.564,103.813841 C39.564,103.813841 42.569,113.480841 50.837,121.521841 C59.785,130.223841 78.949,133.532841 92.833,125.147841 C106.053,117.162841 111.102,100.370841 107.965,89.248841 C103.759,74.335841 91.315,72.002841 91.315,72.002841 C91.315,72.002841 92.96,70.883841 94.142,69.998841 C98.03,66.857841 104.552,60.038841 104.552,49.632841 C104.552,34.806841 93.604,27.072841 89.304,24.481841 C85.004,21.890841 76.109,18.566841 62.175,22.279841 C48.243,25.991841 41.695,42.322841 41.695,42.322841 L24.13,23.779841 C24.13,23.779841 29.895,8.18284098 44.611,3.73684098 C58.414,-0.434159025 68.298,3.88784098 72.598,6.47884098 C76.898,9.06984098 87.352,17.082841 87.444,31.890841 C87.537,46.715841 73.75,53.459841 73.75,53.459841 C73.75,53.459841 78.273,56.147841 82.682,60.313841 C86.38,64.100841 90.965,70.154841 90.965,75.162841 C90.965,86.634841 87.699,98.234841 75.225,106.459841 C61.977,115.196841 41.427,111.134841 33.272,102.978841 C25.117,94.823841 22,85.270841 22,85.270841 L39.564,103.813841 L39.564,103.813841 Z" id="path-3" class="style-scope countdown-timer"></path><path d="M108.405,130.00025 L41.001,130.00025 C41.001,130.00025 50.923,121.62325 56.738,116.75025 C63.061,111.45125 70.487,105.29925 88.19,87.5072496 C92.017,83.6612496 95.074,80.2632496 97.519,77.1732496 C106.07,66.2152496 107.203,58.7102496 107.492,49.1482496 C107.884,36.2052496 94.156,19.1432496 70.997,20.8092496 C47.838,22.4752496 41.001,44.1302496 41.001,44.1302496 L23,25.4352496 C23,25.4352496 29.837,3.77924956 52.996,2.11324956 C76.155,0.447249557 89.884,17.5092496 89.492,30.4532496 C89.117,42.8092496 87.892,51.0202496 70.189,68.8122496 C67.6,71.4142496 65.215,73.7782496 63.007,75.9352496 C50.439,88.1872496 43.254,94.1232496 37.925,98.5882496 C32.109,103.46125 23,111.30525 23,111.30525 L91.071,111.30525 L108.405,130.00025 L108.405,130.00025 Z" id="path-2" class="style-scope countdown-timer"></path><path d="M50,2 L80.813,2 L80.813,130 L50,130 L50,2 Z" id="path-1" class="style-scope countdown-timer"></path><path d="M66,130 C101.227,129.927 129.906,101.221 130,66 C129.915,30.778 101.223,2.084 66,2 C30.829,2.143 2.085,30.815 2,66 C2.106,101.182 30.821,129.882 66,130 L66,130 Z" id="path-0" class="style-scope countdown-timer"></path></g></g></svg>
+      </countdown-timer>
+    </div>
+    <!-- <div id="countdown"></div> -->
+      <c-timer id="countdown"></c-timer>
+      <div class="c-word-container">
+        <div class="c-word-box">
+          <div class="c-word-box-entries"></div>
+          <div class="c-word-box-line"></div>
+        </div>
+      </div>
+      <div class="c-instruction"></div>
+  </template>
+  <template id="tScreenScore">
+    <div id="countdown"></div>
+       <h1></h1>
+       <h2></h2>
+      <div class="c-headline" style="font-size: 24px">your score</div>
+      <c-time-label class="c-score"></c-time-label>
+      <button type="button" title="Play again" class="js-command-game c-btn">play again</button>
+  </template>
+
+
+
+
+
+
+
+<script>
+
+const TIME_LIMIT = 20
+const WARNING_THRESHOLD = 12
+const DANGER_THRESHOLD = 6
+
+const sentences = [
+    ["it's six o'clock", '六点整'],
+    ["it's ten past six", '六点十分'],
+    ["it's quarter to nine", '九点差一刻'],
+    ["it's half past ten", '十点半'],
+    ["it's twelve noon", '中午十二点'],
+    ["it's a quarter to eleven", '十一点差一刻'],
+    ["it's twenty past nine", '九点二十分'],
+    ["it's twenty five past ten", '十点二十五分'],
+    ["it's five to six in the morning", '早上六点五分'],
+    ["it's half past eleven at night", '晚上十一点半'],
+    ["it's twenty five to ten", '十点差二十五分'],
+    ["it's quarter to four in the afternoon", '下午四点差一刻'],
+    ["it's half past seven in the evening", '晚上七点半'],
+    ["it's ten past one in the afternoon", '下午一点十分'],
+    ["it's ten past two in the morning", '凌晨两点十分'],
+    ["it's twenty to twelve at night", '晚上十二点差二十分'],
+    ["it's twenty five to three in the afternoon", '下午三点差二十五分'],
+    ["it's quarter to four in the morning", '凌晨四点差一刻'],
+    ["it's ten past five in the afternoon", '下午五点十分'],
+    ["it's eight o'clock in the evening", '晚上八点整'],
+    ["it's nine o'clock in the morning", '早上九点整']
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", ''],
+    // ["", '']
+]
+
+let wins = losses = 0
+
+let usedSentences = []
+let currSentence = ''
+
+
+
+class App extends HTMLElement {
+      constructor() {
+        super();
+        this.selectedScreenName = 'start';
+        const initializers = {
+          start: StartScreen,
+          game: GameScreen,
+          score: ScoreScreen
+        }
+        let props = { timespan: 2000 };
+        this.selectedScreen = new initializers[this.selectedScreenName](props);
+        this.appendChild(this.selectedScreen);
+        
+        this.addEventListener('command', e => {
+          const screen = e.detail.screen;
+          if (screen !== this.selectedScreenName) {
+            props = {...props, ...e.detail.props};
+            this.selectedScreen.remove();
+            this.selectedScreenName = screen;
+            this.selectedScreen = new initializers[this.selectedScreenName](props);
+            this.appendChild(this.selectedScreen); 
+          }
+          if(this.selectedScreenName === 'score'){
+            const chineseTrans = sentences.find(x => x[0] === currSentence)[1]
+            const space = currSentence.split(' ').length > 5 ? '<br>' : '&nbsp;&nbsp;'
+            this.querySelector('h1').innerHTML = currSentence + space + chineseTrans
+            this.querySelector('h2').innerHTML = e.detail.result ? `Good Job! You Won!<br><span>With ${e.detail.props.timeLeft} Seconds Left</span>` : 'You Lost! Game Over!'
+          }
+       
+        });
+      }
+    }
+    
+    class Screen extends HTMLElement {
+      constructor(templateId, props = {}) {
+        super();
+        const templateNode = document.getElementById(templateId);
+        if(!templateNode) {
+          throw new Error(`Cannot find the associated template for screen component. ID: ${templateId}`);
+        }
+        const clone = document.importNode(templateNode.content, true);
+        this.classList.add("c-layout__screen", ...(props.classNames || []));
+        this.appendChild(clone);
+      }
+    }
+
+   class StartScreen extends Screen {
+     constructor() {
+        super("tScreenStart", {
+          classNames: ["c-screen-start"]
+        });
+       this.querySelector('.js-command-game').addEventListener('click', () => {
+         const event = new CustomEvent('command', { detail: { screen: 'game' }, bubbles : true });
+         this.dispatchEvent(event);
+       });
+     }
+   }
+
+class ScoreScreen extends Screen {
+     constructor({timespan}) {
+        super("tScreenScore", {
+          classNames: ["c-screen-score"]
+        });
+       const score = this.querySelector('.c-score');
+       score.render();
+
+       
+       this.querySelector('.js-command-game').addEventListener('click', () => {
+         const event = new CustomEvent('command', { detail: { screen: 'game' }, bubbles : true });
+         this.dispatchEvent(event);
+       });
+     }
+   }
+    
+
+
+// Review how this works!!
+    class GameScreen extends Screen {
+      constructor({ content }) {
+        
+        super("tScreenGame", {
+          classNames: ["c-screen-game"]
+        });
+
+        this.chooseRandomSentence()
+        content = currSentence
+        
+        this.timer = this.querySelector('#countdown');   
+        this.instruction = this.querySelector('.c-instruction');
+        this.container = this.querySelector('.c-word-container');
+        this.box = this.querySelector('.c-word-box');
+        this.dropZone = this.querySelector('.c-word-box-entries');
+        // this.instruction.textContent = `Form the phrase "${content}" on the line above`;
+        
+        // console.log(`CONTENT ${content}`)
+        this.words = content.split(' ');
+        this.wordElements = this.words.map(word => new Word(word));
+        
+        this.draggedWord = undefined;
+        this.selections = [];
+        
+        for(const word of this.wordElements) {
+          this.container.appendChild(word); 
+        }
+      }
+      
+      connectedCallback() {
+        
+        this.container.addEventListener('pointerdown', e => {
+          // Solves issue of events not firing
+          e.target.releasePointerCapture(e.pointerId)
+          if(e.target instanceof Word) {
+               this.draggedWord = e.target;
+               this.draggedWord.classList.add('is-dragging');
+          }
+       });
+
+       ['pointerup', 'pointerleave'].forEach(x => {
+            this.container.addEventListener( x, ()=> {
+                if(this.draggedWord) {
+                this.draggedWord.savePosition();
+                this.draggedWord.classList.remove('is-dragging');
+                this.draggedWord = undefined;
+            }
+        })
+       });
+        
+        this.dropZone.addEventListener('pointerover', e => {
+          
+          console.log('Fired!')
+          e.preventDefault()
+          const draggedWord = this.draggedWord;
+         if(draggedWord) {
+           const accepted = this.process(draggedWord.content);
+           this.box.classList.add(accepted ? 'is-valid' : 'is-invalid');
+         }
+       });
+        
+         this.dropZone.addEventListener('pointerup', () => {
+          const draggedWord = this.draggedWord;
+         if(draggedWord) {
+           const accepted = this.process(draggedWord.content);
+           if(accepted > 0) {
+             this.putToBox(draggedWord);
+           }
+           if(accepted < 0) {
+             this.putToBox(draggedWord, true);
+           }
+
+        // if they win
+           if(this.selections.length === this.words.length) {
+              wins++
+              const event = new CustomEvent('command', { detail: { screen: 'score', props: { timeLeft: this.timer.innerText }, 'result': 1 }, bubbles : true });
+              this.dispatchEvent(event);
+           }
+
+           if(this.box.classList.contains('is-invalid')) {
+               this.draggedWord.revertPosition();
+           }
+           this.box.classList.remove('is-invalid', 'is-valid');
+         }
+       });
+        
+        this.box.addEventListener('pointerleave', () => {
+          this.box.classList.remove('is-invalid', 'is-valid');
+       });
+        
+       const {width, height} = this.container.getBoundingClientRect(); 
+        
+       this.addEventListener('pointermove', e => {
+         const draggedWord = this.draggedWord;
+          if (draggedWord) {
+            draggedWord.style.top = Math.max(Math.min(parseInt(draggedWord.style.top, 10) + e.movementY, height - draggedWord.clientHeight), 0) + 'px';
+            draggedWord.style.left = Math.max(Math.min(parseInt(draggedWord.style.left, 10) + e.movementX, width - draggedWord.clientWidth), 0) + 'px';
+          }
+       });
+      }
+      
+    // Handles when the word is put into the box
+      putToBox(word, prependOrAppend) {
+        word.classList.add('is-immutable');
+        
+        for(const w of this.wordElements) {
+          w.tempDim = w.getBoundingClientRect();
+        }
+        
+        if(prependOrAppend) {
+          this.selections.push(word.content);
+          this.dropZone.prepend(word);
+        } else {
+          this.selections.unshift(word.content);
+           this.dropZone.append(word);
+        }
+        
+        for(const w of this.wordElements) {
+          const { x, y } = w.getBoundingClientRect();
+          const dx = x - w.tempDim.x;
+          const dy = y - w.tempDim.y;
+          if(dx || dy) {
+                      w.animate([
+            { 
+              transform: `translate(${-dx}px, ${-dy}px)`
+            },
+            {
+              transform: `translate(0, 0)`
+            }
+          ], {duration: 300}).finished.then(() => { 
+             w.tempDim = undefined;
+          });
+          }
+        }
+      }
+      
+
+
+      disconnectedCallback() {
+        this.timer = undefined;
+        this.instruction = undefined;
+      }
+
+      process(word) {
+
+    // Rejects sentences with the same word more than once here!
+        if(!word || this.selections.includes(word)) {
+          return;
+        }
+        if(this.selections.length === 0) {
+          return 1;
+        }
+        const index = this.words.indexOf(word);
+
+        if (index > 0) {
+            const prevWord = this.words[index - 1];
+            if(this.selections.includes(prevWord)) {
+              return 1;
+            }
+          
+        }
+        if (index < this.words.length - 1) {
+            const nextWord = this.words[index + 1];
+          if(this.selections.includes(nextWord)) {
+            return -1;
+            }
+        }
+      }
+
+
+        chooseRandomSentence = () => {
+            const chosenSentence = sentences[Math.floor(Math.random() * sentences.length)][0]
+            // console.log(chosenSentence)
+
+            if(!usedSentences.includes(chosenSentence)){
+                usedSentences.push(chosenSentence)
+                return currSentence = chosenSentence
+            } else if(usedSentences.length === sentences.length){
+                usedSentences = []
+            }
+            // console.log(`USED SENTENCES: ${usedSentences.length}`)
+            return this.chooseRandomSentence()
+        
+        }
+
+
+    }
+
+
+
+
+
+
+   class Word extends HTMLElement {
+     get content() {return this.textContent }
+     constructor(content) {
+       super();
+       this.textContent = content;
+       this.className = 'c-word';
+       
+       this.setPosition({
+         top: Math.floor(Math.random() * window.screen.height * 0.3) + 'px',
+         left: Math.floor(Math.random() * window.screen.width * 0.6) + 'px'
+       });
+ 
+       this.savePosition();
+     }
+     
+     savePosition() {
+       this.recentPos = {top: this.style.top, left: this.style.left};
+     }
+     
+     revertPosition() {
+       this.setPosition(this.recentPos);
+     }
+     
+     setPosition({top, left}) {
+       this.style.top = top;
+       this.style.left = left;
+     }
+   }
+    
+    // class TimeLabel extends HTMLElement {
+    //   constructor() {
+    //     super();
+    //     const value = this.getAttribute("value");
+    //     if(value) {
+    //         this.render(parseInt(value, 10));
+    //     }
+    //   }
+    //   render(timespan) {  
+    //     console.log(timespan)
+    //     timespan = timespan / 1000;
+    //     const minutes = Math.floor(timespan / 60)
+    //       .toString()
+    //       .padStart(2, "0");
+    //     const seconds = Math.floor(timespan % 60)
+    //       .toString()
+    //       .padStart(2, "0");
+    //     this.textContent = `${minutes}:${seconds}`;
+    //   }
+    // }
+
+
+    class Score extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      render(){
+        this.innerHTML = `<span id="score-span">WINS: ${wins}</span> LOSSES: ${losses}`
+      }
+    }
+
+    // class ResultText extends HTMLElement {
+    //   constructor() {
+    //     super();
+    //   }
+
+    //   render(){
+    //     this.innerHTML = `You Lose!`
+    //   }
+    // }
+    
+
+
+
+    class Timer extends HTMLElement {
+      constructor() {
+        super();
+        this.ticks = undefined;
+        this.token = undefined;
+        this.reset();
+      }
+    
+      stop() {
+        clearInterval(this.token);
+      }
+    
+      reset() {
+        this.ticks = Date.now();
+      }
+    
+      connectedCallback() {
+        // this.start();
+        this.countdownSetup()
+      }
+    
+      disconnectedCallback() {
+        this.stop();
+      }
+    
+      start() {
+        this.token = setInterval(() => this.render(Date.now()), 1000);
+        this.render(Date.now());
+      }
+    
+    //   render(timestamp) {
+
+    //     this.timespan = ((TIME_LIMIT*1000) + this.ticks) - timestamp
+    //     console.log(this.timespan)
+
+    //     const timespan = this.timespan / 1000
+    //     const seconds = Math.floor(timespan % 60)
+    //       .toString()
+    //       .padStart(2, "0");
+    //     if(this.timespan > 0){
+    //         this.textContent = seconds;
+    //     } else {
+    //         // Runs out of time, so a loss
+    //         losses++
+    //         this.stop()
+    //         // props: { timespan: this.timer.timespan }
+    //         const event = new CustomEvent('command', { detail: { screen: 'score', 'result': 0 }, bubbles : true });
+    //         this.dispatchEvent(event);
+    //     }
+        
+    //   }
+
+
+
+        anim() {
+            setTimeout(() => this.classList.add('puffer'), 600)
+
+            // && !this.classList.includes('warning')
+            if (this.currentNum <= WARNING_THRESHOLD && this.currentNum > DANGER_THRESHOLD ){
+                this.classList.add('warning')
+                this.currentNum--
+            } else if (this.currentNum <= DANGER_THRESHOLD && this.currentNum > 1) {
+                this.classList.add('danger')
+                this.classList.remove('warning')
+                this.currentNum--
+            } else if (this.currentNum > 1){
+                this.currentNum--
+            } else {
+                losses++
+                this.stop()
+                const event = new CustomEvent('command', { detail: { screen: 'score', result: 0 }, bubbles : true });
+                this.dispatchEvent(event);
+            } 
+            this.innerText = this.currentNum;
+            this.classList.remove("puffer");
+        }
+
+        countdownSetup() { 
+            this.currentNum = TIME_LIMIT
+            this.innerText = this.currentNum;
+            setTimeout(() => this.classList.add('puffer'), 600)
+            this.classList.remove("puffer");
+            this.token = setInterval(() => this.anim(), 1000);
+        }
+
+
+
+    }
+    
+    customElements.define("c-word", Word);
+    customElements.define("c-timer", Timer);
+    // customElements.define("c-time-label", TimeLabel);
+    customElements.define("c-time-label", Score);
+    // customElements.define("c-result", ResultText);
+    customElements.define("c-screen", Screen);
+    customElements.define("c-game-screen", GameScreen);
+    customElements.define("c-score-screen", ScoreScreen);
+    customElements.define("c-start-screen", StartScreen);
+    customElements.define("c-app", App);
+
+
+</script>
+</body>
+</html>

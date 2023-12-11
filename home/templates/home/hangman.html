@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<head>
+<style>
+/* Variabes */
+/* Mixin's */
+body {
+  background: #ADD8E6;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  color: #fff;
+  height: 100%;
+  text-align: center;
+  font-size: 18px;
+}
+
+.wrappper {
+  width: 100%;
+  margin: 0 auto;
+}
+.wrappper:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+canvas {
+  color: #fff;
+  border: #fff dashed 2px;
+  padding: 15px;
+}
+
+h1, h2, h3 {
+  font-family: "Roboto", sans-serif;
+  font-weight: 100;
+  text-transform: uppercase;
+  margin: 5px 0;
+}
+
+h1 {
+  font-size: 2.6em;
+}
+
+h2 {
+  font-size: 1.6em;
+}
+
+p {
+  font-size: 1.6em;
+}
+
+#alphabet {
+  margin: 15px auto;
+  padding: 0;
+  max-width: 900px;
+}
+#alphabet:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+#alphabet li {
+  float: left;
+  margin: 5px;
+  list-style: none;
+  width: 35px;
+  height: 30px;
+  font-size: 1.6em;
+  padding: 10px;
+  background: #fff;
+  color: #ADD8E6;
+  cursor: pointer;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  -khtml-border-radius: 5px;
+  border: solid 1px #fff;
+}
+#alphabet li:hover {
+  background: #ADD8E6;
+  border: solid 1px #fff;
+  color: #fff;
+}
+
+#my-word {
+  margin: 0;
+  display: block;
+  padding: 0;
+  display: block;
+}
+
+#my-word li {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  display: inline-block;
+  padding: 0 10px;
+  font-size: 3em;
+  text-transform: uppercase;
+  font-weight: 900;
+}
+
+.active {
+  opacity: 0.4;
+  filter: alpha(opacity=40);
+  -moz-transition: all 1s ease-in;
+  -moz-transition: all 0.3s ease-in-out;
+  -webkit-transition: all 0.3s ease-in-out;
+  cursor: default;
+}
+.active:hover {
+  -moz-transition: all 1s ease-in;
+  -moz-transition: all 0.3s ease-in-out;
+  -webkit-transition: all 0.3s ease-in-out;
+  opacity: 0.4;
+  filter: alpha(opacity=40);
+  -moz-transition: all 1s ease-in;
+  -moz-transition: all 0.3s ease-in-out;
+  -webkit-transition: all 0.3s ease-in-out;
+}
+
+#mylives {
+  font-size: 2.5em;
+  text-align: center;
+  display: block;
+  color: black;
+  font-weight: 600;
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+button {
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  -khtml-border-radius: 5px;
+  background: #ADD8E6;
+  color: #fff;
+  border: solid 1px #fff;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 18px 10px;
+  width: 180px;
+  margin: 10px;
+  outline: none;
+}
+
+#reset {
+  font-weight: 700;
+  font-size: 30px;
+  width: auto;
+}
+
+
+button:hover {
+  -webkit-transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+  background: #fff;
+  border: solid 1px #fff;
+  color: #ADD8E6;
+}
+
+@media (max-width: 767px) {
+  #alphabet {
+    padding: 0 0 0 15px;
+  }
+}
+@media (max-width: 480px) {
+  #alphabet {
+    padding: 0 0 0 25px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+body {
+  font-family: sans-serif;
+  display: grid;
+  height: 100vh;
+  place-items: center;
+}
+
+.base-timer {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.base-timer__svg {
+  transform: scaleX(-1);
+}
+
+.base-timer__circle {
+  fill: none;
+  stroke: none;
+}
+
+.base-timer__path-elapsed {
+  stroke-width: 7px;
+  stroke: grey;
+}
+
+.base-timer__path-remaining {
+  stroke-width: 7px;
+  stroke-linecap: round;
+  transform: rotate(90deg);
+  transform-origin: center;
+  transition: 1s linear all;
+  fill-rule: nonzero;
+  stroke: currentColor;
+}
+
+.base-timer__path-remaining.green {
+  color: rgb(65, 184, 131);
+}
+
+.base-timer__path-remaining.orange {
+  color: orange;
+}
+
+.base-timer__path-remaining.red {
+  color: red;
+}
+
+.base-timer__label {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 88px;
+}
+
+.flex-container {
+  display: flex;
+  justify-content: space-around;
+}
+
+#chinese-word {
+  margin-left: 30px !important;
+}
+
+
+
+</style>
+
+
+</head>
+
+
+
+
+
+
+
+<body>
+
+<div class="wrapper">
+    <h1>Hangman</h1>
+ </div>
+ <div class="wrapper">
+  <!-- <input type="number"> -->
+<div class="flex-container">
+  <canvas id="stickman" class="flex-item">This Text will show if the Browser does NOT support HTML5 Canvas tag</canvas>
+  <div id="app" class="flex-item"></div>
+</div>
+
+     <p id="catagoryName"></p>
+     <div id="hold">
+     </div>
+     <p id="mylives"></p>
+     <!-- <p id="clue">Clue -</p>   -->
+     
+     <!-- <p>Use the alphabet below to guess the word.</p> -->
+     <div id="buttons"></div>
+     
+     <div class="flex-container">
+        <p>WINS: <span id="wins">0</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LOSSES: <span id="losses">0</span></p>
+        <div class="container">
+   
+       <!-- <button id="hint">Hint</button> -->
+       <button id="reset">PLAY AGAIN</button>
+     
+ </div>
+
+ 
+
+
+
+
+
+<script>
+
+
+
+/*
+This code base:
+Needs completely refactoring to ES6 - would be better as a class
+Lots of typos, vars and weird functions
+Add input box to arbitrarily change the start time
+Could add countdown sound
+Better CSS and animations
+Change categories to array of objects
+
+*/
+window.onload = function () {
+
+  // Kepp track of results
+const winSpan = document.querySelector('#wins')
+const lossSpan = document.querySelector('#losses')
+let wins = 0
+let losses = 0
+let gameInPlay = true
+
+let alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+      'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+      't', 'u', 'v', 'w', 'x', 'y', 'z'];
+
+const categories = [
+    [['balcony','阳台'], ['bathroom', '浴室'], ['games room', '游戏室'], ['sitting room', '客厅'], ['living room', '客厅'], ['dining room', '餐室'], ['bedroom', '卧室'], ['kitchen', '厨房']],
+    [['air conditioner', '空调'], ['toaster', '烤面包机'], ['fridge', '冰箱'], ['microwave', '微波炉'], ['washing machine', '洗衣机'], ['oven', '烤箱'], ['stove', '炉子'], ['vacuum cleaner', '吸尘器']],
+    [['bookshelf', '书架'], ['desk', '书桌'], ['table', '桌子'], ['bed', '床'], ['cupboard', '橱柜'], ['sofa', '沙发'], ['armchair', '扶手椅'], ['curtains', '窗帘'], ['fireplace', '壁炉'],['sink', '洗涤池']],
+    [['relative', '亲戚'], ['boy', '男孩儿'], ['sister', '姐姐/妹妹'], ['brother', '哥哥/弟弟'], ['mother', '母亲'], ['father', '父亲'], ['boyfriend', '男朋友'], ['girlfriend', '女朋友'], ['daughter', '女儿'], ['son', '儿子'], ['grandparent', '(外)祖父/母'], ['grandfather', '(外)祖父'], ['grandmother', '(外)祖母'], ['uncle', '伯父/叔叔/舅舅/姑/姨夫'], ['aunt', '姑妈/姨/伯母/舅母'], ['parents', '父母'], ['cousin', '堂/表(兄弟姐妹)'], ['nephew', '外甥/侄子'], ['niece', '外甥女/侄女']],
+    [['towel', '毛巾'], ['dress', '连衣裙'], ['stamps', '邮票'], ['t shirt', 'T恤衫'], ['soap', '肥皂'], ['sandwich', '三明治'], ['sweets', '糖果'], ['toothbrush', '牙刷'], ['camera', '照相机'], ['jacket', '夹克'], ['make up', '化妆品'], ['tissues', '纸巾'], ['shampoo', '洗发水'], ['diary', '日记本'],['envelope', '信封'], ['socks', '袜子'], ['pyjamas', '睡衣'], ['batteries', '电池'], ['department store', '百货商店'], ['bakers', '面包店'], ['chemists', '药店'], ['post office', '邮局'], ['newsagents', '报刊店'], ['supermarket', '超市'], ['coat', '外套'], ['tickets', '票'],['writing paper', '信纸'], ['sweater', '毛衣'], ['tights', '丝袜'], ['toothpaste', '牙膏']]
+]
+    // ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', ''],]
+
+let usedWords = []
+
+
+var chosenCategory;     // Selected catagory
+var getHint ;          // Word getHint
+var guess ;             // Geuss
+var geusses = [];      // Stored geusses
+var lives ;             // Lives
+var counter ;           // Count correct geusses
+var space;              // Number of spaces in word '-'
+let word;
+let chineseWord;
+
+// Get elements
+var showLives = document.getElementById("mylives");
+var showCatagory = document.getElementById("scatagory");
+var getHint = document.getElementById("hint");
+var showClue = document.getElementById("clue");
+
+
+
+
+const showChineseWord = () => {
+    const node = document.createElement("li");
+    const textnode = document.createTextNode(chineseWord);
+    node.id = 'chinese-word'
+    node.appendChild(textnode);
+    document.querySelector('#my-word').appendChild(node);
+}
+
+
+// Check whether the guess is right or wrong
+const check = () => {
+//List is declared in the function below
+  list.onclick = function () {
+    // if(showLives.innerHTML !== "Well Done! You Win!"){
+    if(this.className !== 'active' && gameInPlay){
+    var geuss = this.innerHTML
+    this.setAttribute("class", "active");
+    // this.onclick = null;
+    for (var i = 0; i < word.length; i++) {
+      if (word[i] === geuss) {
+        geusses[i].innerHTML = geuss;
+        counter += 1;
+      } 
+    }
+  
+    if (word.indexOf(geuss) === -1) {
+      lives--; comments(); animate();
+    } else {
+      comments();
+    }
+  }
+}}
+
+
+// create alphabet ul
+const buttons = () => {
+  const myButtons = document.getElementById('buttons');
+  const letters = document.createElement('ul');
+  letters.id = 'alphabet';
+
+  for (var i = 0; i < alphabet.length; i++) {
+    
+    list = document.createElement('li');
+    list.id = 'letter';
+    list.innerHTML = alphabet[i];
+    check();
+    myButtons.appendChild(letters);
+    letters.appendChild(list);
+  }
+}
+  
+
+// Select Catagory
+var selectCat = function () {
+  if (chosenCategory === categories[0]) {
+    catagoryName.innerHTML = "Your Category Is ROOMS 房间";
+  } else if (chosenCategory === categories[1]) {
+    catagoryName.innerHTML = "Your Category Is HOUSEHOLD APPLIANCES 家用电器";
+  } else if (chosenCategory === categories[2]) {
+    catagoryName.innerHTML = "Your Category Is FURNITURE 家具";
+  } else if (chosenCategory === categories[3]) {
+    catagoryName.innerHTML = "Your Category Is FAMILY 家族";
+  } else if (chosenCategory === categories[4]) {
+    catagoryName.innerHTML = "Your Category Is SHOPPING 购物";
+  }
+}
+
+const correct = document.createElement('ul');
+
+// Create geusses ul
+ const result = () => {
+  const wordHolder = document.getElementById('hold');
+  
+
+  for (var i = 0; i < word.length; i++) {
+    correct.setAttribute('id', 'my-word');
+    const guess = document.createElement('li');
+    guess.setAttribute('class', 'guess');
+    if (word[i] === "-") {
+      guess.innerHTML = "-";
+      space = 1;
+    } else {
+      guess.innerHTML = "_";
+    }
+
+    geusses.push(guess);
+    wordHolder.appendChild(correct);
+    correct.appendChild(guess);
+  }
+}
+
+// Show lives
+ comments = function () {
+  showLives.innerHTML = "You have " + lives + " lives";
+  if (!lives) {
+    showChineseWord()
+    gameInPlay = false
+    showLives.innerHTML = "You're Dead! Game Over!";
+    showLives.style.color = 'red'
+    lossSpan.innerHTML = ++losses
+
+    for (var i = 0; i < word.length; i++) {
+        geusses[i].innerHTML = word[i];
+      }
+  }
+
+
+    if (counter + space === geusses.length) {
+      showChineseWord()
+      gameInPlay = false
+      showLives.innerHTML = "Well Done! You Win!"
+      showLives.style.color = 'green'
+      winSpan.innerHTML = ++wins
+  }
+}
+
+    // Animate man
+var animate = function () {
+  var drawMe = lives ;
+  // console.log(lives)
+  drawArray[drawMe]();
+}
+
+
+ // Hangman
+canvas =  function(){
+
+  myStickman = document.getElementById("stickman");
+  context = myStickman.getContext('2d');
+  context.beginPath();
+  context.strokeStyle = "#fff";
+  context.lineWidth = 2;
+};
+
+  head = function(){
+    myStickman = document.getElementById("stickman");
+    context = myStickman.getContext('2d');
+    context.beginPath();
+    context.arc(60, 25, 10, 0, Math.PI*2, true);
+    context.stroke();
+  }
+  
+draw = function($pathFromx, $pathFromy, $pathTox, $pathToy) {
+  
+  context.moveTo($pathFromx, $pathFromy);
+  context.lineTo($pathTox, $pathToy);
+  context.stroke(); 
+}
+
+ frame1 = function() {
+   draw (0, 150, 150, 150);
+ };
+ 
+ frame2 = function() {
+   draw (10, 0, 10, 600);
+ };
+
+ frame3 = function() {
+   draw (0, 5, 70, 5);
+ };
+
+ frame4 = function() {
+   draw (60, 5, 60, 15);
+ };
+
+ torso = function() {
+   draw (60, 36, 60, 70);
+ };
+
+ rightArm = function() {
+   draw (60, 46, 100, 50);
+ };
+
+ leftArm = function() {
+   draw (60, 46, 20, 50);
+ };
+
+ rightLeg = function() {
+   draw (60, 70, 100, 100);
+ };
+
+ leftLeg = function() {
+   draw (60, 70, 20, 100);
+ };
+
+drawArray = [rightLeg, leftLeg, rightArm, leftArm,  torso,  head, frame4, frame3, frame2, frame1]; 
+
+
+
+
+
+
+
+
+
+const chooseWord = () => {
+    
+    chosenCategory = categories[Math.floor(Math.random() * categories.length)];
+
+    let [chosenWord, chineseWord] = chosenCategory[Math.floor(Math.random() * chosenCategory.length)]
+    
+    chosenWord = chosenWord.replace(/\s/g, "-");
+    
+    if(!usedWords.includes(chosenWord)){
+        usedWords.push(chosenWord)
+        return [chosenWord, chineseWord]
+    } else if (categories.flat().length === usedWords.length) {
+        usedWords = []
+    }
+    
+    return chooseWord()  
+}
+
+
+const TIME_LIMIT = 35;
+
+const FULL_DASH_ARRAY = 283;
+const WARNING_THRESHOLD = 16;
+const ALERT_THRESHOLD = 7;
+
+const COLOR_CODES = {
+  info: {
+    color: "green"
+  },
+  warning: {
+    color: "orange",
+    threshold: WARNING_THRESHOLD
+  },
+  alert: {
+    color: "red",
+    threshold: ALERT_THRESHOLD
+  }
+};
+
+// Play
+play = function () {
+  
+    
+
+  [word, chineseWord] = chooseWord()
+
+  buttons();
+
+  geusses = [];
+  lives = 10;
+  counter = 0;
+  space = 0;
+  startTimer();
+  result();
+  comments();
+  selectCat();
+  canvas();
+}
+
+
+play();
+
+
+document.getElementById('reset').onclick = function() {
+
+    const timeRemaining = parseInt(document.querySelector('#base-timer-label').innerHTML)
+
+// Disable button if time remaining
+    if(timeRemaining && mylives.innerHTML.startsWith('You')){
+      return
+    }
+
+
+    const myWord = document.querySelector('#my-word')
+    // myWord.parentNode.removeChild(myWord)
+    myWord.innerHTML = ''
+    
+
+  correct.parentNode.removeChild(correct);
+//   letters.parentNode.removeChild(letters);
+//   showClue.innerHTML = "";
+    alphabet = document.querySelector('#alphabet');
+    [...alphabet.children].forEach(x => x.classList.remove('active'))
+  context.clearRect(0, 0, 400, 400);
+
+  const { alert, warning, info } = COLOR_CODES;
+
+  document
+      .getElementById("base-timer-path-remaining")
+      .classList.remove(warning.color, alert.color);
+      // , warning.threshold, info.color)
+  document
+      .getElementById("base-timer-path-remaining")
+      .classList.add(info.color);
+
+      showLives.style.color = 'black'
+
+
+  gameInPlay = true
+
+  // timeLeft = TIME_LIMIT
+
+  // document.querySelector('#timer').innerHTML = '30 seconds remaining...'
+//   geusses = []
+  play();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// let timerInterval = null;
+let remainingPathColor = COLOR_CODES.info.color;
+
+document.getElementById("app").innerHTML = `
+<div class="base-timer">
+  <svg class="base-timer__svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <g class="base-timer__circle">
+      <circle class="base-timer__path-elapsed" cx="50" cy="50" r="45"></circle>
+      <path
+        id="base-timer-path-remaining"
+        stroke-dasharray="283"
+        class="base-timer__path-remaining ${remainingPathColor}"
+        d="
+          M 50, 50
+          m -45, 0
+          a 45,45 0 1,0 90,0
+          a 45,45 0 1,0 -90,0
+        "
+      ></path>
+    </g>
+  </svg>
+  <span id="base-timer-label" class="base-timer__label">${TIME_LIMIT}</span>
+</div>
+`;
+
+
+
+// function onTimesUp() {
+//   clearInterval(timerInterval);
+// }
+
+// function startTimer1() {
+
+//   timerInterval = setInterval(() => {
+//     timePassed++;
+//     timeLeft = TIME_LIMIT - timePassed;
+//     document.getElementById("base-timer-label").innerHTML = timeLeft
+    
+//     setCircleDasharray();
+//     setRemainingPathColor(timeLeft);
+
+//     if (timeLeft === 0) {
+//       onTimesUp();
+//     }
+//   }, 1000);
+// }
+
+
+// function timer(){
+//     // let secs = 30
+//     const totalUsedWordsAtStart = usedWords.length
+
+//     // const countdown = document.querySelector('#timer')
+//       const countdown = () => {
+
+//         startTimer();
+
+//         if(showLives.innerHTML === "Well Done! You Win!" || totalUsedWordsAtStart !== usedWords.length){
+//             clearInterval(interval)
+//         }
+
+//         // secs-- 
+//         // console.log(`Seconds: ${secs}`)
+//         // const s = secs === 1 ? '' : 's'
+//         // countdown.innerHTML = `${secs} second${s} remaining...`
+
+//         if(!secs || Math.sign(secs) === -1 || !lives){
+//             showLives.innerHTML = "You're Dead! Game Over!";
+//             for (var i = 0; i < word.length; i++) {
+//               geusses[i].innerHTML = word[i];
+//             } 
+//             clearInterval(interval)
+
+//             alphabet = document.querySelector('#alphabet');
+//             [...alphabet.children].forEach(x => x.className = 'active')
+
+//             for(let i = lives-1; i >= 0; i--){
+//                 lives--
+//                 animate()
+//             }  
+//         }
+//       }
+//     const interval = setInterval(decrementer, 1000)
+//   }
+
+
+
+
+
+function startTimer() {
+
+  const totalUsedWordsAtStart = usedWords.length
+  let timeLeft = TIME_LIMIT;
+  let timePassed = 0;
+
+    const countdown = () => {
+
+        if(showLives.innerHTML === "Well Done! You Win!" || totalUsedWordsAtStart !== usedWords.length){
+            return clearInterval(interval)
+        }
+
+        timePassed++;
+        timeLeft = lives ? TIME_LIMIT - timePassed : timeLeft = 0
+        document.getElementById("base-timer-label").innerHTML = timeLeft
+        
+        setCircleDasharray(timeLeft);
+        setRemainingPathColor(timeLeft);
+
+        if(!timeLeft || Math.sign(timeLeft) === -1 || !lives){
+            if(gameInPlay){
+              showChineseWord()
+            }
+            
+            gameInPlay = false
+            showLives.innerHTML = "You're Dead! Game Over!";
+            showLives.style.color = 'red'
+          
+            // Display the word
+            for (var i = 0; i < word.length; i++) {
+              geusses[i].innerHTML = word[i];
+            }
+
+            clearInterval(interval)
+
+            alphabet = document.querySelector('#alphabet');
+            [...alphabet.children].forEach(x => x.className = 'active')
+
+            if(lives){
+              lossSpan.innerHTML = ++losses
+            }
+
+            for(let i = lives-1; i >= 0; i--){
+                lives--
+                animate()
+            }
+            
+        }
+      }
+    const interval = setInterval(countdown, 1000)
+
+  
+}
+
+
+
+// function formatTime(time) {
+//   const minutes = Math.floor(time / 60);
+//   let seconds = time % 60;
+
+//   if (seconds < 10) {
+//     seconds = `0${seconds}`;
+//   }
+
+//   return `${minutes}:${seconds}`;
+// }
+
+function setRemainingPathColor(timeLeft) {
+  const { alert, warning, info } = COLOR_CODES;
+  if (timeLeft <= alert.threshold) {
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.remove(warning.color);
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.add(alert.color);
+  } else if (timeLeft <= warning.threshold) {
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.remove(info.color);
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.add(warning.color);
+  }
+}
+
+function calculateTimeFraction(timeLeft) {
+  const rawTimeFraction = timeLeft / TIME_LIMIT;
+  return rawTimeFraction - (1 / TIME_LIMIT) * (1 - rawTimeFraction);
+}
+
+function setCircleDasharray(timeLeft) {
+  const circleDasharray = `${(
+    calculateTimeFraction(timeLeft) * FULL_DASH_ARRAY
+  ).toFixed(0)} 283`;
+  document
+    .getElementById("base-timer-path-remaining")
+    .setAttribute("stroke-dasharray", circleDasharray);
+}
+
+}
+ </script>
+</body>

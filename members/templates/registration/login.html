@@ -11,24 +11,20 @@
     <div class="row pt-5">
         <div class="col-12 col-sm-10 offset-sm-1 col-md-8 mt-5 offset-md-2 pt-5 mt-5">
             <div class="card">
-                <div class="card-header text-center py-4">
-                    <h2 class="title">
+                <div class="card-header py-4">
+                    <h2 class="title text-center">
                         Sign IN
                     </h2>
                 
-                    <h6 class="card-category">
                         {% if form.errors %}
                             {% for field, errors in form.errors.items %}
                                 {% for e in errors%}
-                                <h5 class="text-danger">{{ e|striptags }}</h5>
+                                {{ e|safe }}
                                 {% endfor %}
                             {% endfor %}
                         {% else %}
-                        <span>
-                            <h5>Please enter your Log In details:</h5>
-                        </span>
+                            <h5 class="text-center">Please enter your Log In details:</h5>
                         {% endif %}  
-                    </h6>
                 </div>
 
                 <form role="form" method="post" action="">
@@ -43,20 +39,18 @@
                             </div>
                         </div>
                         {% endfor %}
-
                     </div>
                     
                     <div class="card-footer text-center">
-                        <button type="submit" name="login" class="btn btn-fill btn-primary lg-submit-btn">Login</button>
                         
+                        <button type="submit" name="login" class="btn btn-fill btn-primary lg-submit-btn">Login</button>
+                
                         <br /><br />
 
                         <p>Don't have an account? <a href="{% url 'register' %}" class="text-primary">Register</a></p>
                         <p>Forgotten your password? <a href="{% url 'reset_password' %}" class="text-primary">Reset it</a></p>
                     </div>
-
                 </form>
-
             </div>
         </div>
     </div>

@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField
 from django.contrib.auth.models import User
 from .models import *
 from django.utils.translation import gettext_lazy as _
@@ -11,27 +11,34 @@ from django.contrib.auth.hashers import check_password
 
 
 class LoginForm(AuthenticationForm):
-    username = forms.CharField(
-        widget=forms.TextInput(
-            attrs={
-                "placeholder": "Username",
-                "class": "form-control"
-            }
-        ))
+    
+    username = UsernameField(
+        widget=forms.TextInput(attrs={
+            "autofocus": True,
+            "placeholder": "Username",
+            "class": "form-control"
+        }))
+    
     password = forms.CharField(
-        widget=forms.PasswordInput(
-            attrs={
-                "placeholder": "Password",
-                "class": "form-control"
-            }
-        ))
+        label=_("Password"),
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            "autocomplete": "current-password",
+            "placeholder": "Password",
+            "class": "form-control"  
+        }))
 
     error_messages = {
-        "invalid_login": _(
-            "Please enter a valid Username and/or Password. Note that both "
-            "fields may be case-sensitive."
-        ),
-        "inactive": _("This account is inactive."),
+        "invalid_login": _('''
+            <h5 class="text-danger col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">
+            Please enter a valid Username and/or Password. Note that both fields may be case-sensitive.</h5>        
+        '''),
+
+        "inactive": _('''
+        <h2 class="text-center text-danger mb-2">This account is inactive!</h2> 
+        <h5 class="text-danger col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-xl-6 offset-xl-3 px-md-1">If this is your first time to log in, 
+        then make sure you have activated the account with the email we sent you.</h5>
+        '''),
     }
 
 
