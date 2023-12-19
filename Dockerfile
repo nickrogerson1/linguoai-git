@@ -25,4 +25,4 @@ COPY . ./
 
 CMD parallel --ungroup --halt now,fail=1 ::: \
     "celery -A linguoai worker -l info -B" \
-    "python manage.py migrate && python manage.py collectstatic && daphne --bind 0.0.0.0 --port $PORT linguoai.asgi:application"
+    "python manage.py migrate && python manage.py collectstatic --noinput && daphne --bind 0.0.0.0 --port $PORT linguoai.asgi:application"
