@@ -32,11 +32,9 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-# '.railway.app', 
-ALLOWED_HOSTS = ['.linguo.ai']
+ALLOWED_HOSTS = ['.railway.app', '.linguo.ai']
 
-# 'https://*.railway.app', 
-CSRF_TRUSTED_ORIGINS = ['https://*.linguo.ai']
+CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://*.linguo.ai']
 
 
 INSTALLED_APPS = [
