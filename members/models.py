@@ -146,7 +146,6 @@ class IeltsWritingTask2(BaseModel):
         ('TH', 'Thai แบบไทย'),
         ('AR', 'Arabic عربي'),
         ('RU', 'Russian русский'),
-        ('ID', 'Indonesian bahasa Indonesia'),
         ('FA', 'Farsi فارسی'),
         ('VI', 'Vietnamese Tiếng Việt'),
         ('BN', 'Bengali বাংলা'),
