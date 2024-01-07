@@ -134,6 +134,7 @@ def max_word_count_general_validator(sub):
 class IeltsWritingTask2(BaseModel):
     CHOICES = [
         ('EN', 'English'),
+        ('MS', 'Malaysian Bahasa Melayu'),
         ('CN', 'Chinese 中文'),
         ('ES', 'Spanish Español'),
         ('PT', 'Portuguese Português'),
