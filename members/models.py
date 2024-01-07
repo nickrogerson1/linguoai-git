@@ -135,6 +135,7 @@ class IeltsWritingTask2(BaseModel):
     CHOICES = [
         ('EN', 'English'),
         ('MS', 'Malaysian Bahasa Melayu'),
+        ('ID', 'Indonesian Bahasa Indonesia'),
         ('CN', 'Chinese 中文'),
         ('ES', 'Spanish Español'),
         ('PT', 'Portuguese Português'),
