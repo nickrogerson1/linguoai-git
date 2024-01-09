@@ -66,6 +66,7 @@ urlpatterns = [
 
 
     path('log/', ResultsLogView.as_view(), name='log'),
+    path('submit-image/', SubmitImage.as_view(), name='submit-image'),
 
     # Dashboard user DB searches
     path('ielts-writing-task-2-results/', IeltsResultsView.as_view(), name='ielts-writing-task-2-results'),

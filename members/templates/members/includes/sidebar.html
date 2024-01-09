@@ -18,6 +18,12 @@
                         <p>Go To Admin</p>
                     </a>
                 </li>
+                <li class="{% if 'icons' in segment %} active {% endif %}">
+                    <a href="{% url 'submit-image'  %}">
+                        <i class="tim-icons icon-camera-18"></i>
+                        <p>Submit OCR</p>
+                    </a>
+                </li>
                 {% endif %}
                 <li class="{% if 'icons' in segment %} active {% endif %}">
                     <a href="{% url 'ielts-writing-task-2' %}">

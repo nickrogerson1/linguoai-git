@@ -300,7 +300,7 @@ class DeleteUser(LoginRequiredMixin, DeleteView):
     
 
 
-class InternalContactForm(FormView):
+class InternalContactForm(LoginRequiredMixin, FormView):
 
     form_class = ContactForm
     template_name = 'members/home/contact-form.html'
@@ -900,3 +900,39 @@ def report_bad_result(request, url):
 
         # Tell the modal it can close
         return JsonResponse({'report_success' : True}, status = 200)
+    
+
+
+
+from django.conf import settings
+from io import BytesIO
+import os
+from .api_funcs.make_request import get_text_from_openai
+
+class SubmitImage(FormView):
+    template_name = 'members/home/image-submission.html'
+    form_class = OCRImageForm
+
+
+    def post(self, request):
+        form = OCRImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            print('Form is VALID!')
+
+            image = form.cleaned_data['image']
+            filename = f'{settings.MEDIA_ROOT}{image.name}'
+            buffer = BytesIO(image.read())
+
+            with open(filename, 'wb') as f:
+                f.write(buffer.getbuffer())
+
+            image_url = f'https://linguo.ai/media/{image.name}' #real url
+            text = get_text_from_openai(image_url)
+            print(text)
+
+            os.remove(filename)
+
+            return render(request, self.template_name, context={'text' : text})
+        else:
+            print('Form is invalid!')
+            return super().form_invalid(form)

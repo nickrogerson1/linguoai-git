@@ -33,3 +33,35 @@ def fetch_from_openai(prompt,model):
         return [result, model, prompt_tokens, completion_tokens, total_tokens]    
 
     except Exception as e: raise
+
+
+
+def get_text_from_openai(image_url):
+
+    try:
+
+        client = OpenAI(api_key=api_key)
+
+        res = client.chat.completions.create(
+        model="gpt-4-vision-preview",
+        messages=[
+            {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Transcribe the handwritten text only verbatim."},
+                {
+                "type": "image_url",
+                "image_url": {
+                    "url": image_url,
+                },
+                },
+            ],
+            }
+        ],
+        max_tokens=500,
+        )
+
+        return res.choices[0].message.content
+    
+    except Exception as e:
+        print(e)

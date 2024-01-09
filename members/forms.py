@@ -7,6 +7,7 @@ from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth import password_validation
 from datetime import date
 from django.contrib.auth.hashers import check_password
+from django.core.validators import FileExtensionValidator
 
 
 
@@ -304,3 +305,20 @@ class MultipleFileField(forms.FileField):
 
 class FileFieldForm(forms.Form):
     file_field = MultipleFileField()
+
+
+
+
+def validate_image(obj):
+    filesize = obj.size
+    mb_limit = 20.0
+    if filesize > mb_limit*1024*1024:
+        mb_filesize = round(filesize / 1024 / 1024, 2)
+        raise ValidationError(f'Max file size is {mb_limit}MB. Your file was {mb_filesize}MB. Please reduce the size of your image and try again.')
+
+
+class OCRImageForm(forms.Form):
+    image = forms.ImageField(label=False, validators=[
+        FileExtensionValidator(allowed_extensions=['png', 'jpeg', 'jpg', 'webp', 'gif']), 
+        validate_image
+    ])
