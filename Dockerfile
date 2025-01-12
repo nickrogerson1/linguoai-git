@@ -24,5 +24,6 @@ RUN apt-get purge -y --auto-remove gcc
 COPY . ./
 
 CMD parallel --ungroup --halt now,fail=1 ::: \
-    "celery -A linguoai worker -l info -B" \
+    # "celery -A linguoai worker -l info -B" \ Beat turned off
+    "celery -A linguoai worker -l info" \
     "python manage.py migrate && python manage.py collectstatic --noinput && daphne --bind 0.0.0.0 --port $PORT linguoai.asgi:application"
