@@ -24,7 +24,9 @@ app.conf.update(
     result_extended = True,
     worker_max_memory_per_child = 12000,
     worker_max_tasks_per_child = 2,
-    worker_concurrency = 2
+    worker_concurrency = 2,
+# Test this if memory issues persist 19/11/24
+    task_time_limit = 600
 )
 
 app.autodiscover_tasks()
@@ -61,6 +63,6 @@ def check_exchange_rate(retry_no=0, delay=60):
 
 
 # Celery Beat config
-@app.on_after_configure.connect
-def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(crontab(minute='0', hour=[0,12]), check_exchange_rate.s(), name='Get Exchange Rate')
+# @app.on_after_configure.connect
+# def setup_periodic_tasks(sender, **kwargs):
+#     sender.add_periodic_task(crontab(minute='0', hour=[0,12]), check_exchange_rate.s(), name='Get Exchange Rate')

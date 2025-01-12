@@ -540,6 +540,8 @@ class ImprovedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin, 
             t0 = time.time()
             sub = escape(self.object.submission).strip()
 
+            # print(f'SUB IMPROVED VIEW: {sub}')
+
             args = self.check_user_has_sufficient_funds(self.charge_type, sub=sub)
              # [ price_per_100_words, total_words, charged ]
 
@@ -582,6 +584,8 @@ class CorrectedFormView(LoginRequiredMixin, BalanceCheckMixin, StandardSubMixin,
 
             t0 = time.time()
             sub = escape(self.object.submission).strip()
+
+            # print(f'SUB CORRECTED VIEW: {sub}')
 
             args = self.check_user_has_sufficient_funds(self.charge_type, sub=sub)
              # [ price_per_100_words, total_words, charged ]
@@ -713,7 +717,7 @@ class ImprovedResultsDetailView(LoginRequiredMixin, DetailViewMixin, DetailView)
 
 
 
-# Need to do some of check to add submissions that are incomplete to the top of the list
+# Need to do some sort of check to add submissions that are incomplete to the top of the list
 class ResultsLogView(LoginRequiredMixin, ListView):
     paginate_by = 25
     template_name = 'members/home/log.html'
@@ -904,12 +908,20 @@ def report_bad_result(request, url):
 
 
 
+
 from django.conf import settings
 from io import BytesIO
 import os
 from .api_funcs.make_request import get_text_from_openai
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-class SubmitImage(FormView):
+
+class SuperUserRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_superuser
+
+
+class SubmitImage(SuperUserRequiredMixin, FormView):
     template_name = 'members/home/image-submission.html'
     form_class = OCRImageForm
 

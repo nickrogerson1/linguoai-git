@@ -23,7 +23,7 @@ class CustomUserAdmin(UserAdmin):
         (None, {"fields": ("username", "password")}),
         (_("Personal info"), {"fields": ("first_name", "email", "country", "year", "balance", "total_spent", "currency", "reports", 
         "total_submissions", "percent_reported", "reports_blocked", "discount_code", "discount_code_used", "affiliate")}),
-        (
+         (
             _("Permissions"),
             {
                 "fields": (

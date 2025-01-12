@@ -4,8 +4,36 @@
 
 <div class="content">
     <div class="container-fluid">
-        {% if not text %}
-        <!-- <div class="row"> -->
+        <div class="alert alert-info" role="alert" id="success-alert">
+            The text has been copied to your clipboard!
+        </div>
+        {% if text %}
+
+        <div>
+            <h2 class="text-center">This is the Transcribed Text</h2>
+            <div style="font-size: 18px;" id="transcribed-text">{{ text|linebreaks|safe }}</div>
+
+            <div class="row flex-column flex-md-row">
+
+                <div class="mt-3 pr-3">
+                    <input id="reload-button" type="submit" value="Submit Again" class="btn btn-fill btn-primary">
+                </div>
+
+                <form id="corrected-form" action="{% url 'corrected' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mt-3 pr-3">
+                        <input id="corrected" type="submit" value="Submit to Corrected" class="btn btn-fill btn-primary">
+                    </div>
+                </form>
+                <div class="mt-3 pr-3">
+                    <button id="copy-button" class="btn btn-fill btn-primary">Copy Text</button>
+                </div>
+
+            </div>
+        </div>
+        
+
+        {% else %}
             <h2>Submit The Image You Want To Be Read</h2>
             <h4 id="warning-text" style="visibility: hidden; color: red;">DO NOT CLICK OFF THE PAGE AFTER SUBMITTING! THIS CAN TAKE AGES SO BEAR WITH IT!</h4>
             <form method="post" enctype="multipart/form-data">
@@ -19,11 +47,6 @@
             </form>
         {% endif %}
 
-        {% if text %}
-        <h2 class="text-center">This is the Transcribed Text</h2>
-        <div style="font-size: 18px;">{{ text|linebreaks }}</div>
-        <input id="reload-button" type="submit" value="Submit Again" class="mt-3 btn btn-fill btn-primary">
-        {% endif %}
     </div>
 </div>
 {% endblock content %}
@@ -42,5 +65,38 @@ if(reloadButton){
     reloadButton.addEventListener('click', () =>  window.location.href=window.location.href)
 
 }
+
+
+$('#corrected-form').on('submit', function(e) {
+    const text = $('#transcribed-text')[0].innerText
+    $(this).append(`<input type="hidden" name="submission" value="${text}" />`)
+
+})
+
+
+// All for copying the text
+$(document).ready(function() {
+    $("#success-alert").hide();
+})
+
+function showSuccessAlert () {
+    $("#success-alert").fadeTo(2000, 500).slideUp(500, function() {
+    $("#success-alert").slideUp(500);
+    });
+};
+
+const copyText = async () => {
+        try {
+            const text = $('#transcribed-text')[0].innerText
+            await navigator.clipboard.writeText(text)
+            document.body.scrollTop = document.documentElement.scrollTop = 80;
+            showSuccessAlert()
+        } catch (e){
+            console.log(e)
+        }
+    }
+
+$('#copy-button').on('click',copyText)
+
 </script>
 {% endblock javascripts %}

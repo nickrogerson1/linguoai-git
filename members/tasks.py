@@ -97,8 +97,12 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
         model_used = 'gpt-3'
     elif data[1].endswith('-preview'):
         model_used = 'gpt-4-turbo'
-    else:
+    elif data[1].startswith('gpt-4'):
         model_used = 'gpt-4'
+    elif data[1].startswith('claude-3'):
+        model_used = 'claude-3-opus'
+    else:
+        model_used = 'Not Registered In Tasks'
    
 
     model.model_used = model_used
@@ -187,6 +191,8 @@ sub=None, question=None, answer=None, score_res=None, band=None, lang=None):
     
     return [pk, user.balance, time_created]
     
+
+
 
 
 def update_before_retry(retries, this_delay, task_id, username):

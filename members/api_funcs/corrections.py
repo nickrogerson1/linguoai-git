@@ -3,6 +3,8 @@ import nltk.data
 from .make_request import fetch_from_openai
 from lxml import html, etree
 import re
+from html import unescape
+# from django.utils.safestring import mark_safe
 
 
 def find_difference(sub, res):
@@ -13,7 +15,7 @@ def find_difference(sub, res):
         nltk.download('punkt')
 
     sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
-    original_text_sents = sent_detector.tokenize(sub)
+    original_text_sents = sent_detector.tokenize(unescape(sub))
     openai_res_sents = sent_detector.tokenize(res)
     edited = HtmlDiff().make_table(original_text_sents, openai_res_sents)
 # Clean the tables of crappy HTML
