@@ -30,5 +30,4 @@ IELTS tests are really expensive, costing up to £220 in the UK and in excess of
 - Collate training data and create fine-tuned LLM to further improve performance.
 
 ### Current Status
-Due to competition (engnovate.com) which are essentially offering these types of services for free and users being from third world countries who generally do not have enough money to pay for these types of services, the project has been frozen.
-Getting started (how to use it)
+Due to competition (engnovate.com) which are essentially offering these types of services for free and users being from third world countries who generally do not have enough money to pay, the project has been frozen.
