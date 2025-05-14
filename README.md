@@ -1,12 +1,12 @@
 <h1 align="center">LinguoAI – AI-powered English language helper app</h1>
 
-### About This Project (Intro)
+### About This Project
 This app helps English language learners improve their English. It currently consists of three principal features.
 1.	An AI-powered IELTS writing part 2 section scorer
 2.	An AI-powered written English corrector
 3.	An AI-powered written English improver
 
-### What it was built with / Tech Stack
+### What it was built with
 This app was built with Python, the Django Web Framework and PostgreSQL. JQuery and Bootstrap were also used for frontend development.
 Chart.js was used to handle dashboard features.
 NLTK and PyMuPDF were used to provide PDFs and Python DOCX for Word documents.
